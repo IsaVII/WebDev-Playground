@@ -69,6 +69,16 @@
       "screenshot": "/images/i18n.png",
       "difficulty": "intermediate",
       "estimatedTime": "20 minutes"
+    },
+    {
+      "id": 8,
+      "key": "llmintegration",
+      "title": "Integrating an LLM Into Your Web App",
+      "description": "Wire an LLM into a real app the safe way: a backend proxy, a data shape the model can reason over, structured JSON output, and the error handling a model call needs that a normal API call doesn't",
+      "route": "/llmintegration",
+      "screenshot": "/images/llmintegration.png",
+      "difficulty": "intermediate",
+      "estimatedTime": "25 minutes"
     }
 ]
 }

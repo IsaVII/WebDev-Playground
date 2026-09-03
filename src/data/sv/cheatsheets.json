@@ -59,6 +59,16 @@
       "screenshot": "/images/textreveal.png",
       "difficulty": "intermediate",
       "estimatedTime": "20 minuter"
+    },
+    {
+      "id": 8,
+      "key": "llmintegration",
+      "title": "Integrera en LLM i din webbapp",
+      "description": "Koppla in en LLM i en riktig app på ett säkert sätt: en backend-proxy, en dataform modellen kan resonera kring, strukturerad JSON-output och den felhantering ett modellanrop kräver som ett vanligt API-anrop inte gör",
+      "route": "/llmintegration",
+      "screenshot": "/images/llmintegration.png",
+      "difficulty": "intermediate",
+      "estimatedTime": "25 minuter"
     }
 ]
 }

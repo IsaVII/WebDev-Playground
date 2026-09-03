@@ -1,0 +1,106 @@
+{
+  "title": "Integrera en LLM i din webbapp - Fusklapp",
+  "introduction": {
+    "heading": "Skicka din data till en LLM på ett säkert sätt - och få användbara svar tillbaka",
+    "description": "En snabbreferens för att koppla in en LLM (Claude, GPT eller liknande) i en riktig webbapp: hålla API-nyckeln borta från klienten, forma din egen data till en prompt, be om strukturerad output du faktiskt kan rendera, och hantera de typer av fel som hör till att anropa en modell istället för ett vanligt API. Det genomgående exemplet är en migränkalender - en användare loggar symptom, sömn, stress och möjliga triggers över tid, och LLM:en ombeds leta efter mönster i den loggen värda att flagga (aldrig en diagnos, alltid en korrelation) - men samma upplägg fungerar lika bra för träningsloggar, utgiftsspårare, humördagböcker eller vilken annan data som helst du vill att en LLM ska resonera kring."
+  },
+  "prerequisites": [
+    "En Node.js-backend du kontrollerar (Express eller liknande) - LLM:en anropas alltid från servern, aldrig från webbläsaren",
+    "En API-nyckel för en LLM-leverantör (Anthropic, OpenAI, etc.) med betalning uppsatt",
+    "En React-frontend med befintlig användardata att analysera (en lista med loggposter, poster eller händelser)"
+  ],
+  "steps": [
+    {
+      "id": 1,
+      "title": "Välj arkitektur: enbart backend-proxy",
+      "description": "Det viktigaste beslutet: webbläsaren får aldrig hålla din LLM-API-nyckel. Varje anrop till modellen går webbläsare → din backend → LLM-leverantören. Din backend är också platsen där du bestämmer vilken data som faktiskt skickas - hela användarens databas, eller bara de fält som är relevanta för frågan.",
+      "language": "javascript",
+      "note": "Samma regel som för vilken annan tredjeparts-API-nyckel som helst (Stripe, SendGrid, ...) - om den kan läsas från webbläsaren, betrakta den som redan läckt.",
+      "codeFile": "code-examples/cheatsheets/llmIntegration/01-choose-an-architecture-backend-proxy-only.js"
+    },
+    {
+      "id": 2,
+      "title": "Installera SDK:t och spara din API-nyckel",
+      "description": "Installera leverantörens server-side SDK plus en liten Express-uppsättning, och håll nyckeln i en oversionshanterad .env-fil - samma mönster som för en databasanslutningssträng.",
+      "language": "bash",
+      "note": "Lägg till en .env.example med ett platshållarvärde så att teammedlemmar vet att variabeln finns utan att någonsin se det riktiga värdet.",
+      "codeFile": "code-examples/cheatsheets/llmIntegration/02-install-the-sdk-store-your-api-key.sh"
+    },
+    {
+      "id": 3,
+      "title": "Skapa en minimal Express-proxy-endpoint",
+      "description": "Börja med en rutt som bara bevisar att kopplingen fungerar - request in, response ut - innan du lägger till någon LLM-logik. Bekräftar att CORS, JSON-parsning och env-laddning fungerar korrekt först.",
+      "language": "javascript",
+      "codeFile": "code-examples/cheatsheets/llmIntegration/03-create-a-minimal-express-proxy-endpoint.js"
+    },
+    {
+      "id": 4,
+      "title": "Forma din data för modellen",
+      "description": "Skicka inte dina råa databasrader till modellen. Välj de fält som spelar roll för frågan du ställer, och formatera dem kompakt - varje extra token kostar pengar och gör modellens jobb svårare, inte lättare.",
+      "language": "javascript",
+      "note": "Specifikt för en migränlogg: smärtnivå, sömn, stress, väder och egennoterade triggers är signalen; interna id:n, tidsstämplar ner på sekunden och orelaterade fält är brus - utelämna dem.",
+      "codeFile": "code-examples/cheatsheets/llmIntegration/04-shape-your-data-for-the-model.js"
+    },
+    {
+      "id": 5,
+      "title": "Skriv en fokuserad systemprompt",
+      "description": "Systemprompten är där du begränsar vad modellen får säga - vad som räknas som bevis, vad den aldrig får påstå, och exakt vilken form svaret ska ha. Behandla den som ett API-kontrakt, inte ett förslag.",
+      "language": "javascript",
+      "note": "För allt som rör hälsa, ekonomi eller juridik: förbjud uttryckligen diagnostiskt/kausalt språk (\"orsakar\", \"du har\") till förmån för korrelationsspråk (\"kan vara kopplat till\") - och säg det rakt ut i prompten.",
+      "codeFile": "code-examples/cheatsheets/llmIntegration/05-write-a-focused-system-prompt.js"
+    },
+    {
+      "id": 6,
+      "title": "Be om strukturerad output (JSON)",
+      "description": "Att rendera fri text i ditt UI är skört. Be modellen svara i en fast JSON-form (definierad i din systemprompt) så att frontenden kan mappa direkt mot den, på samma sätt som mot ett vanligt API-svar.",
+      "language": "javascript",
+      "codeFile": "code-examples/cheatsheets/llmIntegration/06-ask-for-structured-output-json.js"
+    },
+    {
+      "id": 7,
+      "title": "Tolka och validera svaret",
+      "description": "Lita aldrig blint på modellens output - ta bort eventuella markdown-fences innan parsning, omslut parsningen med try/catch, och kontrollera att resultatet faktiskt har den form du bad om innan det skickas till klienten.",
+      "language": "javascript",
+      "note": "Det här är steget de flesta tutorials hoppar över, och det som blir en produktionsbugg först - en modell som följer ett format 99% av gångerna misslyckas ändå 1 gång av 100.",
+      "codeFile": "code-examples/cheatsheets/llmIntegration/07-parse-validate-the-response.js"
+    },
+    {
+      "id": 8,
+      "title": "Anropa endpointen från React",
+      "description": "Från frontenden är det bara ännu ett fetch-anrop till din egen backend - inget SDK, ingen API-nyckel, ingen särskild hantering utöver de loading-/error-tillstånd vilket asynkront anrop som helst behöver.",
+      "language": "jsx",
+      "note": "Skydda mot att anropa detta på för lite data - ett mönster som påstås utifrån 2-3 poster är inte ett mönster, det är brus, vilket knappens disabled-tillstånd ovan speglar.",
+      "codeFile": "code-examples/cheatsheets/llmIntegration/08-call-the-endpoint-from-react.jsx"
+    },
+    {
+      "id": 9,
+      "title": "Hantera rate limits, caching och kostnad",
+      "description": "LLM-anrop är långsammare och dyrare än en vanlig databasfråga. Cacha resultat nyckelade på den data som analyserades, försök igen vid tillfälliga fel med backoff, och visa 429:or för användaren istället för att hänga.",
+      "language": "javascript",
+      "note": "En cache nyckelad på en hash av indata (snarare än användar-id) är ett billigt sätt att undvika att analysera om en oförändrad logg varje gång någon öppnar sidan.",
+      "codeFile": "code-examples/cheatsheets/llmIntegration/09-handle-rate-limits-caching-cost.js"
+    },
+    {
+      "id": 10,
+      "title": "Vanliga fel och lösningar",
+      "description": "De fel du oftast stöter på när du kopplar in ett LLM-anrop för första gången, och vad de faktiskt betyder.",
+      "language": "bash",
+      "note": "Om modellen fortsätter ignorera instruktionen om enbart JSON, upprepa den i user-meddelandet också - och överväg leverantörens dedikerade läge för strukturerad output/tool-use om det finns.",
+      "codeFile": "code-examples/cheatsheets/llmIntegration/10-common-errors-fixes.sh"
+    }
+  ],
+  "gettingStarted": {
+    "heading": "Checklista för att komma igång",
+    "steps": [
+      "Bekräfta att din API-nyckel bara någonsin förekommer i server-side-kod, aldrig i något som skickas till webbläsaren",
+      "Bygg Express-proxy-rutten och testa den med curl innan du kopplar in frontenden",
+      "Skriv en systemprompt som fastställer både JSON-formen på output och vad modellen inte får påstå",
+      "Lägg till try/catch runt både API-anropet och parsningen av dess svar",
+      "Lägg till ett loading- och ett error-tillstånd i React-komponenten - ett LLM-anrop kan ta flera sekunder"
+    ]
+  },
+  "source": {
+    "label": "Anthropics dokumentation för Messages API",
+    "url": "https://docs.claude.com/en/api/messages"
+  }
+}

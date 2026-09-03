@@ -1,0 +1,106 @@
+{
+  "title": "Integrating an LLM Into Your Web App Cheat Sheet",
+  "introduction": {
+    "heading": "Sending Your Data to an LLM Safely & Getting Useful Answers Back",
+    "description": "A quick reference for wiring an LLM (Claude, GPT, or similar) into a real web app: keeping the API key off the client, shaping your own data into a prompt, asking for structured output you can actually render, and handling the failure modes that come with calling a model instead of a normal API. The running example throughout is a migraine calendar - a user logs symptoms, sleep, stress, and possible triggers over time, and the LLM is asked to look across that log for patterns worth flagging (never a diagnosis, always a correlation) - but the same shape applies to fitness logs, spending trackers, mood journals, or any other data you'd want an LLM to reason over."
+  },
+  "prerequisites": [
+    "A Node.js backend you control (Express or similar) - the LLM is always called from the server, never the browser",
+    "An API key for an LLM provider (Anthropic, OpenAI, etc.) with billing set up",
+    "A React frontend with some existing user data to analyze (a list of log entries, records, or events)"
+  ],
+  "steps": [
+    {
+      "id": 1,
+      "title": "Choose an Architecture: Backend Proxy Only",
+      "description": "The single most important decision: the browser must never hold your LLM API key. Every request to the model goes browser → your backend → the LLM provider. Your backend is also where you decide what data actually gets sent - the user's whole database, or just the fields relevant to the question.",
+      "language": "javascript",
+      "note": "This is the same rule as any other third-party API key (Stripe, SendGrid, ...) - if it can be read from the browser, treat it as already leaked.",
+      "codeFile": "code-examples/cheatsheets/llmIntegration/01-choose-an-architecture-backend-proxy-only.js"
+    },
+    {
+      "id": 2,
+      "title": "Install the SDK & Store Your API Key",
+      "description": "Install the provider's server-side SDK plus a small Express setup, and keep the key in an untracked .env file - the same pattern used for a database connection string.",
+      "language": "bash",
+      "note": "Add a .env.example with a placeholder key so teammates know the variable exists without ever seeing the real value.",
+      "codeFile": "code-examples/cheatsheets/llmIntegration/02-install-the-sdk-store-your-api-key.sh"
+    },
+    {
+      "id": 3,
+      "title": "Create a Minimal Express Proxy Endpoint",
+      "description": "Start with a route that just proves the wiring works - request in, response out - before adding any LLM logic. Confirms CORS, JSON parsing, and env loading are all correct first.",
+      "language": "javascript",
+      "codeFile": "code-examples/cheatsheets/llmIntegration/03-create-a-minimal-express-proxy-endpoint.js"
+    },
+    {
+      "id": 4,
+      "title": "Shape Your Data for the Model",
+      "description": "Don't hand the model your raw database rows. Pick the fields that matter for the question you're asking, and format them compactly - every extra token costs money and makes the model's job harder, not easier.",
+      "language": "javascript",
+      "note": "For a migraine log specifically: pain level, sleep, stress, weather, and self-noted triggers are the signal; internal ids, timestamps down to the second, and unrelated fields are noise - leave them out.",
+      "codeFile": "code-examples/cheatsheets/llmIntegration/04-shape-your-data-for-the-model.js"
+    },
+    {
+      "id": 5,
+      "title": "Write a Focused System Prompt",
+      "description": "The system prompt is where you constrain what the model is allowed to say - what counts as evidence, what it must never claim, and exactly what shape the answer should take. Treat it like an API contract, not a suggestion.",
+      "language": "javascript",
+      "note": "For anything touching health, finance, or legal topics, explicitly ban diagnostic/causal language (\"causes\", \"you have\") in favor of correlational language (\"may be associated with\") - and say so directly in the prompt.",
+      "codeFile": "code-examples/cheatsheets/llmIntegration/05-write-a-focused-system-prompt.js"
+    },
+    {
+      "id": 6,
+      "title": "Ask for Structured Output (JSON)",
+      "description": "Rendering free-form prose in your UI is fragile. Ask the model to respond in a fixed JSON shape (defined in your system prompt) so the frontend can map straight over it, the same way it would map over a normal API response.",
+      "language": "javascript",
+      "codeFile": "code-examples/cheatsheets/llmIntegration/06-ask-for-structured-output-json.js"
+    },
+    {
+      "id": 7,
+      "title": "Parse & Validate the Response",
+      "description": "Never trust the model's output blindly - strip accidental markdown fences before parsing, wrap parsing in a try/catch, and check the result actually has the shape you asked for before sending it to the client.",
+      "language": "javascript",
+      "note": "This is the step most tutorials skip, and the one that turns into a production bug first - a model that's 99% reliable at following a format still fails 1 time in 100.",
+      "codeFile": "code-examples/cheatsheets/llmIntegration/07-parse-validate-the-response.js"
+    },
+    {
+      "id": 8,
+      "title": "Call the Endpoint from React",
+      "description": "From the frontend, this is just another fetch to your own backend - no SDK, no API key, no special handling beyond the loading/error states any async request needs.",
+      "language": "jsx",
+      "note": "Guard against calling this on too little data - a pattern claimed from 2-3 entries isn't a pattern, it's noise, and the button's disabled state above reflects that.",
+      "codeFile": "code-examples/cheatsheets/llmIntegration/08-call-the-endpoint-from-react.jsx"
+    },
+    {
+      "id": 9,
+      "title": "Handle Rate Limits, Caching & Cost",
+      "description": "LLM calls are slower and more expensive than a normal DB query. Cache results keyed on the data that was analyzed, retry transient failures with backoff, and surface 429s to the user instead of hanging.",
+      "language": "javascript",
+      "note": "A cache keyed by a hash of the input data (rather than the user id) is a cheap way to avoid re-analyzing an unchanged log every time someone opens the page.",
+      "codeFile": "code-examples/cheatsheets/llmIntegration/09-handle-rate-limits-caching-cost.js"
+    },
+    {
+      "id": 10,
+      "title": "Common Errors & Fixes",
+      "description": "The errors you'll hit most often when wiring up an LLM call for the first time, and what they actually mean.",
+      "language": "bash",
+      "note": "If the model keeps ignoring the JSON-only instruction, repeat it in the user message as well as the system prompt - and consider a provider's dedicated structured-output/tool-use mode if it has one.",
+      "codeFile": "code-examples/cheatsheets/llmIntegration/10-common-errors-fixes.sh"
+    }
+  ],
+  "gettingStarted": {
+    "heading": "Getting Started Checklist",
+    "steps": [
+      "Confirm your API key only ever appears in server-side code, never in anything shipped to the browser",
+      "Build the Express proxy route and test it with curl before wiring up the frontend",
+      "Write a system prompt that fixes both the output JSON shape and what the model isn't allowed to claim",
+      "Add try/catch around both the API call and the JSON parsing of its response",
+      "Add a loading and an error state to the React component - an LLM call can take several seconds"
+    ]
+  },
+  "source": {
+    "label": "Anthropic Messages API documentation",
+    "url": "https://docs.claude.com/en/api/messages"
+  }
+}
