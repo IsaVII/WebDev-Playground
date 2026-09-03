@@ -1,0 +1,132 @@
+{
+  "title": "Docker",
+  "introduction": {
+    "heading": "What Is Docker?",
+    "description": "Docker packages an app together with everything it needs to run - the runtime, system libraries, and dependencies - into a single, portable image. That image runs the same way on your laptop, a teammate's machine, and a production server, which finally puts an end to \"works on my machine.\" For a typical Node/React project this usually means at least two moving pieces: an image for the app itself (built from a Dockerfile) and, if the app talks to a database, a second container for that database - wired together with docker-compose so `docker compose up` starts the whole stack with one command instead of a page of manual setup instructions."
+  },
+  "coreConcepts": {
+    "heading": "Core Concepts",
+    "concepts": [
+      {
+        "title": "Image vs. Container",
+        "description": "An image is a read-only, versioned template built from a Dockerfile; a container is a running (or stopped) instance of that image - the same relationship as a class and an object"
+      },
+      {
+        "title": "Dockerfile",
+        "description": "A plain-text recipe of instructions - FROM, COPY, RUN, CMD - that Docker executes in order, top to bottom, to produce an image"
+      },
+      {
+        "title": "Layers & Caching",
+        "description": "Every instruction in a Dockerfile creates a new, cached layer; Docker reuses a layer unchanged on the next build unless that instruction or anything it depends on changed, which is why instruction order matters"
+      },
+      {
+        "title": "Multi-Stage Builds",
+        "description": "Using one stage with the full build toolchain to compile the app, then copying only the finished output into a second, minimal stage - the compilers, dev dependencies, and source maps never ship in the final image"
+      },
+      {
+        "title": "Volumes & Bind Mounts",
+        "description": "A named volume is storage Docker manages for you and is the right choice for a database's data directory; a bind mount maps a folder from the host straight into the container and is mainly for live-reloading source code in development"
+      },
+      {
+        "title": "Docker Compose & Service Networking",
+        "description": "docker-compose.yml describes several containers as one application; every service can reach every other service by its service name as a hostname, over a private network Compose creates automatically"
+      }
+    ]
+  },
+  "architecture": {
+    "heading": "How the Pieces Fit Together",
+    "description": "A Node/React app in containers is rarely just \"the app.\" Split it into the pieces Docker actually treats separately: the client (a React app, built once and served as static files), the api (a Node/Express server that stays running), and the db (a database with its own persistent storage) - each its own container, each with its own image, talking to each other over the network docker-compose sets up. Click a service below to see what it actually is and how it's reached."
+  },
+  "gettingStarted": {
+    "heading": "Getting Started",
+    "steps": [
+      "Add a .dockerignore next to the Dockerfile before anything else - without it, `docker build` copies node_modules, .git, and dist into the build context and every build gets slower",
+      "Write a multi-stage Dockerfile: an early stage runs npm ci && npm run build with the full Node toolchain, and a final, minimal stage (e.g. nginx:alpine) copies in only the built output",
+      "Build and try the image locally: docker build -t my-app . then docker run -p 5173:80 my-app, and open the mapped port in a browser",
+      "Add a docker-compose.yml with a service per piece (client, api, db) - reference other services by their service name as the hostname, never localhost or 127.0.0.1",
+      "Pass configuration with environment: or env_file: in docker-compose.yml, and keep real secrets in a git-ignored .env file - never COPY a .env into an image",
+      "Give the database a healthcheck and make the api's depends_on use condition: service_healthy, so the api doesn't try to connect before Postgres is actually ready to accept connections",
+      "Bring the whole stack up with docker compose up --build, and use docker compose logs -f <service> to tail one container's output while you debug"
+    ]
+  },
+  "practiceTopics": [
+    {
+      "title": "Multi-Stage Builds",
+      "description": "Compare a single-stage image that ships the whole Node toolchain against a multi-stage build that ships only the compiled output"
+    },
+    {
+      "title": "Layer Caching Order",
+      "description": "Reorder COPY and RUN instructions and see which change forces npm ci to rerun on the next build - and which doesn't"
+    },
+    {
+      "title": "Compose Networking: App + DB",
+      "description": "Connect an api service to a db service using the service name as the hostname, and see why localhost doesn't work between containers"
+    },
+    {
+      "title": "Common Gotchas Checklist",
+      "description": "Walk through the mistakes that trip up almost everyone the first time they containerize a Node/React app, and how each one is actually fixed"
+    }
+  ],
+  "fullExample": {
+    "heading": "Full Example, Step by Step",
+    "title": "A multi-stage Dockerfile, a docker-compose.yml for app + DB, and a .dockerignore",
+    "description": "This is a complete, realistic setup for containerizing a Node/React project: a multi-stage Dockerfile that builds the React client and serves it with nginx, a docker-compose.yml that wires that client to a Node/Express api and a Postgres db, and the .dockerignore that keeps the build fast and secrets out of the image. Click through the steps to see which lines each one is talking about.",
+    "steps": [
+      {
+        "label": "Build stage: install dependencies in a cached layer",
+        "lines": [1, 9],
+        "explanation": "The build stage is named build (via AS build) so a later stage can copy from it by name. Copying only package.json/package-lock.json before running npm ci means this whole layer is reused on the next build unless a dependency actually changed - editing a component file won't force a full reinstall."
+      },
+      {
+        "label": "Build stage: copy source and build",
+        "lines": [11, 13],
+        "explanation": "COPY . . happens after npm ci on purpose - it's the instruction most likely to change on every build, and placing it last means it never invalidates the (slow) dependency-install layer above it."
+      },
+      {
+        "label": "Runtime stage: start a second, minimal image",
+        "lines": [15, 19],
+        "explanation": "FROM nginx:1.27-alpine AS runtime starts a brand-new, empty stage - nothing from the build stage is carried over automatically. nginx.conf here is a small custom config; the default one doesn't know that React Router needs every unknown path to fall back to index.html."
+      },
+      {
+        "label": "Runtime stage: copy only the compiled output",
+        "lines": [21, 23],
+        "explanation": "COPY --from=build pulls files from the earlier stage by name. Only /app/dist (the built, static HTML/CSS/JS) crosses into this image - node_modules, the source tree, and the entire Node toolchain used to build it are left behind, which is most of why multi-stage images end up so much smaller."
+      },
+      {
+        "label": "Expose the port and run nginx as PID 1",
+        "lines": [25, 28],
+        "explanation": "EXPOSE 80 is documentation for humans and tooling - it doesn't publish the port by itself; that's what docker run -p or compose's ports: does. CMD runs nginx in the foreground (daemon off) so it is the container's main process and receives Docker's stop signal directly, instead of Docker killing a background process it doesn't know about."
+      },
+      {
+        "label": "Compose: define the client service",
+        "lines": [30, 38],
+        "explanation": "build: tells Compose to build the Dockerfile above instead of pulling a prebuilt image. ports: \"5173:80\" maps host port 5173 to the container's port 80 - depends_on only controls start order here, it does not wait for the api to be ready to accept requests."
+      },
+      {
+        "label": "Compose: define the api service and point it at the db",
+        "lines": [40, 54],
+        "explanation": "DATABASE_URL uses db - the db service's name - as the hostname, not localhost; Compose's internal DNS resolves that name to the right container automatically. The named volume api_node_modules is mounted over /app/node_modules so a host bind mount elsewhere in the compose file can't shadow it with an empty or wrong-OS folder."
+      },
+      {
+        "label": "Compose: define the db service with a healthcheck",
+        "lines": [56, 68],
+        "explanation": "healthcheck runs pg_isready inside the container itself every few seconds; the api's depends_on: condition: service_healthy above waits for this to report healthy, not just for the container process to have started - closing the classic race where the api tries to connect before Postgres has actually finished initializing."
+      },
+      {
+        "label": "Compose: name the persistent volumes",
+        "lines": [70, 72],
+        "explanation": "Any volume referenced by name in a service (like db_data: above) has to be declared once at the top level too. Because db_data is a named volume rather than a path inside the container's writable layer, the database's data survives docker compose down and every image rebuild."
+      },
+      {
+        "label": ".dockerignore: keep the context small and secrets out",
+        "lines": [74, 80],
+        "explanation": "Everything sent to the Docker daemon as the \"build context\" gets uploaded even if a COPY never references it, so excluding node_modules and dist keeps builds fast. Excluding .env matters even more: without it, COPY . . would happily bake real secrets into an image layer, where anyone with access to the image can still read them from a shell inside a stopped container."
+      }
+    ],
+    "files": [
+      "code-examples/learning/docker/Dockerfile",
+      "code-examples/learning/docker/docker-compose.yml",
+      "code-examples/learning/docker/dockerignore"
+    ]
+  }
+}

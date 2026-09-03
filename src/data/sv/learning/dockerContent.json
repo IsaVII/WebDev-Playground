@@ -1,0 +1,132 @@
+{
+  "title": "Docker",
+  "introduction": {
+    "heading": "Vad är Docker?",
+    "description": "Docker paketerar en app tillsammans med allt den behöver för att köras - runtime, systembibliotek och beroenden - till en enda, portabel image. Den imagen körs likadant på din laptop, en kollegas maskin och en produktionsserver, vilket äntligen sätter stopp för \"funkar på min maskin\". För ett typiskt Node/React-projekt betyder det oftast minst två rörliga delar: en image för själva appen (byggd från en Dockerfile) och, om appen pratar med en databas, en andra container för den databasen - kopplade ihop med docker-compose så att `docker compose up` startar hela stacken med ett enda kommando istället för en sida manuella installationsinstruktioner."
+  },
+  "coreConcepts": {
+    "heading": "Kärnkoncept",
+    "concepts": [
+      {
+        "title": "Image vs. Container",
+        "description": "En image är en skrivskyddad, versionerad mall byggd från en Dockerfile; en container är en körande (eller stoppad) instans av den imagen - samma relation som en klass och ett objekt"
+      },
+      {
+        "title": "Dockerfile",
+        "description": "Ett vanligt textrecept av instruktioner - FROM, COPY, RUN, CMD - som Docker kör i ordning, uppifrån och ner, för att producera en image"
+      },
+      {
+        "title": "Lager & Caching",
+        "description": "Varje instruktion i en Dockerfile skapar ett nytt, cachat lager; Docker återanvänder ett oförändrat lager vid nästa build om inte den instruktionen, eller något den beror på, har ändrats - därför spelar instruktionsordningen roll"
+      },
+      {
+        "title": "Multi-Stage Builds",
+        "description": "Att använda ett stadium med hela byggverktygskedjan för att kompilera appen, och sedan bara kopiera det färdiga resultatet till ett andra, minimalt stadium - kompilatorer, dev-beroenden och source maps skickas aldrig med i den slutliga imagen"
+      },
+      {
+        "title": "Volumes & Bind Mounts",
+        "description": "En namngiven volume är lagring Docker hanterar åt dig och är rätt val för en databas datakatalog; en bind mount mappar en mapp från värden direkt in i containern och är främst till för att live-ladda om källkod under utveckling"
+      },
+      {
+        "title": "Docker Compose & Nätverk Mellan Tjänster",
+        "description": "docker-compose.yml beskriver flera containrar som en applikation; varje tjänst kan nå varje annan tjänst via sitt tjänstenamn som värdnamn, över ett privat nätverk Compose skapar automatiskt"
+      }
+    ]
+  },
+  "architecture": {
+    "heading": "Hur Delarna Hänger Ihop",
+    "description": "En Node/React-app i containrar är sällan bara \"appen\". Dela upp den i delarna Docker faktiskt behandlar separat: client (en React-app, byggd en gång och serverad som statiska filer), api (en Node/Express-server som förblir igång) och db (en databas med sin egen persistenta lagring) - var och en sin egen container, sin egen image, som pratar med varandra över nätverket docker-compose sätter upp. Klicka på en tjänst nedan för att se vad den faktiskt är och hur den nås."
+  },
+  "gettingStarted": {
+    "heading": "Kom Igång",
+    "steps": [
+      "Lägg till en .dockerignore bredvid Dockerfile innan något annat - utan den kopierar `docker build` in node_modules, .git och dist i build-kontexten och varje build blir långsammare",
+      "Skriv en multi-stage Dockerfile: ett tidigt stadium kör npm ci && npm run build med hela Node-verktygskedjan, och ett sista, minimalt stadium (t.ex. nginx:alpine) kopierar bara in det byggda resultatet",
+      "Bygg och testa imagen lokalt: docker build -t my-app . och sedan docker run -p 5173:80 my-app, öppna sedan den mappade porten i en webbläsare",
+      "Lägg till en docker-compose.yml med en tjänst per del (client, api, db) - referera andra tjänster via deras tjänstenamn som värdnamn, aldrig localhost eller 127.0.0.1",
+      "Skicka konfiguration med environment: eller env_file: i docker-compose.yml, och håll riktiga hemligheter i en git-ignorerad .env-fil - kopiera aldrig en .env in i en image",
+      "Ge databasen en healthcheck och låt api:ts depends_on använda condition: service_healthy, så att api:t inte försöker koppla upp innan Postgres faktiskt är redo att ta emot anslutningar",
+      "Starta hela stacken med docker compose up --build, och använd docker compose logs -f <tjänst> för att följa en enskild containers output medan du felsöker"
+    ]
+  },
+  "practiceTopics": [
+    {
+      "title": "Multi-Stage Builds",
+      "description": "Jämför en single-stage-image som skickar med hela Node-verktygskedjan mot en multi-stage build som bara skickar med det kompilerade resultatet"
+    },
+    {
+      "title": "Layer Caching Order",
+      "description": "Ändra ordningen på COPY- och RUN-instruktioner och se vilken ändring som tvingar npm ci att köras igen vid nästa build - och vilken som inte gör det"
+    },
+    {
+      "title": "Compose Networking: App + DB",
+      "description": "Koppla en api-tjänst till en db-tjänst med tjänstenamnet som värdnamn, och se varför localhost inte fungerar mellan containrar"
+    },
+    {
+      "title": "Common Gotchas Checklist",
+      "description": "Gå igenom misstagen som snärjer nästan alla första gången de containeriserar en Node/React-app, och hur vart och ett faktiskt fixas"
+    }
+  ],
+  "fullExample": {
+    "heading": "Komplett Exempel, Steg för Steg",
+    "title": "En multi-stage Dockerfile, en docker-compose.yml för app + DB, och en .dockerignore",
+    "description": "Detta är en komplett, realistisk uppsättning för att containerisera ett Node/React-projekt: en multi-stage Dockerfile som bygger React-klienten och serverar den med nginx, en docker-compose.yml som kopplar den klienten till ett Node/Express-api och en Postgres-db, samt .dockerignore som håller build:en snabb och hemligheter utanför imagen. Klicka igenom stegen för att se vilka rader varje steg pratar om.",
+    "steps": [
+      {
+        "label": "Build-stadiet: installera beroenden i ett cachat lager",
+        "lines": [1, 9],
+        "explanation": "Build-stadiet namnges build (via AS build) så ett senare stadium kan kopiera från det via namnet. Att bara kopiera package.json/package-lock.json innan npm ci körs betyder att hela detta lager återanvänds vid nästa build om inte ett beroende faktiskt ändrats - att redigera en komponentfil tvingar inte fram en full ominstallation."
+      },
+      {
+        "label": "Build-stadiet: kopiera källkod och bygg",
+        "lines": [11, 13],
+        "explanation": "COPY . . sker medvetet efter npm ci - det är instruktionen som mest sannolikt ändras vid varje build, och att placera den sist betyder att den aldrig ogiltigförklarar det (långsamma) beroende-installationslagret ovanför."
+      },
+      {
+        "label": "Runtime-stadiet: starta en andra, minimal image",
+        "lines": [15, 19],
+        "explanation": "FROM nginx:1.27-alpine AS runtime startar ett helt nytt, tomt stadium - inget från build-stadiet förs över automatiskt. nginx.conf här är en liten anpassad config; standardkonfigurationen vet inte att React Router behöver att varje okänd path faller tillbaka till index.html."
+      },
+      {
+        "label": "Runtime-stadiet: kopiera bara det kompilerade resultatet",
+        "lines": [21, 23],
+        "explanation": "COPY --from=build hämtar filer från det tidigare stadiet via namn. Bara /app/dist (den byggda, statiska HTML/CSS/JS) förs över till denna image - node_modules, källkodsträdet och hela Node-verktygskedjan som användes för att bygga det lämnas kvar, vilket är det mesta av anledningen till att multi-stage-images blir så mycket mindre."
+      },
+      {
+        "label": "Exponera porten och kör nginx som PID 1",
+        "lines": [25, 28],
+        "explanation": "EXPOSE 80 är dokumentation för människor och verktyg - det publicerar inte porten på egen hand; det gör docker run -p eller composes ports:. CMD kör nginx i förgrunden (daemon off) så det är containerns huvudprocess och tar emot Dockers stoppsignal direkt, istället för att Docker dödar en bakgrundsprocess det inte känner till."
+      },
+      {
+        "label": "Compose: definiera client-tjänsten",
+        "lines": [30, 38],
+        "explanation": "build: säger åt Compose att bygga Dockerfile ovan istället för att hämta en färdig image. ports: \"5173:80\" mappar värdens port 5173 till containerns port 80 - depends_on styr bara startordning här, det väntar inte på att api:t ska vara redo att ta emot anrop."
+      },
+      {
+        "label": "Compose: definiera api-tjänsten och peka den mot db",
+        "lines": [40, 54],
+        "explanation": "DATABASE_URL använder db - db-tjänstens namn - som värdnamn, inte localhost; Composes interna DNS matchar det namnet mot rätt container automatiskt. Den namngivna volymen api_node_modules monteras över /app/node_modules så att en bind mount från värden någon annanstans i compose-filen inte kan skugga den med en tom eller fel-OS-mapp."
+      },
+      {
+        "label": "Compose: definiera db-tjänsten med en healthcheck",
+        "lines": [56, 68],
+        "explanation": "healthcheck kör pg_isready inuti containern själv med några sekunders mellanrum; api:ts depends_on: condition: service_healthy ovan väntar på att denna ska rapportera healthy, inte bara att containerprocessen har startat - vilket stänger den klassiska racen där api:t försöker koppla upp innan Postgres faktiskt hunnit initieras klart."
+      },
+      {
+        "label": "Compose: namnge de persistenta volymerna",
+        "lines": [70, 72],
+        "explanation": "En volym som refereras via namn i en tjänst (som db_data: ovan) måste också deklareras en gång på toppnivån. Eftersom db_data är en namngiven volym istället för en sökväg i containerns skrivbara lager överlever databasens data både docker compose down och varje ombyggnad av imagen."
+      },
+      {
+        "label": ".dockerignore: håll kontexten liten och hemligheter utanför",
+        "lines": [74, 80],
+        "explanation": "Allt som skickas till Docker-daemonen som \"build-kontexten\" laddas upp även om ingen COPY någonsin refererar till det, så att exkludera node_modules och dist håller builds snabba. Att exkludera .env spelar ännu större roll: utan det skulle COPY . . glatt baka in riktiga hemligheter i ett image-lager, där vem som helst med tillgång till imagen fortfarande kan läsa dem från ett skal inuti en stoppad container."
+      }
+    ],
+    "files": [
+      "code-examples/learning/docker/Dockerfile",
+      "code-examples/learning/docker/docker-compose.yml",
+      "code-examples/learning/docker/.dockerignore"
+    ]
+  }
+}

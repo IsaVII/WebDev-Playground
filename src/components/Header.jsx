@@ -22,6 +22,7 @@ import expressContentEn from "../data/en/learning/expressContent.json";
 import authContentEn from "../data/en/learning/authContent.json";
 import webSocketsContentEn from "../data/en/learning/webSocketsContent.json";
 import deploymentContentEn from "../data/en/learning/deploymentContent.json";
+import dockerContentEn from "../data/en/learning/dockerContent.json";
 
 // Swedish content
 import cheatsheetsSv from "../data/sv/cheatsheets.json";
@@ -38,6 +39,7 @@ import expressContentSv from "../data/sv/learning/expressContent.json";
 import authContentSv from "../data/sv/learning/authContent.json";
 import webSocketsContentSv from "../data/sv/learning/webSocketsContent.json";
 import deploymentContentSv from "../data/sv/learning/deploymentContent.json";
+import dockerContentSv from "../data/sv/learning/dockerContent.json";
 
 // Content maps
 const CONTENT_BY_LANG = {
@@ -57,6 +59,7 @@ const CONTENT_BY_LANG = {
       auth: authContentEn,
       websockets: webSocketsContentEn,
       deployment: deploymentContentEn,
+      docker: dockerContentEn,
     },
   },
   sv: {
@@ -75,6 +78,7 @@ const CONTENT_BY_LANG = {
       auth: authContentSv,
       websockets: webSocketsContentSv,
       deployment: deploymentContentSv,
+      docker: dockerContentSv,
     },
   },
 };

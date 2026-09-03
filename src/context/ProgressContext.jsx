@@ -19,6 +19,7 @@ import expressContent from "../data/en/learning/expressContent.json";
 import authContent from "../data/en/learning/authContent.json";
 import webSocketsContent from "../data/en/learning/webSocketsContent.json";
 import deploymentContent from "../data/en/learning/deploymentContent.json";
+import dockerContent from "../data/en/learning/dockerContent.json";
 
 // Map topic keys to their learning content (to access practice topics)
 const CONTENT_BY_KEY = {
@@ -34,6 +35,7 @@ const CONTENT_BY_KEY = {
   auth: authContent,
   websockets: webSocketsContent,
   deployment: deploymentContent,
+  docker: dockerContent,
 };
 
 // Everything the user has checked off lives in a single cookie, so

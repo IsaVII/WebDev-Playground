@@ -119,6 +119,16 @@
       "screenshot": "/images/deployment.png",
       "difficulty": "intermediate",
       "estimatedTime": "2.5 hours"
+    },
+    {
+      "id": 13,
+      "key": "docker",
+      "title": "Docker",
+      "description": "Containerize a Node/React app: Dockerfile, docker-compose for app + DB, and the gotchas that trip up almost everyone",
+      "route": "/docker",
+      "screenshot": "/images/docker.png",
+      "difficulty": "intermediate",
+      "estimatedTime": "2.5 hours"
     }
   ]
 }

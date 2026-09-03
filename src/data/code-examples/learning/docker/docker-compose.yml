@@ -1,0 +1,43 @@
+services:
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5173:80"
+    depends_on:
+      - api
+
+  api:
+    build:
+      context: ./server
+    ports:
+      - "4000:4000"
+    environment:
+      DATABASE_URL: postgres://app:app@db:5432/app
+      NODE_ENV: production
+    depends_on:
+      db:
+        condition: service_healthy
+    # Named volume, not a bind mount: keeps the image's own node_modules
+    # instead of letting the host's (possibly missing/wrong-OS) copy win
+    volumes:
+      - api_node_modules:/app/node_modules
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: app
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  db_data:
+  api_node_modules:
