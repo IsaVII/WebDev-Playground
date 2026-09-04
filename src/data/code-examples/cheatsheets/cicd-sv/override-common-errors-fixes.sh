@@ -10,9 +10,13 @@ Fel: Workflowen triggas inte alls
 Orsak: Filen ligger inte under .github/workflows/, har ett YAML-syntaxfel, eller så matchar branchnamnet i on.push.branches inte din standardbranch.
 Fix: Kontrollera "All workflows"-listan i Actions-fliken - om din inte finns med kunde GitHub inte parsa filen; kontrollera YAML-indenteringen först.
 
-Fel: "Resource not accessible by integration" vid deploy
-Orsak: Jobbet saknar permissions-blocket (pages: write / id-token: write) som actions/deploy-pages behöver.
-Fix: Lägg till permissions-blocket som visas i steg 9 i deploy-jobbet.
+Fel: "remote: Permission to <owner>/<repo>.git denied" / 403 vid push till gh-pages
+Orsak: Deploy-jobbet saknar permissions: contents: write, så standard-GITHUB_TOKEN får inte pusha den gh-pages-branch som peaceiris/actions-gh-pages skapar.
+Fix: Lägg till permissions: contents: write i deploy-jobbet, som visas i steg 9.
+
+Fel: "Resource not accessible by integration" vid deploy (endast om du använder det valfria actions/deploy-pages-jobbet)
+Orsak: Jobbet saknar permissions-blocket (pages: write / id-token: write) som actions/deploy-pages behöver, eller så är repots Pages-källa fortfarande satt till "Deploy from a branch" istället för "GitHub Actions".
+Fix: Lägg till det permissions-blocket i deploy-jobbet, och byt Pages-källa till "GitHub Actions" - se det valfria understeget under steg 9.
 
 Fel: En secret visas som en tom sträng i loggen
 Orsak: Referens till secrets.NAME från en pull_request-triggad workflow på en fork, där secrets medvetet hålls tillbaka.

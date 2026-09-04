@@ -3,19 +3,25 @@ deploy:
   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
   runs-on: ubuntu-latest
   permissions:
-    pages: write
-    id-token: write
-  environment:
-    name: github-pages
-    url: ${{ steps.deployment.outputs.page_url }}
+    contents: write
   steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
+    - name: Checkout repository
+      uses: actions/checkout@v5
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v5
       with:
-        node-version: "20"
-    - run: npm ci && npm run build
-    - uses: actions/upload-pages-artifact@v3
+        node-version: "24"
+        cache: "npm"
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build app
+      run: npm run build
+
+    - name: Deploy to gh-pages branch
+      uses: peaceiris/actions-gh-pages@v4
       with:
-        path: dist
-    - id: deployment
-      uses: actions/deploy-pages@v4
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./dist

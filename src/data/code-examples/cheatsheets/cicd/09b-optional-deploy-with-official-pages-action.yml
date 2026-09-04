@@ -1,0 +1,25 @@
+# Optional alternative to peaceiris/actions-gh-pages: serve Pages directly
+# from an Actions run instead of publishing a gh-pages branch. Requires
+# Settings > Pages > Source = "GitHub Actions" (not "Deploy from a branch").
+deploy:
+  needs: build-and-test
+  if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+  runs-on: ubuntu-latest
+  permissions:
+    pages: write
+    id-token: write
+  environment:
+    name: github-pages
+    url: ${{ steps.deployment.outputs.page_url }}
+  steps:
+    - uses: actions/checkout@v5
+    - uses: actions/setup-node@v5
+      with:
+        node-version: "24"
+        cache: "npm"
+    - run: npm ci && npm run build
+    - uses: actions/upload-pages-artifact@v3
+      with:
+        path: dist
+    - id: deployment
+      uses: actions/deploy-pages@v4

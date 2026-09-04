@@ -45,7 +45,7 @@
     {
       "id": 5,
       "title": "Matrisbyggen över Node-versioner",
-      "description": "En matris kör samma jobb flera gånger parallellt, en gång per värde (eller kombination av värden) du listar. Här körs hela installera-och-testa-cykeln en gång per Node-version, vilket fångar ett beroende som bara går sönder på Node 18 eller bara på Node 22 innan en användare någonsin stöter på det.",
+      "description": "En matris kör samma jobb flera gånger parallellt, en gång per värde (eller kombination av värden) du listar. Här körs hela installera-och-testa-cykeln en gång per Node-version, vilket fångar ett beroende som bara går sönder på Node 20 eller bara på Node 24 innan en användare någonsin stöter på det.",
       "language": "yaml",
       "note": "Matriser multipliceras: om du lägger till en os: [ubuntu-latest, windows-latest]-axel bredvid node-version körs alla 3 x 2 = 6 kombinationer.",
       "codeFile": "code-examples/cheatsheets/cicd/05-matrix-builds-across-node-versions.yml"
@@ -83,15 +83,24 @@
     {
       "id": 9,
       "title": "Driftsätt till GitHub Pages vid Merge (CD)",
-      "description": "needs: build-and-test gör att det här jobbet väntar på att CI ska godkännas först, och if:-villkoret begränsar det till pushar på main - så en pull request driftsätter aldrig, bara en merge gör det. Det här är Continuous Deployment: det sista manuella steget (npm run deploy, kört för hand) försvinner helt.",
+      "description": "needs: build-and-test gör att det här jobbet väntar på att CI ska godkännas först, och if:-villkoret begränsar det till pushar på main - så en pull request driftsätter aldrig, bara en merge gör det. Det här är Continuous Deployment: det sista manuella steget (npm run deploy, kört för hand) försvinner helt. Det här repots egen workflow (.github/workflows/ci.yml) bygger appen och pushar dist/ direkt till en gh-pages-branch med peaceiris/actions-gh-pages - ingen Pages-specifik behörighet eller uppladdning/nedladdning av artefakter krävs.",
       "language": "yaml",
       "substeps": [
         "Öppna repositoryts \"Settings\"-flik",
         "Under \"Code and automation\", klicka på \"Pages\"",
-        "Sätt Source till \"GitHub Actions\" (inte \"Deploy from a branch\")"
+        "Sätt Source till \"Deploy from a branch\", Branch till gh-pages, och mappen till / (root)"
       ],
-      "note": "permissions: pages: write och id-token: write krävs för actions/deploy-pages - utan dem misslyckas jobbet med ett 403-fel även om allt annat är korrekt.",
-      "codeFile": "code-examples/cheatsheets/cicd/09-deploy-to-github-pages-on-merge-cd.yml"
+      "note": "permissions: contents: write krävs på deploy-jobbet - utan det kan standard-GITHUB_TOKEN inte pusha den gh-pages-branch som peaceiris/actions-gh-pages skapar, och jobbet misslyckas med ett behörighetsfel även om allt annat är korrekt.",
+      "codeFile": "code-examples/cheatsheets/cicd/09-deploy-to-github-pages-on-merge-cd.yml",
+      "subSteps": [
+        {
+          "title": "Valfritt: Driftsätt istället via GitHubs officiella Pages-action",
+          "description": "Om du hellre vill att Pages ska servera bygget direkt från en Actions-körning istället för att publicera en gh-pages-branch, byt ut peaceiris-jobbet mot actions/upload-pages-artifact + actions/deploy-pages. Det kräver egna behörigheter (pages: write, id-token: write) och ett environment: github-pages-block, samt att repots Pages-källa är satt till \"GitHub Actions\" istället för \"Deploy from a branch\".",
+          "language": "yaml",
+          "note": "Båda metoderna är giltiga - gh-pages-branch-metoden ovan är enklare och är vad det här repot faktiskt använder; den här undviker att ha en byggartefakt i git-historiken, till priset av en något mer invecklad behörighetsuppsättning.",
+          "codeFile": "code-examples/cheatsheets/cicd/09b-optional-deploy-with-official-pages-action.yml"
+        }
+      ]
     },
     {
       "id": 10,
@@ -118,8 +127,9 @@
       "actions/checkout + actions/setup-node med cache: \"npm\"",
       "npm ci, sedan npm run lint och npm test",
       "Lägg till secrets under Settings > Secrets and variables > Actions",
-      "Lägg till ett deploy-jobb med needs: build-and-test och ett if:-branchvillkor",
-      "Sätt Pages-källan till \"GitHub Actions\" i repots Settings",
+      "Lägg till ett deploy-jobb med needs: build-and-test, ett if:-branchvillkor, och permissions: contents: write",
+      "Bygg, och pusha sedan dist/ till gh-pages med peaceiris/actions-gh-pages (eller använd det valfria actions/deploy-pages-jobbet istället)",
+      "Sätt Pages-källan till gh-pages-branchen i repots Settings (eller \"GitHub Actions\" om du använde det valfria alternativet)",
       "Lägg till statusbadgen i din README"
     ]
   },

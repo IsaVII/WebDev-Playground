@@ -45,7 +45,7 @@
     {
       "id": 5,
       "title": "Matrix Builds Across Node Versions",
-      "description": "A matrix runs the same job multiple times in parallel, once per value (or combination of values) you list. Here it runs the full install-and-test cycle once per Node version, catching a dependency that only breaks on Node 18 or only on Node 22 before a user ever hits it.",
+      "description": "A matrix runs the same job multiple times in parallel, once per value (or combination of values) you list. Here it runs the full install-and-test cycle once per Node version, catching a dependency that only breaks on Node 20 or only on Node 24 before a user ever hits it.",
       "language": "yaml",
       "note": "Matrices multiply: adding an os: [ubuntu-latest, windows-latest] axis alongside node-version runs all 3 x 2 = 6 combinations.",
       "codeFile": "code-examples/cheatsheets/cicd/05-matrix-builds-across-node-versions.yml"
@@ -83,15 +83,24 @@
     {
       "id": 9,
       "title": "Deploy to GitHub Pages on Merge (CD)",
-      "description": "needs: build-and-test makes this job wait for CI to pass first, and the if: condition restricts it to pushes on main - so a pull request never deploys, only a merge does. This is Continuous Deployment: the last manual step (npm run deploy, run by hand) disappears entirely.",
+      "description": "needs: build-and-test makes this job wait for CI to pass first, and the if: condition restricts it to pushes on main - so a pull request never deploys, only a merge does. This is Continuous Deployment: the last manual step (npm run deploy, run by hand) disappears entirely. This repo's own workflow (.github/workflows/ci.yml) builds the app and pushes dist/ straight to a gh-pages branch with peaceiris/actions-gh-pages - no Pages-specific permissions or artifact upload/download step required.",
       "language": "yaml",
       "substeps": [
         "Open the repository's \"Settings\" tab",
         "Under \"Code and automation\", click \"Pages\"",
-        "Set Source to \"GitHub Actions\" (not \"Deploy from a branch\")"
+        "Set Source to \"Deploy from a branch\", Branch to gh-pages, and the folder to / (root)"
       ],
-      "note": "permissions: pages: write and id-token: write are required for actions/deploy-pages - without them the job fails with a 403 even though everything else is correct.",
-      "codeFile": "code-examples/cheatsheets/cicd/09-deploy-to-github-pages-on-merge-cd.yml"
+      "note": "permissions: contents: write is required on the deploy job - without it, the default GITHUB_TOKEN can't push the gh-pages branch that peaceiris/actions-gh-pages creates, and the job fails with a permissions error even though everything else is correct.",
+      "codeFile": "code-examples/cheatsheets/cicd/09-deploy-to-github-pages-on-merge-cd.yml",
+      "subSteps": [
+        {
+          "title": "Optional: Deploy via GitHub's Official Pages Action Instead",
+          "description": "If you'd rather have Pages serve the build directly from an Actions run instead of publishing a gh-pages branch, swap the peaceiris job for actions/upload-pages-artifact + actions/deploy-pages. It needs its own permissions (pages: write, id-token: write) and an environment: github-pages block, and requires the repo's Pages source to be set to \"GitHub Actions\" rather than \"Deploy from a branch\".",
+          "language": "yaml",
+          "note": "Both approaches are valid - the gh-pages-branch method above is simpler and is what this repo actually uses; this one avoids keeping a build artifact in git history at the cost of a slightly more involved permissions setup.",
+          "codeFile": "code-examples/cheatsheets/cicd/09b-optional-deploy-with-official-pages-action.yml"
+        }
+      ]
     },
     {
       "id": 10,
@@ -118,8 +127,9 @@
       "actions/checkout + actions/setup-node with cache: \"npm\"",
       "npm ci, then npm run lint and npm test",
       "Add secrets under Settings > Secrets and variables > Actions",
-      "Add a deploy job with needs: build-and-test and an if: branch guard",
-      "Set the Pages source to \"GitHub Actions\" in repo Settings",
+      "Add a deploy job with needs: build-and-test, an if: branch guard, and permissions: contents: write",
+      "Build, then push dist/ to gh-pages with peaceiris/actions-gh-pages (or use the optional actions/deploy-pages job instead)",
+      "Set the Pages source to the gh-pages branch in repo Settings (or \"GitHub Actions\" if you used the optional approach)",
       "Add the status badge to your README"
     ]
   },
