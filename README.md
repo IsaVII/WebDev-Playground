@@ -8,6 +8,10 @@ Learn **JavaScript**, **TypeScript**, **Git**, **HTTP & Web APIs**, **Node.js**,
 
 ---
 
+# Status
+
+![CI](https://github.com/IsaVII/WebDev-Playground/actions/workflows/ci.yml/badge.svg)
+
 ## Screenshots
 
 | ![Screenshot 1](./screenshots/WebDev-01.jpg) | ![Screenshot 2](./screenshots/WebDev-02.jpg) |
