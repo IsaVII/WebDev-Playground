@@ -85,7 +85,7 @@
       "title": "MongoDB Atlas IP Whitelist for Render",
       "description": "Configure MongoDB Atlas network access specifically for Render deployment.",
       "language": "bash",
-      "note": "Isa* — *2026-05-22 14:35: Add 0.0.0.0/0 into the IP Access List in MongoDB for RENDER",
+      "note": "Render (and most other PaaS providers) uses dynamic outbound IPs, so pinning individual IPs isn't practical - add 0.0.0.0/0 to the IP Access List for that cluster instead.",
       "codeFile": "code-examples/cheatsheets/mongodb/06-mongodb-atlas-ip-whitelist-for-render.sh"
     },
     {

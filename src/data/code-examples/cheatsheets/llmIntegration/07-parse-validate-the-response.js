@@ -13,7 +13,7 @@ app.post('/api/migraines/analyze', async (req, res) => {
 
   try {
     const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6',
+      model: 'claude-sonnet-5', // check docs.claude.com for the current model ID - these change over time
       max_tokens: 1000,
       system: SYSTEM_PROMPT,
       messages: [

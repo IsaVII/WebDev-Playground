@@ -1,2 +1,2 @@
 // src/main.jsx (or App.jsx)
-import "./styles/reveal.css";
+import "./styles/motion.css";

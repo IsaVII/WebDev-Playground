@@ -104,7 +104,7 @@
     "steps": [
       "Lägg till src/hooks/useReducedMotion.js och src/hooks/useScrollReveal.js",
       "Lägg till src/components/motion/Reveal.jsx och TextReveal.jsx",
-      "Lägg till src/styles/reveal.css och importera den en gång från din entry-fil",
+      "Lägg till src/styles/motion.css och importera den en gång från din entry-fil",
       "Använd <TextReveal text=\"...\" as=\"h1\" /> för hero/sektionsrubriker",
       "Wrappa kort/sektioner i <Reveal> och lägg till .stagger-children till en delad förälder för kaskaderande rutnät/listor"
     ]

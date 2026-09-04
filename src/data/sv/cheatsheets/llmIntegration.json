@@ -54,6 +54,7 @@
       "title": "Be om strukturerad output (JSON)",
       "description": "Att rendera fri text i ditt UI är skört. Be modellen svara i en fast JSON-form (definierad i din systemprompt) så att frontenden kan mappa direkt mot den, på samma sätt som mot ett vanligt API-svar.",
       "language": "javascript",
+      "note": "Modell-ID:n (som det som används i kodexemplet) ersätts regelbundet - kontrollera docs.claude.com/en/docs/about-claude/models för det aktuella standardvalet innan du släpper koden.",
       "codeFile": "code-examples/cheatsheets/llmIntegration/06-ask-for-structured-output-json.js"
     },
     {

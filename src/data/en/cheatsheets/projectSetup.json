@@ -50,10 +50,10 @@
     },
     {
       "id": 6,
-      "title": "Add Tailwind Directives to CSS (Optional)",
-      "description": "Update your main CSS file (usually src/index.css) to include Tailwind's utility layers.",
+      "title": "Add the Tailwind Import to CSS (Optional)",
+      "description": "Update your main CSS file (usually src/index.css) to pull in Tailwind. Tailwind v4 replaced the old three-line @tailwind base/components/utilities directives with a single @import statement.",
       "language": "css",
-      "note": "Replace any existing CSS content in your main CSS file with these directives.",
+      "note": "Replace any existing CSS content in your main CSS file with this import - if you're following a Tailwind v3 tutorial, you'll see @tailwind base/components/utilities instead, which no longer works with @tailwindcss/vite.",
       "codeFile": "code-examples/cheatsheets/projectSetup/06-add-tailwind-directives-to-css-optional.css"
     },
     {
@@ -187,9 +187,9 @@
       "npm create vite@latest frontend -- --template react",
       "cd frontend && npm install",
       "npm install @reduxjs/toolkit react-redux react-router-dom",
-      "npm install tailwindcss postcss autoprefixer @tailwindcss/vite",
+      "npm install tailwindcss @tailwindcss/vite",
       "Update vite.config.js with Tailwind plugin",
-      "Add Tailwind directives to src/index.css",
+      "Add @import \"tailwindcss\"; to src/index.css",
       "Create src/redux/store.js",
       "Wrap App with Redux Provider in main.jsx",
       "Create pages/ and components/ folders",

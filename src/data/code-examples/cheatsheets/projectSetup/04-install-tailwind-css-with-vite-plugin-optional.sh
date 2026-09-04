@@ -1,1 +1,1 @@
-npm install tailwindcss postcss autoprefixer @tailwindcss/vite
+npm install tailwindcss @tailwindcss/vite

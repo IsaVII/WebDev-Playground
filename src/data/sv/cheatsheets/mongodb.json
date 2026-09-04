@@ -85,7 +85,7 @@
       "title": "MongoDB Atlas IP-vitlista för Render",
       "description": "Konfigurera MongoDB Atlas nätverksåtkomst specifikt för Render-distribution.",
       "language": "bash",
-      "note": "Isa* — *2026-05-22 14:35: Lägg till 0.0.0.0/0 i IP Access List i MongoDB för RENDER",
+      "note": "Render (och de flesta andra PaaS-leverantörer) använder dynamiska utgående IP-adresser, så det går inte att peka ut specifika IP-adresser i praktiken - lägg istället till 0.0.0.0/0 i IP Access List för det klustret.",
       "codeFile": "code-examples/cheatsheets/mongodb-sv/override-mongodb-atlas-ip-vitlista-for-render.sh"
     },
     {

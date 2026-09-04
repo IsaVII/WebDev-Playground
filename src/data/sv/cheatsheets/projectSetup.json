@@ -50,10 +50,10 @@
     },
     {
       "id": 6,
-      "title": "Lägg till Tailwind-direktiv till CSS (Valfritt)",
-      "description": "Uppdatera din huvud-CSS-fil (vanligtvis src/index.css) för att inkludera Tailwinds utility-lager.",
+      "title": "Lägg till Tailwind-importen i CSS (Valfritt)",
+      "description": "Uppdatera din huvud-CSS-fil (vanligtvis src/index.css) för att hämta in Tailwind. Tailwind v4 ersatte de gamla tre @tailwind base/components/utilities-direktiven med en enda @import-sats.",
       "language": "css",
-      "note": "Ersätt eventuellt befintligt CSS-innehåll i din huvud-CSS-fil med dessa direktiv.",
+      "note": "Ersätt eventuellt befintligt CSS-innehåll i din huvud-CSS-fil med den här importen - följer du en Tailwind v3-guide ser du istället @tailwind base/components/utilities, vilket inte längre fungerar med @tailwindcss/vite.",
       "codeFile": "code-examples/cheatsheets/projectSetup/06-add-tailwind-directives-to-css-optional.css"
     },
     {
@@ -187,9 +187,9 @@
       "npm create vite@latest frontend -- --template react",
       "cd frontend && npm install",
       "npm install @reduxjs/toolkit react-redux react-router-dom",
-      "npm install tailwindcss postcss autoprefixer @tailwindcss/vite",
+      "npm install tailwindcss @tailwindcss/vite",
       "Uppdatera vite.config.js med Tailwind plugin",
-      "Lägg till Tailwind-direktiv till src/index.css",
+      "Lägg till @import \"tailwindcss\"; i src/index.css",
       "Skapa src/redux/store.js",
       "Wrappa App med Redux Provider i main.jsx",
       "Skapa pages/ och components/ mappar",

@@ -1,4 +1,4 @@
-// 1. src/data/cheatsheets.json – add an entry to the topics array
+// 1. src/data/en/cheatsheets.json – add an entry to the topics array
 {
   "id": 7,
   "key": "mytopic",

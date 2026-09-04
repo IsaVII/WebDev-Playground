@@ -1,4 +1,4 @@
-/* src/styles/reveal.css */
+/* src/styles/motion.css */
 :root {
   --duration-base: 280ms; /* used for the reduced-motion opacity fallback */
   --duration-moderate: 420ms; /* reveal + text-reveal transition length */

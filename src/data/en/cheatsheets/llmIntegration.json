@@ -54,6 +54,7 @@
       "title": "Ask for Structured Output (JSON)",
       "description": "Rendering free-form prose in your UI is fragile. Ask the model to respond in a fixed JSON shape (defined in your system prompt) so the frontend can map straight over it, the same way it would map over a normal API response.",
       "language": "javascript",
+      "note": "Model IDs (like the one used in the code example) get superseded regularly - check docs.claude.com/en/docs/about-claude/models for the current default before shipping.",
       "codeFile": "code-examples/cheatsheets/llmIntegration/06-ask-for-structured-output-json.js"
     },
     {

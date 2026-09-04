@@ -9,7 +9,7 @@ const response = await fetch('https://api.anthropic.com/v1/messages', {
     'content-type': 'application/json',
   },
   body: JSON.stringify({
-    model: 'claude-sonnet-4-6',
+    model: 'claude-sonnet-5', // check docs.claude.com for the current model ID - these change over time
     max_tokens: 1000,
     messages: [{ role: 'user', content: 'Find patterns in my migraine log' }],
   }),

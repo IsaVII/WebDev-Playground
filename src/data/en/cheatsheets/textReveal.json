@@ -104,7 +104,7 @@
     "steps": [
       "Add src/hooks/useReducedMotion.js and src/hooks/useScrollReveal.js",
       "Add src/components/motion/Reveal.jsx and TextReveal.jsx",
-      "Add src/styles/reveal.css and import it once from your entry file",
+      "Add src/styles/motion.css and import it once from your entry file",
       "Use <TextReveal text=\"...\" as=\"h1\" /> for hero/section headings",
       "Wrap cards/sections in <Reveal> and add .stagger-children to a shared parent for cascading grids/lists"
     ]
