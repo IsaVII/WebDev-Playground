@@ -79,6 +79,16 @@
       "screenshot": "/images/llmintegration.png",
       "difficulty": "intermediate",
       "estimatedTime": "25 minutes"
+    },
+    {
+      "id": 9,
+      "key": "cicd",
+      "title": "CI/CD with GitHub Actions",
+      "description": "Automate linting, testing, and deployment with GitHub Actions - triggers, matrix builds, caching, secrets, and shipping to GitHub Pages on every merge",
+      "route": "/cicd",
+      "screenshot": "/images/cicd.png",
+      "difficulty": "intermediate",
+      "estimatedTime": "20 minutes"
     }
 ]
 }

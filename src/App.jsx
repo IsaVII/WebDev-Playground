@@ -39,6 +39,7 @@ const I18n = lazy(() => import("./pages/cheatsheets/I18n"));
 const LlmIntegration = lazy(() =>
   import("./pages/cheatsheets/LlmIntegration"),
 );
+const CiCd = lazy(() => import("./pages/cheatsheets/CiCd"));
 
 function App() {
   return (
@@ -75,6 +76,7 @@ function App() {
                   path="/llmintegration"
                   element={<LlmIntegration />}
                 />
+                <Route path="/cicd" element={<CiCd />} />
               </Routes>
             </PageTransition>
           </Suspense>

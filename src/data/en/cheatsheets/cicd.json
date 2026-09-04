@@ -1,0 +1,130 @@
+{
+  "title": "CI/CD with GitHub Actions Cheat Sheet",
+  "introduction": {
+    "heading": "CI/CD: Automating Tests, Builds & Deploys",
+    "description": "A practical reference for wiring up a GitHub Actions pipeline that lints and tests every push automatically (Continuous Integration) and deploys automatically once those checks pass (Continuous Deployment) - no separate CI service and no manual npm run deploy required."
+  },
+  "prerequisites": [
+    "A project already pushed to a GitHub repository",
+    "package.json scripts for lint/test/build (npm run lint, npm test, npm run build)",
+    "Basic YAML familiarity - indentation is meaningful"
+  ],
+  "steps": [
+    {
+      "id": 1,
+      "title": "Create the Workflow File & Folder Structure",
+      "description": "GitHub Actions looks for workflow files in one specific folder at the root of the repo. Any .yml or .yaml file there is picked up automatically - no registration step, no external service to configure.",
+      "language": "bash",
+      "note": "The folder must be named exactly .github/workflows - a typo like .github/workflow (singular) means GitHub silently ignores the file, with no error anywhere.",
+      "codeFile": "code-examples/cheatsheets/cicd/01-create-the-workflow-file-folder-structure.sh"
+    },
+    {
+      "id": 2,
+      "title": "Choose Your Triggers",
+      "description": "The on: block decides when the workflow runs. push runs it on every push to the listed branches, pull_request runs it for PRs targeting them (so checks show up before a merge), and workflow_dispatch adds a manual \"Run workflow\" button in the Actions tab.",
+      "language": "yaml",
+      "note": "workflow_dispatch takes no inputs here, but you can add them underneath it to pass parameters (e.g. which environment to deploy) when triggering manually.",
+      "codeFile": "code-examples/cheatsheets/cicd/02-choose-your-triggers.yml"
+    },
+    {
+      "id": 3,
+      "title": "Check Out Code & Set Up Node",
+      "description": "Every job starts on a brand-new, empty virtual machine, so nothing exists until you put it there. actions/checkout clones the repo; actions/setup-node installs the Node version you ask for and, with cache: \"npm\", restores npm's cache automatically.",
+      "language": "yaml",
+      "note": "Pin node-version to the same major version you develop and deploy with, so a Node-version mismatch never becomes a 'works on my machine' bug.",
+      "codeFile": "code-examples/cheatsheets/cicd/03-check-out-code-set-up-node.yml"
+    },
+    {
+      "id": 4,
+      "title": "Install, Lint & Test",
+      "description": "npm ci (not npm install) installs exactly what package-lock.json specifies and fails outright if the lockfile is out of sync with package.json - the deterministic, CI-appropriate counterpart to npm install. Any run: step that exits non-zero fails the whole job and blocks the pull request.",
+      "language": "yaml",
+      "note": "Order matters: lint fails fast on style/syntax issues before spending minutes running the full test suite.",
+      "codeFile": "code-examples/cheatsheets/cicd/04-install-lint-test.yml"
+    },
+    {
+      "id": 5,
+      "title": "Matrix Builds Across Node Versions",
+      "description": "A matrix runs the same job multiple times in parallel, once per value (or combination of values) you list. Here it runs the full install-and-test cycle once per Node version, catching a dependency that only breaks on Node 18 or only on Node 22 before a user ever hits it.",
+      "language": "yaml",
+      "note": "Matrices multiply: adding an os: [ubuntu-latest, windows-latest] axis alongside node-version runs all 3 x 2 = 6 combinations.",
+      "codeFile": "code-examples/cheatsheets/cicd/05-matrix-builds-across-node-versions.yml"
+    },
+    {
+      "id": 6,
+      "title": "Cache Dependencies for Faster Runs",
+      "description": "setup-node's cache: \"npm\" option from step 3 already covers the common case. This is the underlying mechanism for anything it doesn't: the cache key is derived from the lockfile's hash, so a cache is reused until dependencies actually change and is invalidated automatically the moment they do.",
+      "language": "yaml",
+      "note": "Never cache node_modules itself across OS or Node-version boundaries - native binary dependencies (like sharp or bcrypt) won't be compatible with a different platform.",
+      "codeFile": "code-examples/cheatsheets/cicd/06-cache-dependencies-for-faster-runs.yml"
+    },
+    {
+      "id": 7,
+      "title": "Store Secrets & Environment Variables",
+      "description": "Secrets - API keys, deploy tokens, database URLs - never belong in the YAML file itself. They're masked wherever they'd appear in logs and stored encrypted, and are referenced with ${{ secrets.NAME }}. Non-secret configuration can use ${{ vars.NAME }} (repository variables) instead, which are visible in the UI but not encrypted.",
+      "language": "yaml",
+      "substeps": [
+        "Open the repository on GitHub",
+        "Click \"Settings\" -> \"Secrets and variables\" -> \"Actions\"",
+        "Click \"New repository secret\"",
+        "Name it (e.g. VITE_API_URL), paste the value, and click \"Add secret\""
+      ],
+      "note": "Secrets aren't available to workflows triggered by a pull_request from a forked repository, by design - it stops a malicious PR from exfiltrating your tokens.",
+      "codeFile": "code-examples/cheatsheets/cicd/07-store-secrets-environment-variables.yml"
+    },
+    {
+      "id": 8,
+      "title": "Build & Upload Artifacts",
+      "description": "Uploading the build output as an artifact makes it downloadable from the workflow run's summary page, and is how a later job (or a separate deploy workflow) picks up exactly what CI just built and tested, instead of rebuilding it from scratch.",
+      "language": "yaml",
+      "note": "retention-days keeps storage usage (and cost, on private repos) down - artifacts you only need for inspecting a failed run don't need to live for 90 days.",
+      "codeFile": "code-examples/cheatsheets/cicd/08-build-upload-artifacts.yml"
+    },
+    {
+      "id": 9,
+      "title": "Deploy to GitHub Pages on Merge (CD)",
+      "description": "needs: build-and-test makes this job wait for CI to pass first, and the if: condition restricts it to pushes on main - so a pull request never deploys, only a merge does. This is Continuous Deployment: the last manual step (npm run deploy, run by hand) disappears entirely.",
+      "language": "yaml",
+      "substeps": [
+        "Open the repository's \"Settings\" tab",
+        "Under \"Code and automation\", click \"Pages\"",
+        "Set Source to \"GitHub Actions\" (not \"Deploy from a branch\")"
+      ],
+      "note": "permissions: pages: write and id-token: write are required for actions/deploy-pages - without them the job fails with a 403 even though everything else is correct.",
+      "codeFile": "code-examples/cheatsheets/cicd/09-deploy-to-github-pages-on-merge-cd.yml"
+    },
+    {
+      "id": 10,
+      "title": "Add a Status Badge",
+      "description": "Drop this into your README so the pass/fail state of the latest run on the default branch is visible at a glance, without opening the Actions tab.",
+      "language": "markdown",
+      "note": "Replace <owner> and <repo>, and ci.yml with your actual workflow filename if it differs.",
+      "codeFile": "code-examples/cheatsheets/cicd/10-add-a-status-badge.md"
+    },
+    {
+      "id": 11,
+      "title": "Common Errors & Fixes",
+      "description": "The errors you'll hit most often when setting up a pipeline for the first time, and what they actually mean.",
+      "language": "bash",
+      "note": "When a run fails for a reason that isn't obvious, re-run it with \"Enable debug logging\" from the re-run dropdown before assuming the workflow itself is broken.",
+      "codeFile": "code-examples/cheatsheets/cicd/11-common-errors-fixes.sh"
+    }
+  ],
+  "gettingStarted": {
+    "heading": "Quick Checklist",
+    "steps": [
+      "Add .github/workflows/ci.yml",
+      "Define on: push / pull_request / workflow_dispatch triggers",
+      "actions/checkout + actions/setup-node with cache: \"npm\"",
+      "npm ci, then npm run lint and npm test",
+      "Add secrets under Settings > Secrets and variables > Actions",
+      "Add a deploy job with needs: build-and-test and an if: branch guard",
+      "Set the Pages source to \"GitHub Actions\" in repo Settings",
+      "Add the status badge to your README"
+    ]
+  },
+  "source": {
+    "label": "GitHub Actions documentation",
+    "url": "https://docs.github.com/en/actions"
+  }
+}

@@ -4,6 +4,7 @@ import Main from "./Main";
 import Deployment from "./learning/Deployment";
 import Git from "./learning/Git";
 import SQL from "./cheatsheets/SQL";
+import CiCd from "./cheatsheets/CiCd";
 import learningContent from "../data/en/learningContent.json";
 import cheatsheets from "../data/en/cheatsheets.json";
 
@@ -88,6 +89,23 @@ describe("SQL (cheat sheet)", () => {
     expect(
       screen.getByRole("heading", { name: /SQL Database/ }),
     ).toBeInTheDocument();
+  });
+});
+
+describe("CI/CD (new cheat sheet)", () => {
+  it("renders its steps without needing Redux/progress providers' data", () => {
+    renderWithProviders(<CiCd />);
+    expect(
+      screen.getByRole("heading", { name: /CI\/CD with GitHub Actions/ }),
+    ).toBeInTheDocument();
+  });
+
+  it("shows the GitHub Pages deploy step and its quick checklist", () => {
+    renderWithProviders(<CiCd />);
+    expect(
+      screen.getByText("Deploy to GitHub Pages on Merge (CD)"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Quick Checklist")).toBeInTheDocument();
   });
 });
 

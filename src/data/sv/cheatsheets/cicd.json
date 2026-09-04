@@ -1,0 +1,130 @@
+{
+  "title": "CI/CD med GitHub Actions Cheat Sheet",
+  "introduction": {
+    "heading": "CI/CD: Automatisera Tester, Byggen & Driftsättningar",
+    "description": "En praktisk referens för att sätta upp en GitHub Actions-pipeline som lintar och testar varje push automatiskt (Continuous Integration) och driftsätter automatiskt när dessa kontroller godkänts (Continuous Deployment) - ingen separat CI-tjänst och ingen manuell npm run deploy krävs."
+  },
+  "prerequisites": [
+    "Ett projekt som redan är pushat till ett GitHub-repository",
+    "package.json-scripts för lint/test/build (npm run lint, npm test, npm run build)",
+    "Grundläggande YAML-kunskap - indentering har betydelse"
+  ],
+  "steps": [
+    {
+      "id": 1,
+      "title": "Skapa Workflow-filen & Mappstrukturen",
+      "description": "GitHub Actions letar efter workflow-filer i en specifik mapp i repots rot. Alla .yml- eller .yaml-filer där plockas upp automatiskt - inget registreringssteg, ingen extern tjänst att konfigurera.",
+      "language": "bash",
+      "note": "Mappen måste heta exakt .github/workflows - ett stavfel som .github/workflow (singular) gör att GitHub tyst ignorerar filen, utan något fel någonstans.",
+      "codeFile": "code-examples/cheatsheets/cicd/01-create-the-workflow-file-folder-structure.sh"
+    },
+    {
+      "id": 2,
+      "title": "Välj dina Triggers",
+      "description": "on:-blocket avgör när workflowen körs. push kör den vid varje push till de listade branscherna, pull_request kör den för PR:ar riktade mot dem (så kontroller syns innan en merge), och workflow_dispatch lägger till en manuell \"Run workflow\"-knapp i Actions-fliken.",
+      "language": "yaml",
+      "note": "workflow_dispatch tar inga inputs här, men du kan lägga till dem under den för att skicka parametrar (t.ex. vilken miljö som ska driftsättas) vid manuell triggning.",
+      "codeFile": "code-examples/cheatsheets/cicd/02-choose-your-triggers.yml"
+    },
+    {
+      "id": 3,
+      "title": "Checka ut Kod & Sätt upp Node",
+      "description": "Varje jobb startar på en helt ny, tom virtuell maskin, så inget finns förrän du sätter det där. actions/checkout klonar repot; actions/setup-node installerar den Node-version du anger och, med cache: \"npm\", återställer npms cache automatiskt.",
+      "language": "yaml",
+      "note": "Fäst node-version till samma huvudversion du utvecklar och driftsätter med, så att en Node-versionskrock aldrig blir en 'fungerar på min maskin'-bugg.",
+      "codeFile": "code-examples/cheatsheets/cicd/03-check-out-code-set-up-node.yml"
+    },
+    {
+      "id": 4,
+      "title": "Installera, Linta & Testa",
+      "description": "npm ci (inte npm install) installerar exakt det som package-lock.json specificerar och misslyckas direkt om lockfilen är osynkroniserad med package.json - den deterministiska, CI-lämpliga motsvarigheten till npm install. Ett run:-steg som avslutas med ett felkodsvärde skiftt än noll fäller hela jobbet och blockerar pull requesten.",
+      "language": "yaml",
+      "note": "Ordningen har betydelse: lint misslyckas snabbt på stil-/syntaxfel innan minuter läggs på att köra hela testsviten.",
+      "codeFile": "code-examples/cheatsheets/cicd/04-install-lint-test.yml"
+    },
+    {
+      "id": 5,
+      "title": "Matrisbyggen över Node-versioner",
+      "description": "En matris kör samma jobb flera gånger parallellt, en gång per värde (eller kombination av värden) du listar. Här körs hela installera-och-testa-cykeln en gång per Node-version, vilket fångar ett beroende som bara går sönder på Node 18 eller bara på Node 22 innan en användare någonsin stöter på det.",
+      "language": "yaml",
+      "note": "Matriser multipliceras: om du lägger till en os: [ubuntu-latest, windows-latest]-axel bredvid node-version körs alla 3 x 2 = 6 kombinationer.",
+      "codeFile": "code-examples/cheatsheets/cicd/05-matrix-builds-across-node-versions.yml"
+    },
+    {
+      "id": 6,
+      "title": "Cacha Beroenden för Snabbare Körningar",
+      "description": "setup-nodes cache: \"npm\"-alternativ från steg 3 täcker redan det vanliga fallet. Det här är den underliggande mekanismen för allt det inte täcker: cache-nyckeln härleds från lockfilens hash, så en cache återanvänds tills beroenden faktiskt ändras och ogiltigförklaras automatiskt i samma stund de gör det.",
+      "language": "yaml",
+      "note": "Cacha aldrig node_modules i sig över OS- eller Node-versionsgränser - native binära beroenden (som sharp eller bcrypt) kommer inte vara kompatibla med en annan plattform.",
+      "codeFile": "code-examples/cheatsheets/cicd/06-cache-dependencies-for-faster-runs.yml"
+    },
+    {
+      "id": 7,
+      "title": "Lagra Secrets & Miljövariabler",
+      "description": "Secrets - API-nycklar, deploy-tokens, databas-URL:er - hör aldrig hemma i själva YAML-filen. De maskas överallt där de skulle synas i loggar och lagras krypterade, och refereras med ${{ secrets.NAME }}. Icke-hemlig konfiguration kan istället använda ${{ vars.NAME }} (repository-variabler), som syns i UI:t men inte är krypterade.",
+      "language": "yaml",
+      "substeps": [
+        "Öppna repositoryt på GitHub",
+        "Klicka på \"Settings\" -> \"Secrets and variables\" -> \"Actions\"",
+        "Klicka på \"New repository secret\"",
+        "Namnge den (t.ex. VITE_API_URL), klistra in värdet och klicka \"Add secret\""
+      ],
+      "note": "Secrets är inte tillgängliga för workflows triggade av en pull_request från en forkad repository, med avsikt - det hindrar en illvillig PR från att exfiltrera dina tokens.",
+      "codeFile": "code-examples/cheatsheets/cicd/07-store-secrets-environment-variables.yml"
+    },
+    {
+      "id": 8,
+      "title": "Bygg & Ladda upp Artefakter",
+      "description": "Att ladda upp byggresultatet som en artefakt gör den nedladdningsbar från workflow-körningens sammanfattningssida, och är hur ett senare jobb (eller en separat deploy-workflow) hämtar exakt det som CI just byggde och testade, istället för att bygga om det från grunden.",
+      "language": "yaml",
+      "note": "retention-days håller nere lagringsanvändningen (och kostnaden, för privata repon) - artefakter du bara behöver för att inspektera en misslyckad körning behöver inte leva i 90 dagar.",
+      "codeFile": "code-examples/cheatsheets/cicd/08-build-upload-artifacts.yml"
+    },
+    {
+      "id": 9,
+      "title": "Driftsätt till GitHub Pages vid Merge (CD)",
+      "description": "needs: build-and-test gör att det här jobbet väntar på att CI ska godkännas först, och if:-villkoret begränsar det till pushar på main - så en pull request driftsätter aldrig, bara en merge gör det. Det här är Continuous Deployment: det sista manuella steget (npm run deploy, kört för hand) försvinner helt.",
+      "language": "yaml",
+      "substeps": [
+        "Öppna repositoryts \"Settings\"-flik",
+        "Under \"Code and automation\", klicka på \"Pages\"",
+        "Sätt Source till \"GitHub Actions\" (inte \"Deploy from a branch\")"
+      ],
+      "note": "permissions: pages: write och id-token: write krävs för actions/deploy-pages - utan dem misslyckas jobbet med ett 403-fel även om allt annat är korrekt.",
+      "codeFile": "code-examples/cheatsheets/cicd/09-deploy-to-github-pages-on-merge-cd.yml"
+    },
+    {
+      "id": 10,
+      "title": "Lägg till en Statusbadge",
+      "description": "Släpp in den här i din README så att pass/fail-statusen för den senaste körningen på standardbranchen syns direkt, utan att öppna Actions-fliken.",
+      "language": "markdown",
+      "note": "Ersätt <owner> och <repo>, och ci.yml med ditt faktiska workflow-filnamn om det skiljer sig.",
+      "codeFile": "code-examples/cheatsheets/cicd/10-add-a-status-badge.md"
+    },
+    {
+      "id": 11,
+      "title": "Vanliga Fel & Fixar",
+      "description": "Felen du oftast stöter på när du sätter upp en pipeline för första gången, och vad de faktiskt betyder.",
+      "language": "bash",
+      "note": "När en körning misslyckas av en anledning som inte är uppenbar, kör om den med \"Enable debug logging\" från re-run-menyn innan du antar att själva workflowen är trasig.",
+      "codeFile": "code-examples/cheatsheets/cicd-sv/override-common-errors-fixes.sh"
+    }
+  ],
+  "gettingStarted": {
+    "heading": "Snabb Checklista",
+    "steps": [
+      "Lägg till .github/workflows/ci.yml",
+      "Definiera on: push / pull_request / workflow_dispatch triggers",
+      "actions/checkout + actions/setup-node med cache: \"npm\"",
+      "npm ci, sedan npm run lint och npm test",
+      "Lägg till secrets under Settings > Secrets and variables > Actions",
+      "Lägg till ett deploy-jobb med needs: build-and-test och ett if:-branchvillkor",
+      "Sätt Pages-källan till \"GitHub Actions\" i repots Settings",
+      "Lägg till statusbadgen i din README"
+    ]
+  },
+  "source": {
+    "label": "GitHub Actions-dokumentation",
+    "url": "https://docs.github.com/en/actions"
+  }
+}
