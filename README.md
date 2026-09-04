@@ -1,4 +1,4 @@
-# WebDev Learning Playground
+# WebDev Learning Playground ![CI](https://github.com/IsaVII/WebDev-Playground/actions/workflows/ci.yml/badge.svg)
 
 A frontend-only, interactive learning platform for mastering modern web development — through **structured lessons**, **live demos**, **step-by-step code walkthroughs**, and **task-focused cheat sheets** you can follow while actually building something.
 
@@ -7,10 +7,6 @@ Learn **JavaScript**, **TypeScript**, **Git**, **HTTP & Web APIs**, **Node.js**,
 **Live demo:** https://isavii.github.io/WebDev-Playground/
 
 ---
-
-# Status
-
-![CI](https://github.com/IsaVII/WebDev-Playground/actions/workflows/ci.yml/badge.svg)
 
 ## Screenshots
 
