@@ -15,7 +15,7 @@
       "title": "Sätt upp en Databas (Lokal eller Hosted)",
       "description": "Innan du skriver någon SQL behöver du någonstans att köra den. Välj en lokal installation för full kontroll, eller en gratis hosted instans för att hoppa över inställningen helt.",
       "language": "bash",
-      "note": "MySQL och SQLite fungerar på samma sätt i grunden - installera lokalt, eller använd en hosted MySQL-instans (PlanetScale) - endast de exakta kommandona skiljer sig.",
+      "note": "MySQL och SQLite fungerar på samma sätt i grunden - installera lokalt, eller använd en hosted instans från en leverantör med gratisnivå (Neon eller Supabase för PostgreSQL, Railway eller Aiven för MySQL) - endast de exakta kommandona skiljer sig.",
       "codeFile": "code-examples/cheatsheets/sql-sv/override-satt-upp-en-databas-lokal-eller-hosted.sh"
     },
     {

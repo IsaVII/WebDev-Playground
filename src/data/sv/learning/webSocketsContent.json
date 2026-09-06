@@ -129,7 +129,7 @@
           30,
           32
         ],
-        "explanation": "onopen triggas bara efter att servern accepterat anslutningen - att skicka tidigare skulle tyst misslyckas eftersom socket:en inte är redo än."
+        "explanation": "onopen triggas bara efter att servern accepterat anslutningen - att anropa send() tidigare kastar ett InvalidStateError eftersom socket:en inte är OPEN än."
       },
       {
         "label": "Hantera inkommande meddelanden",

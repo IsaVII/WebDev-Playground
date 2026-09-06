@@ -15,7 +15,7 @@
       "title": "Set Up a Database (Local or Hosted)",
       "description": "Before writing any SQL you need somewhere for it to run. Pick a local install for full control, or a free hosted instance to skip setup entirely.",
       "language": "bash",
-      "note": "MySQL and SQLite work the same way in spirit - install locally, or use a hosted MySQL instance (PlanetScale) - only the exact commands differ.",
+      "note": "MySQL and SQLite work the same way in spirit - install locally, or use a hosted instance from a provider with a free tier (Neon or Supabase for PostgreSQL, Railway or Aiven for MySQL) - only the exact commands differ.",
       "codeFile": "code-examples/cheatsheets/sql/01-set-up-a-database-local-or-hosted.sh"
     },
     {

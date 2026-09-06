@@ -1,7 +1,11 @@
-{
-  "name": "my-app",
-  "version": "0.1.0",
-+ "homepage": "https://gitname.github.io/react-gh-pages",
-  "private": true,
-  ...
-}
+// vite.config.js - Vite projects set the sub-path here
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+  base: '/react-gh-pages/', // "/<your-repo-name>/" - keep the trailing slash
+})
+
+// Create React App (deprecated) instead used a "homepage" field in package.json:
+// "homepage": "https://gitname.github.io/react-gh-pages"

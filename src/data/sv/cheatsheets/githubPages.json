@@ -5,7 +5,7 @@
     "description": "En steg-för-steg-guide för att publicera en React-app till GitHub Pages med hjälp av paketet gh-pages. Följ stegen i ordning första gången du distribuerar ett projekt; efter det är steg 5 (npm run deploy) det enda du vanligtvis behöver upprepa."
   },
   "prerequisites": [
-    "Ett React-projekt (Create React App eller Vite) redan uppladdat till ett GitHub-repository",
+    "Ett React-projekt (Vite, eller ett annat byggverktyg) redan uppladdat till ett GitHub-repository",
     "Git och Node/npm installerat lokalt",
     "Push-åtkomst till GitHub-repositoryt du vill distribuera till"
   ],
@@ -19,10 +19,10 @@
     },
     {
       "id": 2,
-      "title": "Lägg till en homepage-egenskap till package.json",
-      "description": "GitHub Pages serverar din webbplats från https://<username>.github.io/<repo-name>, så verktyg som Create React App behöver känna till den basvägen för att lösa tillgångar korrekt. Lägg till ett \"homepage\"-fält med den URL:en.",
-      "language": "json",
-      "note": "Ersätt gitname med ditt GitHub-användarnamn och react-gh-pages med ditt repository-namn.",
+      "title": "Sätt basvägen för underkatalog-URL:en",
+      "description": "GitHub Pages serverar din webbplats från https://<username>.github.io/<repo-name>, så bygget behöver känna till den undervägen för att lösa tillgångar korrekt. I Vite sätter du base: '/<repo-name>/' i vite.config.js. I Create React App (nu utfasat) lade du istället till ett \"homepage\"-fält i package.json med den fullständiga URL:en.",
+      "language": "javascript",
+      "note": "Det avslutande snedstrecket i base spelar roll: '/react-gh-pages/', inte '/react-gh-pages'. Ersätt med ditt faktiska repository-namn.",
       "codeFile": "code-examples/cheatsheets/githubPages/02-add-a-homepage-property-to-package-json.json"
     },
     {
@@ -30,7 +30,7 @@
       "title": "Lägg till predeploy och deploy-skript",
       "description": "predeploy bygger appen automatiskt före varje distribution, och deploy pushar build-utdatan till gh-pages-grenen. Peka gh-pages -d på vilken mapp din build producerar.",
       "language": "json",
-      "note": "Använd -d dist för ett Vite-projekt, eller -d build för Create React App (react-scripts).",
+      "note": "Använd -d dist för ett Vite-projekt, eller -d build för Create React App (react-scripts, nu utfasat).",
       "codeFile": "code-examples/cheatsheets/githubPages/03-add-predeploy-and-deploy-scripts.json"
     },
     {
@@ -67,7 +67,7 @@
     "heading": "Snabb Checklista",
     "steps": [
       "npm install gh-pages --save-dev",
-      "Lägg till \"homepage\" till package.json",
+      "Sätt base i vite.config.js (eller \"homepage\" i package.json för CRA)",
       "Lägg till \"predeploy\" och \"deploy\"-skript till package.json",
       "git remote add origin (endast om inte redan satt)",
       "npm run deploy",

@@ -129,7 +129,7 @@
           30,
           32
         ],
-        "explanation": "onopen only fires after the server accepts the connection - sending any earlier would silently fail because the socket isn't ready yet."
+        "explanation": "onopen only fires after the server accepts the connection - calling send() any earlier throws an InvalidStateError because the socket isn't OPEN yet."
       },
       {
         "label": "Handle incoming messages",

@@ -5,7 +5,7 @@
     "description": "A complete guide to scaffolding a production-ready React application with Redux state management, Tailwind CSS, routing, and folder structure. This covers the essential packages and configurations needed to start developing immediately."
   },
   "prerequisites": [
-    "Node.js 16+ and npm installed",
+    "Node.js 20.19+ (or 22.12+) and npm installed - recent Vite versions drop older Node releases",
     "A text editor (VS Code, etc.)",
     "Basic familiarity with npm and command line"
   ],
@@ -199,6 +199,6 @@
   },
   "source": {
     "label": "Vite Official Docs",
-    "url": "https://vitejs.dev/"
+    "url": "https://vite.dev/"
   }
 }
