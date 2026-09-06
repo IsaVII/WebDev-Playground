@@ -167,18 +167,23 @@ Fel: En secret visas som en tom sträng i loggen
 Orsak: Referens till secrets.NAME från en pull_request-triggad workflow på en fork, där secrets medvetet hålls tillbaka.
 Fix: Använd pull_request_target med försiktighet, eller strukturera om så att steget som behöver secreten bara körs vid push till ditt eget repo.
 `,"/src/data/code-examples/cheatsheets/githubPages/01-install-gh-pages.sh":`npm install gh-pages --save-dev
-`,"/src/data/code-examples/cheatsheets/githubPages/02-add-a-homepage-property-to-package-json.json":`{
-  "name": "my-app",
-  "version": "0.1.0",
-+ "homepage": "https://gitname.github.io/react-gh-pages",
-  "private": true,
-  ...
-}
+`,"/src/data/code-examples/cheatsheets/githubPages/02-add-a-homepage-property-to-package-json.json":`// vite.config.js - Vite projects set the sub-path here
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+  base: '/react-gh-pages/', // "/<your-repo-name>/" - keep the trailing slash
+})
+
+// Create React App (deprecated) instead used a "homepage" field in package.json:
+// "homepage": "https://gitname.github.io/react-gh-pages"
 `,"/src/data/code-examples/cheatsheets/githubPages/03-add-predeploy-and-deploy-scripts.json":`"scripts": {
 + "predeploy": "npm run build",
 + "deploy": "gh-pages -d dist",
-  "start": "react-scripts start",
-  "build": "react-scripts build",
+  "dev": "vite",
+  "build": "vite build",
+  "preview": "vite preview",
   ...
 }
 `,"/src/data/code-examples/cheatsheets/githubPages/04-point-the-repo-at-github.sh":`git remote add origin https://github.com/{username}/{repo-name}.git
@@ -2210,19 +2215,19 @@ export const store = configureStore({
   },
 });
 `,"/src/data/code-examples/cheatsheets/projectSetup/09-wrap-your-app-with-redux-provider.js":`// src/main.jsx
-import React from 'react'
-import ReactDOM from 'react-dom/client'
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
 import { Provider } from 'react-redux'
 import App from './App.jsx'
 import { store } from './redux/store'
 import './index.css'
 
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
+createRoot(document.getElementById('root')).render(
+  <StrictMode>
     <Provider store={store}>
       <App />
     </Provider>
-  </React.StrictMode>,
+  </StrictMode>,
 )
 `,"/src/data/code-examples/cheatsheets/projectSetup/10-create-routes-with-react-router.js":`// src/App.jsx
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
@@ -2967,12 +2972,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Install dependencies
         run: npm ci
@@ -2992,7 +2997,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Deploy to Vercel
         run: npx vercel deploy --prod --token=$VERCEL_TOKEN
@@ -3292,6 +3297,67 @@ server.listen(3000, () => {
 });
 
 module.exports = server;
+`,"/src/data/code-examples/learning/payments/example.js":`const express = require("express");
+const Stripe = require("stripe");
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
+const app = express();
+
+// 1. Create a PaymentIntent for this order - amount is set on the server
+//    (never trust an amount sent from the client), and an idempotency key
+//    means retrying this request can't create a second charge
+app.post("/create-payment-intent", express.json(), async (req, res) => {
+  const { orderId } = req.body;
+  const order = await db.orders.findById(orderId);
+  const intent = await stripe.paymentIntents.create(
+    { amount: order.amountCents, currency: "usd", metadata: { orderId } },
+    { idempotencyKey: \`order_\${orderId}\` },
+  );
+  res.json({ clientSecret: intent.client_secret });
+});
+
+// 2. Webhooks need the RAW request body to verify the signature - this
+//    route must come before any app.use(express.json()) that would parse
+//    and reserialize the body before the signature check sees it
+app.post(
+  "/webhook",
+  express.raw({ type: "application/json" }),
+  (req, res) => {
+    const signature = req.get("stripe-signature");
+    let event;
+    try {
+      event = stripe.webhooks.constructEvent(
+        req.body,
+        signature,
+        process.env.STRIPE_WEBHOOK_SECRET,
+      );
+    } catch {
+      return res.status(400).send("Webhook signature verification failed");
+    }
+
+    // 3. The webhook, not the browser, is what actually confirms payment
+    if (event.type === "payment_intent.succeeded") {
+      const { orderId } = event.data.object.metadata;
+      db.orders.update(orderId, { status: "paid" });
+    }
+
+    if (event.type === "payment_intent.payment_failed") {
+      const { orderId } = event.data.object.metadata;
+      db.orders.update(orderId, { status: "payment_failed" });
+    }
+
+    res.json({ received: true });
+  },
+);
+
+// 4. Refunding is a separate flow from the original charge
+app.post("/orders/:id/refund", express.json(), async (req, res) => {
+  const order = await db.orders.findById(req.params.id);
+  await stripe.refunds.create({ payment_intent: order.paymentIntentId });
+  await db.orders.update(order.id, { status: "refunded" });
+  res.json({ status: "refunded" });
+});
+
+module.exports = app;
 `,"/src/data/code-examples/learning/react/example.jsx":`import { useEffect, useState } from "react";
 
 // A small presentational component - it only reads the "name" prop,
