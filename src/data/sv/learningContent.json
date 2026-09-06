@@ -129,6 +129,16 @@
       "screenshot": "/images/docker.png",
       "difficulty": "intermediate",
       "estimatedTime": "2.5 timmar"
+    },
+    {
+      "id": 14,
+      "key": "payments",
+      "title": "Betalningar",
+      "description": "Lägg till ett betalningssystem i en webbapp: tokenisering, hostad checkout vs inbäddade element, webhooks, idempotency keys, payment intent-livscykeln och återbetalningar & tvister",
+      "route": "/payments",
+      "screenshot": "/images/payments.png",
+      "difficulty": "intermediate",
+      "estimatedTime": "3 timmar"
     }
   ]
 }

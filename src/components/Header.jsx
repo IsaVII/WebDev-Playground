@@ -23,6 +23,7 @@ import authContentEn from "../data/en/learning/authContent.json";
 import webSocketsContentEn from "../data/en/learning/webSocketsContent.json";
 import deploymentContentEn from "../data/en/learning/deploymentContent.json";
 import dockerContentEn from "../data/en/learning/dockerContent.json";
+import paymentsContentEn from "../data/en/learning/paymentsContent.json";
 
 // Swedish content
 import cheatsheetsSv from "../data/sv/cheatsheets.json";
@@ -40,6 +41,7 @@ import authContentSv from "../data/sv/learning/authContent.json";
 import webSocketsContentSv from "../data/sv/learning/webSocketsContent.json";
 import deploymentContentSv from "../data/sv/learning/deploymentContent.json";
 import dockerContentSv from "../data/sv/learning/dockerContent.json";
+import paymentsContentSv from "../data/sv/learning/paymentsContent.json";
 
 // Content maps
 const CONTENT_BY_LANG = {
@@ -60,6 +62,7 @@ const CONTENT_BY_LANG = {
       websockets: webSocketsContentEn,
       deployment: deploymentContentEn,
       docker: dockerContentEn,
+      payments: paymentsContentEn,
     },
   },
   sv: {
@@ -79,6 +82,7 @@ const CONTENT_BY_LANG = {
       websockets: webSocketsContentSv,
       deployment: deploymentContentSv,
       docker: dockerContentSv,
+      payments: paymentsContentSv,
     },
   },
 };

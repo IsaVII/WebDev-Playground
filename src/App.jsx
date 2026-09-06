@@ -29,6 +29,7 @@ const Express = lazy(() => import("./pages/learning/Express"));
 const Auth = lazy(() => import("./pages/learning/Auth"));
 const Deployment = lazy(() => import("./pages/learning/Deployment"));
 const Docker = lazy(() => import("./pages/learning/Docker"));
+const Payments = lazy(() => import("./pages/learning/Payments"));
 const ProjectSetup = lazy(() => import("./pages/cheatsheets/ProjectSetup"));
 const GithubPages = lazy(() => import("./pages/cheatsheets/GithubPages"));
 const NpmLibraries = lazy(() => import("./pages/cheatsheets/NpmLibraries"));
@@ -65,6 +66,7 @@ function App() {
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/deployment" element={<Deployment />} />
                 <Route path="/docker" element={<Docker />} />
+                <Route path="/payments" element={<Payments />} />
                 <Route path="/projectsetup" element={<ProjectSetup />} />
                 <Route path="/githubpages" element={<GithubPages />} />
                 <Route path="/npmlibraries" element={<NpmLibraries />} />

@@ -1,0 +1,108 @@
+{
+  "title": "Betalningar",
+  "introduction": {
+    "heading": "Vad är ett Betalningssystem?",
+    "description": "Att lägga till betalningar i en webbapp innebär nästan alltid att integrera en betalningsprocessor (Stripe, PayPal, Braintree...) istället för att hantera kortnummer själv - att faktiskt lagra eller överföra rå kortdata sätter dig i ett tungt regelverk (PCI-DSS) som inte är värt det för de flesta appar. Formen är densamma överallt: webbläsaren samlar in kortuppgifter direkt i processorns eget SDK (aldrig din server), din backend skapar en betalning för ett specifikt belopp, och en server-till-server webhook - inte webbläsarens \"det fungerade!\" - är det som faktiskt bekräftar att pengarna flyttades. Allt nedan använder Stripes termer eftersom det är den vanligaste, men koncepten (tokenisering, webhooks, idempotens) kartläggs direkt till vilken processor som helst."
+  },
+  "coreConcepts": {
+    "heading": "Kärnkoncept",
+    "concepts": [
+      {
+        "title": "Tokenization",
+        "description": "Kortuppgifter samlas in av processorns eget SDK och byts mot en token innan din kod någonsin ser dem - din server hanterar bara token"
+      },
+      {
+        "title": "Payment Intents",
+        "description": "Objektet som spårar en betalning genom hela dess livscykel - skapad, behöver bekräftas, kan behöva extra autentisering, och lyckas sedan eller misslyckas"
+      },
+      {
+        "title": "Webhooks",
+        "description": "Signerade server-till-server-händelser som är den verkliga sanningskällan - att klienten rapporterar framgång är inte en bekräftelse på att du fick betalt"
+      },
+      {
+        "title": "Idempotency Keys",
+        "description": "En unik nyckel kopplad till en betalningsförfrågan så att en förnyad förfrågan efter en timeout eller dubbelklick inte kan skapa en andra debitering"
+      },
+      {
+        "title": "Refunds vs Disputes",
+        "description": "En återbetalning är något du initierar och kontrollerar; en tvist (chargeback) initieras av kundens bank och har sin egen bevisdeadline"
+      }
+    ]
+  },
+  "flow": {
+    "heading": "Betalningsflödet",
+    "description": "Varje kortbetalning följer samma form oavsett processor: webbläsaren samlar in kortuppgifter utan att din server någonsin ser dem, din server skapar en debitering för ett känt belopp, och en webhook bekräftar vad som faktiskt hände. Där de två vanliga integrationsstrategierna skiljer sig är vem som bygger betalningsformuläret - en hostad checkout-sida omdirigerar användaren helt till processorn, medan inbäddade element håller kvar användaren på din sida men ändå ger kortinmatning direkt till processorns SDK."
+  },
+  "gettingStarted": {
+    "heading": "Kom Igång",
+    "steps": [
+      "Installera processorns server-SDK (npm install stripe) och ladda dess klientsides-SDK/skript för att samla in kortuppgifter",
+      "Håll den hemliga nyckeln endast server-side - endast den publicerbara nyckeln är någonsin säker att skicka till webbläsaren",
+      "Skapa en PaymentIntent eller Checkout Session på din server för exakt belopp, i den minsta valutaenheten (cent)",
+      "Samla in kortuppgifter med processorns hostade fält/Elements eller omdirigera till dess hostade checkout - din server ser aldrig kortnumret",
+      "Behandla klientens rapporterade framgång som preliminär - uppdatera bara din databas när en webhook bekräftar betalningen server-side",
+      "Verifiera varje webhooks signatur mot din webhook-signeringshemlighet innan du litar på något i dess payload",
+      "Koppla en idempotency key till förfrågningar som skapar debiteringar så att en förnyad förfrågan efter en nätverksstörning inte kan dubbeldebitera",
+      "Hantera återbetalningar och tvister som separata flöden från den ursprungliga debiteringen - en återbetalning initieras av dig, en tvist initieras av banken"
+    ]
+  },
+  "practiceTopics": [
+    {
+      "title": "Tokenizing Card Details",
+      "description": "Se varför ett rått kortnummer aldrig når din server - processorns SDK byter ut det mot en engångstoken först"
+    },
+    {
+      "title": "Hosted Checkout vs Embedded Elements",
+      "description": "Jämför de två integrationsstrategierna och vart kortdata tar vägen i respektive"
+    },
+    {
+      "title": "Webhook Signature Verification",
+      "description": "Verifiera - och försök förfalska - en webhook-payload mot en signeringshemlighet"
+    },
+    {
+      "title": "Idempotency Keys",
+      "description": "Skicka samma debiteringsförfrågan flera gånger, med och utan en idempotency key, och jämför resultatet"
+    },
+    {
+      "title": "Payment Intent Lifecycle",
+      "description": "Stega en betalning genom requires_payment_method, requires_action (3D Secure), och vidare till succeeded eller failed"
+    },
+    {
+      "title": "Refunds & Disputes",
+      "description": "Utfärda en full eller delvis återbetalning, se sedan hur en tvist skiljer sig från en återbetalning"
+    }
+  ],
+  "fullExample": {
+    "heading": "Komplett Exempel, Steg för Steg",
+    "title": "Skapa en debitering, verifiera webhooken och utfärda en återbetalning",
+    "description": "Detta exempel knyter ihop att skapa en PaymentIntent, bekräfta betalning via en webhook och återbetala en order i en liten Express-fil. Klicka igenom stegen för att se vilka rader varje steg pratar om.",
+    "steps": [
+      {
+        "label": "Skapa debiteringen med en idempotency key",
+        "lines": [9, 17],
+        "explanation": "Beloppet kommer från ordern som slås upp på servern (lita aldrig på ett belopp skickat från klienten) och idempotency key:n härleds från order-id:t - att förnya exakt denna förfrågan, säg efter en timeout, återanvänder samma PaymentIntent istället för att skapa en andra."
+      },
+      {
+        "label": "Webhooks behöver den råa kroppen, inte parsad JSON",
+        "lines": [19, 25],
+        "explanation": "Signaturverifiering hashar exakt de bytes Stripe skickade - om någon body-parsing-middleware körs först och serialiserar om JSON:en misslyckas signaturkontrollen även för en legitim händelse, så denna route använder express.raw() istället för express.json()."
+      },
+      {
+        "label": "Verifiera signaturen innan du litar på något",
+        "lines": [26, 36],
+        "explanation": "constructEvent() räknar om den förväntade signaturen från den råa kroppen och din webhook-signeringshemlighet - om den inte matchar kom förfrågan inte verkligen från Stripe, eller så har payloaden ändrats under överföringen, så den avvisas direkt."
+      },
+      {
+        "label": "Webhooken bekräftar betalning, inte webbläsaren",
+        "lines": [38, 47],
+        "explanation": "Först när denna händelse anländer markeras ordern som \"paid\" - en klientsides-omdirigering till en framgångssida betyder bara att webbläsaren tror att det fungerade, och en tappad anslutning eller stängd flik ska inte kunna lämna en order permanent markerad som betald när den inte var det."
+      },
+      {
+        "label": "Återbetalning är ett separat flöde",
+        "lines": [53, 58],
+        "explanation": "En återbetalning reverserar pengar på en befintlig PaymentIntent - den rör inte idempotency keys eller webhooks för den ursprungliga debiteringen, och Stripe skickar sin egen charge.refunded-webhook som en riktig app också skulle lyssna på."
+      }
+    ],
+    "files": ["code-examples/learning/payments/example.js"]
+  }
+}

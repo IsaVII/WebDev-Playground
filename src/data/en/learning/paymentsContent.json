@@ -1,0 +1,108 @@
+{
+  "title": "Payments",
+  "introduction": {
+    "heading": "What is a Payment System?",
+    "description": "Adding payments to a web app almost always means integrating a payment processor (Stripe, PayPal, Braintree...) rather than handling card numbers yourself - actually storing or transmitting raw card data puts you in a heavy compliance regime (PCI-DSS) that isn't worth it for the vast majority of apps. The shape is the same everywhere: the browser collects card details directly into the processor's own SDK (never your server), your backend creates a charge for a specific amount, and a server-to-server webhook - not the browser's \"it worked!\" - is what actually confirms the money moved. Everything below uses Stripe's terms since it's the most common, but the concepts (tokenization, webhooks, idempotency) map directly onto any processor."
+  },
+  "coreConcepts": {
+    "heading": "Core Concepts",
+    "concepts": [
+      {
+        "title": "Tokenization",
+        "description": "Card details are collected by the processor's own SDK and exchanged for a token before your code ever sees them - your server only ever handles the token"
+      },
+      {
+        "title": "Payment Intents",
+        "description": "The object that tracks one payment through its full lifecycle - created, needs confirmation, may need extra authentication, then succeeds or fails"
+      },
+      {
+        "title": "Webhooks",
+        "description": "Signed, server-to-server events that are the real source of truth - the client reporting success is not confirmation that you got paid"
+      },
+      {
+        "title": "Idempotency Keys",
+        "description": "A unique key attached to a charge request so retrying it after a timeout or double-click can't create a second charge"
+      },
+      {
+        "title": "Refunds vs Disputes",
+        "description": "A refund is something you initiate and control; a dispute (chargeback) is initiated by the customer's bank and has its own evidence deadline"
+      }
+    ]
+  },
+  "flow": {
+    "heading": "The Payment Flow",
+    "description": "Every card payment follows the same shape regardless of processor: the browser collects card details without your server ever seeing them, your server creates a charge for a known amount, and a webhook confirms what actually happened. Where the two common integration strategies differ is who builds the payment form - a hosted checkout page redirects the user to the processor entirely, while embedded elements keep the user on your page but still hand card input directly to the processor's SDK."
+  },
+  "gettingStarted": {
+    "heading": "Getting Started",
+    "steps": [
+      "Install the processor's server SDK (npm install stripe) and load its client-side SDK/script for collecting card details",
+      "Keep the secret key server-side only - only the publishable key is ever safe to ship to the browser",
+      "Create a PaymentIntent or Checkout Session on your server for the exact amount, in the smallest currency unit (cents)",
+      "Collect card details with the processor's hosted fields/Elements or redirect to its hosted checkout - your server never sees the card number",
+      "Treat the client's reported success as provisional - only update your database once a webhook confirms the payment server-side",
+      "Verify every webhook's signature against your webhook signing secret before trusting anything in its payload",
+      "Attach an idempotency key to charge-creating requests so a retried request after a network blip can't double-charge",
+      "Handle refunds and disputes as separate flows from the original charge - a refund is you-initiated, a dispute is bank-initiated"
+    ]
+  },
+  "practiceTopics": [
+    {
+      "title": "Tokenizing Card Details",
+      "description": "See why a raw card number never reaches your server - the processor's SDK exchanges it for a one-time token first"
+    },
+    {
+      "title": "Hosted Checkout vs Embedded Elements",
+      "description": "Compare the two integration strategies and where card data goes in each"
+    },
+    {
+      "title": "Webhook Signature Verification",
+      "description": "Verify - and try to spoof - a webhook payload against a signing secret"
+    },
+    {
+      "title": "Idempotency Keys",
+      "description": "Fire the same charge request several times, with and without an idempotency key, and compare the result"
+    },
+    {
+      "title": "Payment Intent Lifecycle",
+      "description": "Step a payment through requires_payment_method, requires_action (3D Secure), and on to succeeded or failed"
+    },
+    {
+      "title": "Refunds & Disputes",
+      "description": "Issue a full or partial refund, then see how a dispute differs from a refund"
+    }
+  ],
+  "fullExample": {
+    "heading": "Full Example, Step by Step",
+    "title": "Create a charge, verify the webhook, and issue a refund",
+    "description": "This example wires together creating a PaymentIntent, confirming payment via a webhook, and refunding an order into one small Express file. Click through the steps to see which lines each one is talking about.",
+    "steps": [
+      {
+        "label": "Create the charge with an idempotency key",
+        "lines": [9, 17],
+        "explanation": "The amount comes from the order looked up on the server (never trust an amount sent from the client) and the idempotency key is derived from the order id - retrying this exact request, say after a timeout, reuses the same PaymentIntent instead of creating a second one."
+      },
+      {
+        "label": "Webhooks need the raw body, not parsed JSON",
+        "lines": [19, 25],
+        "explanation": "Signature verification hashes the exact bytes Stripe sent - if any body-parsing middleware runs first and reserializes the JSON, the signature check fails even for a legitimate event, so this route uses express.raw() instead of express.json()."
+      },
+      {
+        "label": "Verify the signature before trusting anything",
+        "lines": [26, 36],
+        "explanation": "constructEvent() recomputes the expected signature from the raw body and your webhook signing secret - if it doesn't match, the request didn't really come from Stripe, or the payload was altered in transit, so it's rejected outright."
+      },
+      {
+        "label": "The webhook confirms payment, not the browser",
+        "lines": [38, 47],
+        "explanation": "Only after this event arrives does the order get marked \"paid\" - a client-side redirect to a success page just means the browser thinks it worked, and a dropped connection or closed tab shouldn't be able to leave an order permanently marked paid when it wasn't."
+      },
+      {
+        "label": "Refunding is a separate flow",
+        "lines": [53, 58],
+        "explanation": "A refund reverses money on an existing PaymentIntent - it doesn't touch idempotency keys or webhooks for the original charge, and Stripe fires its own charge.refunded webhook that a real app would also listen for."
+      }
+    ],
+    "files": ["code-examples/learning/payments/example.js"]
+  }
+}

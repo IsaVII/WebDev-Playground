@@ -129,6 +129,16 @@
       "screenshot": "/images/docker.png",
       "difficulty": "intermediate",
       "estimatedTime": "2.5 hours"
+    },
+    {
+      "id": 14,
+      "key": "payments",
+      "title": "Payments",
+      "description": "Add a payment system to a web app: tokenization, hosted checkout vs embedded elements, webhooks, idempotency keys, the payment intent lifecycle, and refunds & disputes",
+      "route": "/payments",
+      "screenshot": "/images/payments.png",
+      "difficulty": "intermediate",
+      "estimatedTime": "3 hours"
     }
   ]
 }
