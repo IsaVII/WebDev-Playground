@@ -2911,6 +2911,226 @@ function FeatureGrid({ items }) {
     </div>
   );
 }
+`,"/src/data/code-examples/java/diagrams/library-model.txt":`// UML class model - lending library
+class Book        { Long id; String title; String isbn }
+class BookCopy    { Long id; String barcode; String shelf }
+class Author      { Long id; String name }
+class Member      { Long id; String name; String email }
+class Loan        { Long id; LocalDate borrowedOn;
+                    LocalDate dueOn; LocalDate returnedOn }
+
+// Reading the relationship lines below:
+//   <>  filled diamond = composition
+//   1, 0..*, 1..*, *   = multiplicity at that end
+//   an association with its own attributes (Loan)
+//   becomes an entity / table in its own right
+// ---------------------------------------------------
+
+Book "1" <>-- "1..*" BookCopy
+  // every copy belongs to exactly one Book;
+  // delete the Book and its copies go too (cascade)
+
+Book "*" -- "*" Author
+  // shared authorship in both directions, so this
+  // becomes the book_author join table
+
+Member   "1" -- "0..*" Loan
+BookCopy "1" -- "0..*" Loan
+  // Loan sits between a Member and a BookCopy and
+  // records borrowed_on / due_on / returned_on -
+  // attributes that belong to neither end alone
+
+ER DIAGRAM (crow's-foot: | = one, < = many)
+-------------------------------------------
+book        (id PK, title, isbn)
+  |----<  book_copy (id PK, barcode, shelf,
+                     book_id FK -> book.id)
+
+book        >----<  author   (via join table)
+book_author (book_id FK -> book.id,
+             author_id FK -> author.id,
+             PRIMARY KEY (book_id, author_id))
+author      (id PK, name)
+
+member      (id PK, name, email)
+  |----<  loan (id PK, borrowed_on, due_on,
+            returned_on, member_id FK, book_copy_id FK)
+`,"/src/data/code-examples/java/diagrams/library.sql":`-- Relational schema translated from the class / ER model above
+CREATE TABLE book (
+    id    BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    isbn  VARCHAR(20) UNIQUE
+);
+
+CREATE TABLE author (
+    id   BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name VARCHAR(120) NOT NULL
+);
+
+-- composition: a copy cannot exist without its book -> ON DELETE CASCADE
+CREATE TABLE book_copy (
+    id      BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    barcode VARCHAR(40) NOT NULL UNIQUE,
+    shelf   VARCHAR(20),
+    book_id BIGINT NOT NULL REFERENCES book(id) ON DELETE CASCADE
+);
+
+-- many-to-many: identity is the pair of foreign keys, no surrogate id
+CREATE TABLE book_author (
+    book_id   BIGINT NOT NULL REFERENCES book(id)   ON DELETE CASCADE,
+    author_id BIGINT NOT NULL REFERENCES author(id) ON DELETE CASCADE,
+    PRIMARY KEY (book_id, author_id)
+);
+
+CREATE TABLE member (
+    id    BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name  VARCHAR(120) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE
+);
+
+-- Loan: the association-with-attributes becomes its own table
+CREATE TABLE loan (
+    id           BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    borrowed_on  DATE NOT NULL,
+    due_on       DATE NOT NULL,
+    returned_on  DATE,
+    member_id    BIGINT NOT NULL REFERENCES member(id),
+    book_copy_id BIGINT NOT NULL REFERENCES book_copy(id)
+);
+`,"/src/data/code-examples/java/spring/Application.java":`import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+// Turns on component scanning + auto-configuration for this package and below.
+@SpringBootApplication
+public class Application {
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+}
+`,"/src/data/code-examples/java/spring/Customer.java":`import jakarta.persistence.*;
+
+@Entity
+public class Customer {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String name;
+    private String email;
+
+    protected Customer() {}          // JPA needs a no-arg constructor
+    public Customer(String name, String email) {
+        this.name = name;
+        this.email = email;
+    }
+    // id/name/email getters omitted for brevity
+}
+`,"/src/data/code-examples/java/spring/CustomerController.java":`import java.util.List;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/customers")
+public class CustomerController {
+
+    private final CustomerService service;   // the service, never the repository
+
+    public CustomerController(CustomerService service) {
+        this.service = service;
+    }
+
+    @GetMapping
+    public List<Customer> list() {
+        return service.findAll();
+    }
+
+    @PostMapping
+    public Customer create(@RequestBody NewCustomer body) {
+        return service.create(body.name(), body.email());
+    }
+
+    record NewCustomer(String name, String email) {}
+}
+`,"/src/data/code-examples/java/spring/CustomerRepository.java":`import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+// No implementation class - Spring Data generates one at startup.
+public interface CustomerRepository extends JpaRepository<Customer, Long> {
+
+    // Parsed into: select c from Customer c where c.email = ?1
+    Optional<Customer> findByEmail(String email);
+}
+`,"/src/data/code-examples/java/spring/CustomerService.java":`import java.util.List;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+public class CustomerService {
+
+    private final CustomerRepository repository;
+
+    // Single constructor - Spring injects the generated repository, no @Autowired.
+    public CustomerService(CustomerRepository repository) {
+        this.repository = repository;
+    }
+
+    public List<Customer> findAll() {
+        return repository.findAll();
+    }
+
+    @Transactional
+    public Customer create(String name, String email) {
+        repository.findByEmail(email).ifPresent(c -> {
+            throw new IllegalStateException("email already registered");
+        });
+        return repository.save(new Customer(name, email));
+    }
+}
+`,"/src/data/code-examples/java/streams/OrderAnalysis.java":`import java.util.*;
+import java.util.stream.*;
+import static java.util.stream.Collectors.*;
+
+/** A few questions about a list of orders, answered with stream pipelines. */
+public class OrderAnalysis {
+
+    enum Status { NEW, PAID, SHIPPED, CANCELLED }
+
+    record Order(long id, String customer, long total, Status status) {}
+
+    private final List<Order> orders;
+
+    OrderAnalysis(List<Order> orders) {
+        this.orders = orders;
+    }
+
+    /** Total revenue from orders that actually shipped. */
+    long shippedRevenue() {
+        return orders.stream()
+                .filter(o -> o.status() == Status.SHIPPED)
+                .mapToLong(Order::total)
+                .sum();
+    }
+
+    /** The single biggest order for each customer. */
+    Map<String, Optional<Order>> biggestOrderPerCustomer() {
+        return orders.stream()
+                .collect(groupingBy(
+                        Order::customer,
+                        maxBy(Comparator.comparingLong(Order::total))
+                ));
+    }
+
+    /** How many orders sit in each status. */
+    Map<Status, Long> countByStatus() {
+        return orders.stream()
+                .collect(groupingBy(Order::status, counting()));
+    }
+
+    /** The first order still waiting to ship, if there is one. */
+    Optional<Order> firstUnshipped() {
+        return orders.stream()
+                .filter(o -> o.status() == Status.NEW || o.status() == Status.PAID)
+                .findFirst();
+    }
+}
 `,"/src/data/code-examples/learning/auth/example.js":`const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const SECRET = process.env.JWT_SECRET;
