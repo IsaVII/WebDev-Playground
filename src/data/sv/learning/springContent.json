@@ -1,0 +1,167 @@
+{
+  "title": "Spring Framework - Grunderna",
+  "introduction": {
+    "heading": "Vem bygger dina objekt?",
+    "description": "I vanlig Java skapar din kod de objekt den behöver: `new OrderService(new OrderRepository(new DataSource(...)))`. Spring inverterar det. Du deklarerar vilka klasser som är komponenter och vilka beroenden de behöver, och Springs container bygger dem, kopplar ihop dem i rätt ordning och räcker dig färdiga objekt. Den enda idén - inversion of control genom dependency injection - är det allt annat i Spring vilar på. Spring Boot lägger sedan till auto-konfiguration: den tittar på vad som finns på din classpath (en databasdrivrutin, en webbserver, ett JSON-bibliotek) och konfigurerar rimliga standardvärden så att du skriver nästan ingen uppsättningskod. Resten av lektionen är vokabulären som kursen kommer att anta att du redan har: beans, stereotyper, lagren Controller/Service/Repository, och Spring Data JPA-repositories som du deklarerar som ett gränssnitt och aldrig implementerar."
+  },
+  "coreConcepts": {
+    "heading": "Kärnbegrepp",
+    "concepts": [
+      {
+        "title": "Inversion of Control (IoC)",
+        "description": "I stället för att din kod anropar ett bibliotek för att få saker gjorda håller ramverket kontrollflödet och anropar in i din kod. Tillämpat på objektskapande betyder det att du slutar skriva `new` för dina tjänster och låter containern sätta ihop dem"
+      },
+      {
+        "title": "Dependency Injection & ApplicationContext",
+        "description": "Containern (ApplicationContext) läser din konfiguration, skapar varje bean en gång, och skickar varje beans beroenden in i dess konstruktor. Konstruktorinjektion föredras eftersom den gör beroenden explicita och objektet oföränderligt"
+      },
+      {
+        "title": "Beans",
+        "description": "En bean är bara ett objekt som containern hanterar. Som standard är beans singletons - en delad instans för hela applikationen - skapade direkt när contexten startar"
+      },
+      {
+        "title": "Stereotyp-annoteringar",
+        "description": "@Component markerar en klass som en bean att upptäckas av component scanning. @Service, @Repository och @Controller / @RestController är specialiseringar som säger samma sak plus signalerar klassens roll (och, för @Repository, översätter persistensundantag)"
+      },
+      {
+        "title": "Spring Boot auto-konfiguration",
+        "description": "@SpringBootApplication slår på component scanning och auto-konfiguration. Auto-konfigurationsklasser backar om du har definierat din egen bean av den typen, så standardvärden är lätta att åsidosätta"
+      },
+      {
+        "title": "Lagerarkitektur",
+        "description": "En förfrågan flödar Controller (HTTP in/ut, inga affärsregler) till Service (affärslogiken och transaktionsgränsen) till Repository (endast databasåtkomst). Varje lager beror bara på det under sig, injicerat som ett gränssnitt"
+      },
+      {
+        "title": "Spring Data JPA-repositories",
+        "description": "Deklarera ett gränssnitt som utökar JpaRepository<Entity, IdType> och Spring genererar implementationen vid start. Metodnamn som findByLastNameAndActiveTrue tolkas till frågor; @Query levererar JPQL/SQL när namnet skulle bli otympligt"
+      }
+    ]
+  },
+  "layers": {
+    "heading": "En förfrågan genom lagren",
+    "description": "Lagerindelningen är inte ceremoni - den är det som håller HTTP-bekymmer borta från din affärslogik och SQL borta från båda. Följ en GET-förfrågan för en kund när den korsar varje gräns: controllern gör en URL till ett metodanrop, servicen tillämpar regler och äger transaktionen, repositoryt kör exakt en fråga, och resultatet mappas tillbaka ut till JSON. Klicka på ett lager för att se vad det ansvarar för och inte."
+  },
+  "gettingStarted": {
+    "heading": "Kom igång",
+    "steps": [
+      "Generera ett projekt på start.spring.io med beroendena Spring Web och Spring Data JPA (lägg till en drivrutin som PostgreSQL eller H2-databasen i minnet)",
+      "Låt @SpringBootApplication på din huvudklass sköta component scanning - håll varje annan klass i ett paket under den",
+      "Annotera varje klass efter dess roll: @RestController för HTTP-endpoints, @Service för affärslogik, @Entity för en persisterad tabellrad",
+      "Injicera beroenden genom konstruktorn, inte med fält-@Autowired - en enda konstruktor behöver ingen annotering alls",
+      "Deklarera repositories som gränssnitt som utökar JpaRepository<Entity, Long>; skriv ingen implementation",
+      "Lägg till härledda frågemetoder genom namngivning (findByEmail, findByStatusAndCreatedAfter) och byt till @Query bara när namnet blir långt",
+      "Sätt @Transactional på service-metoder som skriver, så att ett fel rullar tillbaka hela arbetsenheten",
+      "Konfigurera datakällan i application.properties (eller application.yml) - URL, användarnamn, lösenord, och spring.jpa.hibernate.ddl-auto för lokal schemahantering"
+    ]
+  },
+  "practiceTopics": [
+    {
+      "title": "IoC-containern kopplar beans",
+      "description": "Registrera komponenter, deklarera deras beroenden och se containern lösa grafen - bryt den sedan med en saknad eller tvetydig bean"
+    },
+    {
+      "title": "Härledda frågemetoder",
+      "description": "Skriv ett Spring Data-repository-metodnamn och se JPQL:en den genererar - och var namngivningsreglerna tar slut"
+    },
+    {
+      "title": "Vilken stereotyp hör var",
+      "description": "Matcha @RestController, @Service, @Repository, @Component och @Configuration till klassen som ska bära dem"
+    }
+  ],
+  "fullExample": {
+    "heading": "Fullständigt exempel, steg för steg",
+    "title": "En minimal Spring Boot CRUD-skiva: entity, repository, service, controller",
+    "description": "De fyra klasserna bakom en REST-resurs - GET/POST /api/customers - utan något extra. Den visar konstruktorinjektion, en härledd frågemetod, en transaktionell service, och en controller som bara talar HTTP. Klicka dig igenom för att se hur lagren kopplas och vem som skapar vad.",
+    "steps": [
+      {
+        "label": "Entiteten: en rad i customers-tabellen",
+        "lines": [1, 17],
+        "explanation": "@Entity markerar denna klass som JPA-hanterad; @Id + @GeneratedValue gör id till en automatiskt tilldelad primärnyckel. Denna klass har inga Spring-annoteringar utöver persistens - den är inte en bean, den är data som repositoryt laddar och sparar."
+      },
+      {
+        "label": "Repositoryt: ett gränssnitt Spring implementerar åt dig",
+        "lines": [19, 27],
+        "explanation": "Att utöka JpaRepository<Customer, Long> ger save, findById, findAll, deleteById gratis. findByEmail är en härledd fråga - Spring tolkar namnet till 'select c from Customer c where c.email = ?1' vid start. Du skriver aldrig klassen som implementerar detta."
+      },
+      {
+        "label": "Servicen: affärsregler och transaktionsgränsen",
+        "lines": [29, 54],
+        "explanation": "@Service gör den till en bean; konstruktorn tar repositoryt, så Spring injicerar den genererade implementationen - inget @Autowired behövs för en enda konstruktor. @Transactional på create() betyder att unikhetskontrollen och sparandet commitar eller rullar tillbaka tillsammans."
+      },
+      {
+        "label": "Controllern: HTTP in, HTTP ut, inget annat",
+        "lines": [56, 80],
+        "explanation": "@RestController + @RequestMapping(\"/api/customers\") binder metoder till URL:er. Den anropar servicen och returnerar objekt - Spring serialiserar dem till JSON. Det finns inga affärsregler och ingen repository-referens här; att hoppa över servicen för att injicera repositoryt direkt är det vanligaste lagerfelet."
+      },
+      {
+        "label": "Huvudklassen: där containern startar",
+        "lines": [82, 91],
+        "explanation": "@SpringBootApplication slår på component scanning (hittar @Service och @RestController i detta paket och nedåt) och auto-konfiguration (ser JPA + en drivrutin på classpath och konfigurerar en EntityManager och en DataSource). run() bygger ApplicationContext och varje singleton-bean i den."
+      }
+    ],
+    "files": [
+      "code-examples/java/spring/Customer.java",
+      "code-examples/java/spring/CustomerRepository.java",
+      "code-examples/java/spring/CustomerService.java",
+      "code-examples/java/spring/CustomerController.java",
+      "code-examples/java/spring/Application.java"
+    ]
+  },
+  "quiz": [
+    {
+      "question": "Vad inverterar 'inversion of control' egentligen, i kontexten av Springs container?",
+      "options": [
+        "Ordningen metoder körs i",
+        "Vem som skapar och kopplar dina objekt - containern gör det i stället för att din kod anropar `new`",
+        "Riktningen på databasfrågor",
+        "Arv, så att subklasser styr superklasser"
+      ],
+      "answerIndex": 1,
+      "explanation": "IoC här betyder att du inte längre konstruerar och kopplar dina service-objekt för hand. Du deklarerar komponenterna och deras beroenden; containern instansierar dem och injicerar beroendena."
+    },
+    {
+      "question": "Du har en @Service med en enda konstruktor som tar en CustomerRepository. Vad behöver du för att injicera den?",
+      "options": [
+        "@Autowired på fältet",
+        "@Autowired på konstruktorn",
+        "Inget - Spring injicerar en enda konstruktors argument automatiskt",
+        "En @Bean-metod i en @Configuration-klass"
+      ],
+      "answerIndex": 2,
+      "explanation": "Sedan Spring 4.3 behöver en bean med exakt en konstruktor inget @Autowired - containern använder den konstruktorn och löser varje parameter som en bean. Konstruktorinjektion föredras framför fältinjektion."
+    },
+    {
+      "question": "Du deklarerar `interface CustomerRepository extends JpaRepository<Customer, Long>` och skriver ingen implementation. Vem tillhandahåller en?",
+      "options": [
+        "Du måste, annars kompilerar det inte",
+        "Spring Data genererar en proxy-implementation vid start",
+        "JVM:en, via default-metoder",
+        "Hibernate, men bara vid den första frågan"
+      ],
+      "answerIndex": 1,
+      "explanation": "Spring Data skapar en runtime-implementation av repository-gränssnittet när contexten startar, backad av en EntityManager, inklusive härledda frågor tolkade från metodnamn."
+    },
+    {
+      "question": "I lagerindelningen Controller/Service/Repository, var hör affärsregler och @Transactional-gränsen hemma?",
+      "options": [
+        "Controllern",
+        "Servicen",
+        "Repositoryt",
+        "Entiteten"
+      ],
+      "answerIndex": 1,
+      "explanation": "Controllern översätter bara HTTP; repositoryt kör bara frågor. Servicen håller affärslogiken och är den naturliga transaktionsgränsen - ett service-anrop = en arbetsenhet."
+    },
+    {
+      "question": "Spring Boot auto-konfigurerar en DataSource åt dig. Hur åsidosätter du den med din egen?",
+      "options": [
+        "Det går inte - auto-konfiguration vinner alltid",
+        "Ta bort spring-boot-autoconfigure från classpath",
+        "Definiera bara din egen DataSource-bean - matchande auto-konfiguration backar",
+        "Sätt auto.config=false i application.properties"
+      ],
+      "answerIndex": 2,
+      "explanation": "Auto-konfiguration är villkorlig. De flesta auto-config-klasser är annoterade @ConditionalOnMissingBean, så att definiera din egen bean av den typen inaktiverar standarden automatiskt."
+    }
+  ]
+}

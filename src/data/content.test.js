@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import learningContent from "./en/learningContent.json";
 import cheatsheets from "./en/cheatsheets.json";
+import javaBackend from "./en/javaBackend.json";
 
 const ALLOWED_DIFFICULTIES = ["beginner", "intermediate", "advanced"];
 
@@ -94,6 +95,12 @@ function checkTopicIndex(topics, { requireContentMapping }) {
 
 describe("learningContent.json", () => {
   checkTopicIndex(learningContent.topics, { requireContentMapping: true });
+});
+
+describe("javaBackend.json", () => {
+  // Same wiring rules as learning topics: each key must be routed in App.jsx
+  // and mapped to its content JSON in Header.jsx and ProgressContext.jsx.
+  checkTopicIndex(javaBackend.topics, { requireContentMapping: true });
 });
 
 describe("cheatsheets.json", () => {

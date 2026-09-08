@@ -3,17 +3,21 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import learningContentEn from "../data/en/learningContent.json";
 import cheatsheetsEn from "../data/en/cheatsheets.json";
+import javaBackendEn from "../data/en/javaBackend.json";
 import learningContentSv from "../data/sv/learningContent.json";
 import cheatsheetsSv from "../data/sv/cheatsheets.json";
+import javaBackendSv from "../data/sv/javaBackend.json";
 
 const CONTENT_MAP = {
   en: {
     learning: learningContentEn,
     cheatsheets: cheatsheetsEn,
+    javaBackend: javaBackendEn,
   },
   sv: {
     learning: learningContentSv,
     cheatsheets: cheatsheetsSv,
+    javaBackend: javaBackendSv,
   },
 };
 
@@ -52,12 +56,18 @@ function SearchBar() {
     CONTENT_MAP[currentLang]?.learning || CONTENT_MAP.en.learning;
   const cheatsheets =
     CONTENT_MAP[currentLang]?.cheatsheets || CONTENT_MAP.en.cheatsheets;
+  const javaBackend =
+    CONTENT_MAP[currentLang]?.javaBackend || CONTENT_MAP.en.javaBackend;
 
   // Combine all searchable content
   const ALL_CONTENT = [
     ...learningContent.topics.map((topic) => ({
       ...topic,
       type: t("header.learning"),
+    })),
+    ...javaBackend.topics.map((topic) => ({
+      ...topic,
+      type: t("header.javaBackend"),
     })),
     ...cheatsheets.topics.map((topic) => ({
       ...topic,
@@ -187,7 +197,7 @@ function SearchBar() {
         >
           {results.map((item, index) => (
             <button
-              key={item.id}
+              key={item.route}
               type="button"
               role="option"
               aria-selected={index === selectedIndex}

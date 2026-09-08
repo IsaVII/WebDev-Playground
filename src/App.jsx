@@ -30,6 +30,9 @@ const Auth = lazy(() => import("./pages/learning/Auth"));
 const Deployment = lazy(() => import("./pages/learning/Deployment"));
 const Docker = lazy(() => import("./pages/learning/Docker"));
 const Payments = lazy(() => import("./pages/learning/Payments"));
+const Diagrams = lazy(() => import("./pages/learning/Diagrams"));
+const Streams = lazy(() => import("./pages/learning/Streams"));
+const Spring = lazy(() => import("./pages/learning/Spring"));
 const ProjectSetup = lazy(() => import("./pages/cheatsheets/ProjectSetup"));
 const GithubPages = lazy(() => import("./pages/cheatsheets/GithubPages"));
 const NpmLibraries = lazy(() => import("./pages/cheatsheets/NpmLibraries"));
@@ -67,6 +70,9 @@ function App() {
                 <Route path="/deployment" element={<Deployment />} />
                 <Route path="/docker" element={<Docker />} />
                 <Route path="/payments" element={<Payments />} />
+                <Route path="/diagrams" element={<Diagrams />} />
+                <Route path="/streams" element={<Streams />} />
+                <Route path="/spring" element={<Spring />} />
                 <Route path="/projectsetup" element={<ProjectSetup />} />
                 <Route path="/githubpages" element={<GithubPages />} />
                 <Route path="/npmlibraries" element={<NpmLibraries />} />

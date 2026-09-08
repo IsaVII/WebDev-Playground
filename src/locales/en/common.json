@@ -2,6 +2,7 @@
   "header": {
     "home": "Home",
     "learning": "Learning",
+    "javaBackend": "Java Backend",
     "cheatsheets": "Cheat Sheets"
   },
   "footer": {
@@ -12,6 +13,7 @@
     "title": "WebDev Playground",
     "subtitle": "Learn web development through interactive examples",
     "learningSection": "Learning Topics",
+    "javaBackendSection": "Java Backend",
     "cheatsheetsSection": "Cheat Sheets",
     "searchPlaceholder": "Search topics..."
   },

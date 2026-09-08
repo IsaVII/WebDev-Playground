@@ -10,6 +10,7 @@ import { useProgress } from "../context/ProgressContext";
 // English content
 import cheatsheetsEn from "../data/en/cheatsheets.json";
 import learningContentEn from "../data/en/learningContent.json";
+import javaBackendEn from "../data/en/javaBackend.json";
 import javascriptContentEn from "../data/en/learning/javascriptContent.json";
 import typescriptContentEn from "../data/en/learning/typescriptContent.json";
 import gitContentEn from "../data/en/learning/gitContent.json";
@@ -24,10 +25,14 @@ import webSocketsContentEn from "../data/en/learning/webSocketsContent.json";
 import deploymentContentEn from "../data/en/learning/deploymentContent.json";
 import dockerContentEn from "../data/en/learning/dockerContent.json";
 import paymentsContentEn from "../data/en/learning/paymentsContent.json";
+import diagramsContentEn from "../data/en/learning/diagramsContent.json";
+import streamsContentEn from "../data/en/learning/streamsContent.json";
+import springContentEn from "../data/en/learning/springContent.json";
 
 // Swedish content
 import cheatsheetsSv from "../data/sv/cheatsheets.json";
 import learningContentSv from "../data/sv/learningContent.json";
+import javaBackendSv from "../data/sv/javaBackend.json";
 import javascriptContentSv from "../data/sv/learning/javascriptContent.json";
 import typescriptContentSv from "../data/sv/learning/typescriptContent.json";
 import gitContentSv from "../data/sv/learning/gitContent.json";
@@ -42,12 +47,16 @@ import webSocketsContentSv from "../data/sv/learning/webSocketsContent.json";
 import deploymentContentSv from "../data/sv/learning/deploymentContent.json";
 import dockerContentSv from "../data/sv/learning/dockerContent.json";
 import paymentsContentSv from "../data/sv/learning/paymentsContent.json";
+import diagramsContentSv from "../data/sv/learning/diagramsContent.json";
+import streamsContentSv from "../data/sv/learning/streamsContent.json";
+import springContentSv from "../data/sv/learning/springContent.json";
 
 // Content maps
 const CONTENT_BY_LANG = {
   en: {
     learning: learningContentEn,
     cheatsheets: cheatsheetsEn,
+    javaBackend: javaBackendEn,
     details: {
       javascript: javascriptContentEn,
       typescript: typescriptContentEn,
@@ -63,11 +72,15 @@ const CONTENT_BY_LANG = {
       deployment: deploymentContentEn,
       docker: dockerContentEn,
       payments: paymentsContentEn,
+      diagrams: diagramsContentEn,
+      streams: streamsContentEn,
+      spring: springContentEn,
     },
   },
   sv: {
     learning: learningContentSv,
     cheatsheets: cheatsheetsSv,
+    javaBackend: javaBackendSv,
     details: {
       javascript: javascriptContentSv,
       typescript: typescriptContentSv,
@@ -83,6 +96,9 @@ const CONTENT_BY_LANG = {
       deployment: deploymentContentSv,
       docker: dockerContentSv,
       payments: paymentsContentSv,
+      diagrams: diagramsContentSv,
+      streams: streamsContentSv,
+      spring: springContentSv,
     },
   },
 };
@@ -152,6 +168,8 @@ function Header() {
     CONTENT_BY_LANG[currentLang]?.learning || CONTENT_BY_LANG.en.learning;
   const cheatsheets =
     CONTENT_BY_LANG[currentLang]?.cheatsheets || CONTENT_BY_LANG.en.cheatsheets;
+  const javaBackend =
+    CONTENT_BY_LANG[currentLang]?.javaBackend || CONTENT_BY_LANG.en.javaBackend;
   const CONTENT_BY_KEY =
     CONTENT_BY_LANG[currentLang]?.details || CONTENT_BY_LANG.en.details;
 
@@ -162,6 +180,12 @@ function Header() {
   }));
 
   const CHEATSHEETS = cheatsheets.topics.map((topic) => ({
+    to: topic.route,
+    label: topic.title,
+    key: topic.key,
+  }));
+
+  const JAVA_BACKEND = javaBackend.topics.map((topic) => ({
     to: topic.route,
     label: topic.title,
     key: topic.key,
@@ -319,6 +343,49 @@ function Header() {
                   CONTENT_BY_KEY[topic.key]?.practiceTopics?.length || 0;
                 const isPartiallyComplete =
                   completedCount > 0 && completedCount < totalCount;
+                const isFullyComplete =
+                  completedCount > 0 && completedCount === totalCount;
+                const showStar = completedCount > 0;
+
+                return (
+                  <li key={topic.to}>
+                    <NavLink
+                      to={topic.to}
+                      className={`group flex items-center justify-between gap-2 rounded-lg px-3 py-2.5 text-[15px] hover:bg-white/10 ${
+                        pathname === topic.to ? "bg-accent/15" : ""
+                      }`}
+                    >
+                      <span className="flex items-center gap-2 text-left">
+                        {showStar && (
+                          <StarIcon
+                            className={
+                              isFullyComplete ? "opacity-100" : "opacity-30"
+                            }
+                          />
+                        )}
+                        <span className={`${showStar ? "font-bold pl-0" : ""}`}>
+                          {topic.label}
+                        </span>
+                      </span>
+                      <ChevronIcon />
+                    </NavLink>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+
+          {/* Java Backend Column */}
+          <div className="flex-1 min-w-64">
+            <p className="px-4 pt-3 pb-1 text-xs font-semibold uppercase tracking-wider text-menu-text/40">
+              {t("header.javaBackend")}
+            </p>
+            <ul className="list-none m-0 p-2 flex flex-col">
+              {JAVA_BACKEND.map((topic) => {
+                const completedCount = getTopicSubtopicCount(topic.key);
+                const totalCount =
+                  (CONTENT_BY_KEY[topic.key]?.practiceTopics?.length || 0) +
+                  (CONTENT_BY_KEY[topic.key]?.quiz?.length ? 1 : 0);
                 const isFullyComplete =
                   completedCount > 0 && completedCount === totalCount;
                 const showStar = completedCount > 0;

@@ -1,0 +1,44 @@
+// UML class model - lending library
+class Book        { Long id; String title; String isbn }
+class BookCopy    { Long id; String barcode; String shelf }
+class Author      { Long id; String name }
+class Member      { Long id; String name; String email }
+class Loan        { Long id; LocalDate borrowedOn;
+                    LocalDate dueOn; LocalDate returnedOn }
+
+// Reading the relationship lines below:
+//   <>  filled diamond = composition
+//   1, 0..*, 1..*, *   = multiplicity at that end
+//   an association with its own attributes (Loan)
+//   becomes an entity / table in its own right
+// ---------------------------------------------------
+
+Book "1" <>-- "1..*" BookCopy
+  // every copy belongs to exactly one Book;
+  // delete the Book and its copies go too (cascade)
+
+Book "*" -- "*" Author
+  // shared authorship in both directions, so this
+  // becomes the book_author join table
+
+Member   "1" -- "0..*" Loan
+BookCopy "1" -- "0..*" Loan
+  // Loan sits between a Member and a BookCopy and
+  // records borrowed_on / due_on / returned_on -
+  // attributes that belong to neither end alone
+
+ER DIAGRAM (crow's-foot: | = one, < = many)
+-------------------------------------------
+book        (id PK, title, isbn)
+  |----<  book_copy (id PK, barcode, shelf,
+                     book_id FK -> book.id)
+
+book        >----<  author   (via join table)
+book_author (book_id FK -> book.id,
+             author_id FK -> author.id,
+             PRIMARY KEY (book_id, author_id))
+author      (id PK, name)
+
+member      (id PK, name, email)
+  |----<  loan (id PK, borrowed_on, due_on,
+            returned_on, member_id FK, book_copy_id FK)

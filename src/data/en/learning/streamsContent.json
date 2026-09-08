@@ -1,0 +1,157 @@
+{
+  "title": "Lambda & Stream API",
+  "introduction": {
+    "heading": "Describe the What, Not the How",
+    "description": "A traditional loop spells out every mechanical step: make an index, check the bound, increment, pull an element, test it, add it to a result list. The Stream API lets you describe the outcome instead - \"of these orders, keep the shipped ones, take their totals, add them up\" - and leaves the stepping to the library. Lambdas are what make that readable: a lambda is just a short, unnamed function you pass as an argument, so `o -> o.isShipped()` is a throwaway test you hand to `filter`. Together they turn a page of nested loops into a pipeline you can read top to bottom. This lesson is about building that mental model - source, intermediate operations, terminal operation - and knowing when a plain loop is still the better call."
+  },
+  "coreConcepts": {
+    "heading": "Core Concepts",
+    "concepts": [
+      {
+        "title": "Lambda Expression",
+        "description": "An anonymous function written inline: parameters -> body. `x -> x * 2` and `(a, b) -> a + b` are lambdas; they exist to be passed to a method, not stored and named"
+      },
+      {
+        "title": "Functional Interface",
+        "description": "An interface with exactly one abstract method - Predicate<T> (T -> boolean), Function<T,R> (T -> R), Consumer<T> (T -> void), Supplier<T> (() -> T). A lambda's shape has to match the one method"
+      },
+      {
+        "title": "Method Reference",
+        "description": "A shorthand for a lambda that just calls one existing method: String::toUpperCase instead of s -> s.toUpperCase(), Order::getTotal instead of o -> o.getTotal()"
+      },
+      {
+        "title": "Stream Pipeline",
+        "description": "A source (a collection, Stream.of, ...), zero or more intermediate operations (map, filter, sorted, distinct, limit) that each return a new stream, and exactly one terminal operation (collect, reduce, forEach, count) that produces a result or side effect"
+      },
+      {
+        "title": "Laziness & Short-Circuiting",
+        "description": "Intermediate operations do nothing until a terminal operation runs; then elements are pulled through one at a time. findFirst, anyMatch, and limit can stop early without touching the rest of the source"
+      },
+      {
+        "title": "Collectors & Optional",
+        "description": "Collectors.toList / groupingBy / partitioningBy / toMap turn a stream back into a data structure. Optional<T> is a box that holds a value or nothing - the return type of operations like findFirst that might have no answer, so a missing result is explicit instead of a null"
+      }
+    ]
+  },
+  "pipeline": {
+    "heading": "A Pipeline, Element by Element",
+    "description": "The thing that trips people up first is imagining a stream runs each operation over the whole collection before moving to the next - filter everything, then map everything. It doesn't. Once the terminal operation starts, each element is drawn through the entire pipeline before the next element is touched, and nothing runs at all until that terminal operation is attached. Build a pipeline below and watch a single element travel through it."
+  },
+  "gettingStarted": {
+    "heading": "Getting Started",
+    "steps": [
+      "Start the pipeline from a collection with .stream(), and remember a stream is single-use - you can't iterate it twice",
+      "Reach for a functional interface by shape: a test is a Predicate, a transform is a Function, 'do something with each' is a Consumer",
+      "Chain intermediate operations - filter to narrow, map to transform, sorted / distinct / limit to shape - each one returns a new stream",
+      "Finish with exactly one terminal operation; if there's no terminal operation, none of the pipeline runs",
+      "Prefer collect(Collectors.toList()) (or .toList() on Java 16+) over forEach + external list - it states the intent and avoids a shared mutable list",
+      "Use groupingBy when you'd otherwise build a Map<K, List<V>> by hand, and partitioningBy for a true/false split",
+      "Treat Optional as a pipeline of its own - map / filter / orElseGet - rather than calling .get() straight away",
+      "Reach back for a plain for loop when you need the index, have to mutate the source, or want to break out with a side effect - streams aren't a rule, they're a tool"
+    ]
+  },
+  "practiceTopics": [
+    {
+      "title": "Lambda vs Anonymous Class vs Method Reference",
+      "description": "See the same Comparator written three ways and how each desugars into the next"
+    },
+    {
+      "title": "Collectors: groupingBy, partitioningBy, toMap",
+      "description": "Run each collector on a small list of people and inspect the Map it produces"
+    },
+    {
+      "title": "Optional Instead of null",
+      "description": "Chain map / filter / orElseGet on an Optional and compare it to the null-checking version"
+    }
+  ],
+  "fullExample": {
+    "heading": "Full Example, Step by Step",
+    "title": "Analyze a list of orders with one stream pipeline",
+    "description": "A single class that answers a few questions about a list of orders - total revenue from shipped orders, the biggest order per customer, a breakdown by status - using streams instead of nested loops. Click through the steps to see each pipeline and what its intermediate and terminal operations do.",
+    "steps": [
+      {
+        "label": "The data and the functional interfaces in play",
+        "lines": [1, 16],
+        "explanation": "Order is a record, so getters are total(), status(), customer(). The methods below use Predicate (the filter tests), Function (the map / groupingBy classifiers) and a Comparator (built with Comparator.comparing, itself taking a Function)."
+      },
+      {
+        "label": "filter + mapToLong + sum: revenue from shipped orders",
+        "lines": [18, 24],
+        "explanation": "filter keeps only SHIPPED orders; mapToLong turns each into a primitive long total (avoiding boxing); sum() is the terminal operation. No intermediate list is ever built - each order that passes the filter is added straight into the running sum."
+      },
+      {
+        "label": "groupingBy with a downstream collector: biggest order per customer",
+        "lines": [26, 33],
+        "explanation": "groupingBy(Order::customer, ...) buckets orders by customer; the second argument, maxBy(comparing(Order::total)), is a downstream collector applied within each bucket, so the result is Map<String, Optional<Order>> - the biggest order for each customer."
+      },
+      {
+        "label": "groupingBy + counting: how many orders in each status",
+        "lines": [35, 39],
+        "explanation": "The same shape again - classify by Order::status, and count within each group with Collectors.counting(). This one line replaces a Map<Status, Integer> that you'd otherwise create, getOrDefault, and increment by hand."
+      },
+      {
+        "label": "findFirst returns an Optional, and laziness makes it cheap",
+        "lines": [41, 47],
+        "explanation": "The pipeline is filter then findFirst. Because streams are lazy and findFirst short-circuits, the filter runs only until the first match is found - the rest of the list is never examined. The Optional return type forces the caller to say what happens when there's no unshipped order."
+      }
+    ],
+    "files": ["code-examples/java/streams/OrderAnalysis.java"]
+  },
+  "quiz": [
+    {
+      "question": "You write a stream pipeline: list.stream().filter(...).map(...). Nothing seems to happen. Why?",
+      "options": [
+        "filter and map throw if the list is empty",
+        "There is no terminal operation, so the pipeline never runs",
+        "You need to call .parallel() first",
+        "map must come before filter"
+      ],
+      "answerIndex": 1,
+      "explanation": "Intermediate operations (filter, map, sorted...) are lazy - they only describe work. Nothing executes until a terminal operation (collect, forEach, count, reduce...) is attached."
+    },
+    {
+      "question": "Which functional interface does the lambda `s -> s.isBlank()` match?",
+      "options": [
+        "Function<String, String>",
+        "Consumer<String>",
+        "Predicate<String>",
+        "Supplier<Boolean>"
+      ],
+      "answerIndex": 2,
+      "explanation": "It takes one argument and returns a boolean - that's Predicate<String>. A Function returns an arbitrary R, a Consumer returns void, a Supplier takes no argument."
+    },
+    {
+      "question": "What is the result type of `orders.stream().collect(groupingBy(Order::status))`?",
+      "options": [
+        "List<Order>",
+        "Map<Status, List<Order>>",
+        "Map<Status, Order>",
+        "Optional<Order>"
+      ],
+      "answerIndex": 1,
+      "explanation": "groupingBy with just a classifier produces Map<K, List<V>> - each distinct key mapped to the list of elements that fell into it. A downstream collector (counting, mapping, maxBy...) changes the value type."
+    },
+    {
+      "question": "`people.stream().filter(p -> p.age() > 90).findFirst()` on a 10-million-element list where the 3rd person matches. Roughly how many elements are inspected?",
+      "options": [
+        "All 10 million",
+        "About 3",
+        "Half, on average",
+        "None - findFirst is lazy too"
+      ],
+      "answerIndex": 1,
+      "explanation": "findFirst short-circuits. Elements are pulled through filter one at a time and the stream stops as soon as findFirst has its answer - here after the 3rd element."
+    },
+    {
+      "question": "When is a plain for loop still the better choice over a stream?",
+      "options": [
+        "Never - streams are always preferable",
+        "When you need the index, must mutate the source in place, or want to break early with a side effect",
+        "Only for arrays, never for lists",
+        "When the collection has fewer than 100 elements"
+      ],
+      "answerIndex": 1,
+      "explanation": "Streams shine for declarative transform-and-collect. Index-based logic, in-place mutation, and early exit with side effects are all more direct and readable as an ordinary loop."
+    }
+  ]
+}

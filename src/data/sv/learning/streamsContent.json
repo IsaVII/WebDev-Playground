@@ -1,0 +1,157 @@
+{
+  "title": "Lambda & Stream API",
+  "introduction": {
+    "heading": "Beskriv vad, inte hur",
+    "description": "En traditionell loop stavar ut varje mekaniskt steg: skapa ett index, kontrollera gränsen, öka, hämta ett element, testa det, lägg till det i en resultatlista. Stream API:t låter dig beskriva utfallet i stället - \"av dessa ordrar, behåll de skickade, ta deras summor, addera ihop dem\" - och lämnar stegningen till biblioteket. Lambdas är det som gör det läsbart: en lambda är bara en kort, namnlös funktion som du skickar som argument, så `o -> o.isShipped()` är ett engångstest som du räcker till `filter`. Tillsammans förvandlar de en sida med nästlade loopar till en pipeline du kan läsa uppifrån och ner. Den här lektionen handlar om att bygga den mentala modellen - källa, mellanoperationer, terminaloperation - och att veta när en vanlig loop fortfarande är det bättre valet."
+  },
+  "coreConcepts": {
+    "heading": "Kärnbegrepp",
+    "concepts": [
+      {
+        "title": "Lambda-uttryck",
+        "description": "En anonym funktion skriven inline: parametrar -> kropp. `x -> x * 2` och `(a, b) -> a + b` är lambdas; de finns för att skickas till en metod, inte lagras och namnges"
+      },
+      {
+        "title": "Funktionellt gränssnitt",
+        "description": "Ett gränssnitt med exakt en abstrakt metod - Predicate<T> (T -> boolean), Function<T,R> (T -> R), Consumer<T> (T -> void), Supplier<T> (() -> T). En lambdas form måste matcha den enda metoden"
+      },
+      {
+        "title": "Metodreferens",
+        "description": "En förkortning för en lambda som bara anropar en befintlig metod: String::toUpperCase i stället för s -> s.toUpperCase(), Order::getTotal i stället för o -> o.getTotal()"
+      },
+      {
+        "title": "Stream-pipeline",
+        "description": "En källa (en samling, Stream.of, ...), noll eller fler mellanoperationer (map, filter, sorted, distinct, limit) som var och en returnerar en ny stream, och exakt en terminaloperation (collect, reduce, forEach, count) som producerar ett resultat eller en sidoeffekt"
+      },
+      {
+        "title": "Lathet & kortslutning",
+        "description": "Mellanoperationer gör ingenting förrän en terminaloperation körs; då dras element igenom ett i taget. findFirst, anyMatch och limit kan stanna tidigt utan att röra resten av källan"
+      },
+      {
+        "title": "Collectors & Optional",
+        "description": "Collectors.toList / groupingBy / partitioningBy / toMap gör en stream tillbaka till en datastruktur. Optional<T> är en låda som håller ett värde eller ingenting - returtypen för operationer som findFirst som kanske inte har något svar, så ett saknat resultat är explicit i stället för en null"
+      }
+    ]
+  },
+  "pipeline": {
+    "heading": "En pipeline, element för element",
+    "description": "Det som förvirrar folk först är att föreställa sig att en stream kör varje operation över hela samlingen innan den går vidare till nästa - filtrera allt, mappa sedan allt. Så är det inte. När terminaloperationen väl startar dras varje element igenom hela pipelinen innan nästa element rörs, och ingenting körs alls förrän den terminaloperationen är kopplad. Bygg en pipeline nedan och se ett enda element resa igenom den."
+  },
+  "gettingStarted": {
+    "heading": "Kom igång",
+    "steps": [
+      "Starta pipelinen från en samling med .stream(), och kom ihåg att en stream är engångs - du kan inte iterera den två gånger",
+      "Välj ett funktionellt gränssnitt efter form: ett test är en Predicate, en transformation är en Function, 'gör något med varje' är en Consumer",
+      "Kedja mellanoperationer - filter för att smalna av, map för att transformera, sorted / distinct / limit för att forma - var och en returnerar en ny stream",
+      "Avsluta med exakt en terminaloperation; om det inte finns någon terminaloperation körs inget av pipelinen",
+      "Föredra collect(Collectors.toList()) (eller .toList() på Java 16+) framför forEach + extern lista - det uttrycker avsikten och undviker en delad muterbar lista",
+      "Använd groupingBy när du annars skulle bygga en Map<K, List<V>> för hand, och partitioningBy för en sann/falsk-uppdelning",
+      "Behandla Optional som en egen pipeline - map / filter / orElseGet - i stället för att anropa .get() direkt",
+      "Ta tillbaka en vanlig for-loop när du behöver indexet, måste mutera källan, eller vill bryta ut med en sidoeffekt - streams är inte en regel, de är ett verktyg"
+    ]
+  },
+  "practiceTopics": [
+    {
+      "title": "Lambda vs anonym klass vs metodreferens",
+      "description": "Se samma Comparator skriven på tre sätt och hur var och en översätts till nästa"
+    },
+    {
+      "title": "Collectors: groupingBy, partitioningBy, toMap",
+      "description": "Kör varje collector på en liten lista med personer och inspektera Map:en den producerar"
+    },
+    {
+      "title": "Optional i stället för null",
+      "description": "Kedja map / filter / orElseGet på en Optional och jämför den med null-kontrollversionen"
+    }
+  ],
+  "fullExample": {
+    "heading": "Fullständigt exempel, steg för steg",
+    "title": "Analysera en lista med ordrar med en stream-pipeline",
+    "description": "En enda klass som svarar på några frågor om en lista med ordrar - total intäkt från skickade ordrar, den största ordern per kund, en uppdelning per status - med streams i stället för nästlade loopar. Klicka dig igenom stegen för att se varje pipeline och vad dess mellan- och terminaloperationer gör.",
+    "steps": [
+      {
+        "label": "Datan och de funktionella gränssnitten i spel",
+        "lines": [1, 16],
+        "explanation": "Order är en record, så getters är total(), status(), customer(). Metoderna nedan använder Predicate (filter-testerna), Function (map / groupingBy-klassificerarna) och en Comparator (byggd med Comparator.comparing, som själv tar en Function)."
+      },
+      {
+        "label": "filter + mapToLong + sum: intäkt från skickade ordrar",
+        "lines": [18, 24],
+        "explanation": "filter behåller bara SHIPPED-ordrar; mapToLong gör varje till en primitiv long-summa (undviker boxning); sum() är terminaloperationen. Ingen mellanliggande lista byggs någonsin - varje order som passerar filtret läggs direkt in i den löpande summan."
+      },
+      {
+        "label": "groupingBy med en downstream-collector: största ordern per kund",
+        "lines": [26, 33],
+        "explanation": "groupingBy(Order::customer, ...) bucketar ordrar per kund; det andra argumentet, maxBy(comparing(Order::total)), är en downstream-collector som appliceras inom varje bucket, så resultatet är Map<String, Optional<Order>> - den största ordern för varje kund."
+      },
+      {
+        "label": "groupingBy + counting: hur många ordrar i varje status",
+        "lines": [35, 39],
+        "explanation": "Samma form igen - klassificera per Order::status, och räkna inom varje grupp med Collectors.counting(). Denna enda rad ersätter en Map<Status, Integer> som du annars skulle skapa, getOrDefault och öka för hand."
+      },
+      {
+        "label": "findFirst returnerar en Optional, och lathet gör det billigt",
+        "lines": [41, 47],
+        "explanation": "Pipelinen är filter sedan findFirst. Eftersom streams är lata och findFirst kortsluter körs filtret bara tills första matchningen hittas - resten av listan undersöks aldrig. Optional-returtypen tvingar anroparen att säga vad som händer när det inte finns någon oskickad order."
+      }
+    ],
+    "files": ["code-examples/java/streams/OrderAnalysis.java"]
+  },
+  "quiz": [
+    {
+      "question": "Du skriver en stream-pipeline: list.stream().filter(...).map(...). Inget verkar hända. Varför?",
+      "options": [
+        "filter och map kastar om listan är tom",
+        "Det finns ingen terminaloperation, så pipelinen körs aldrig",
+        "Du måste anropa .parallel() först",
+        "map måste komma före filter"
+      ],
+      "answerIndex": 1,
+      "explanation": "Mellanoperationer (filter, map, sorted...) är lata - de beskriver bara arbete. Inget körs förrän en terminaloperation (collect, forEach, count, reduce...) är kopplad."
+    },
+    {
+      "question": "Vilket funktionellt gränssnitt matchar lambdan `s -> s.isBlank()`?",
+      "options": [
+        "Function<String, String>",
+        "Consumer<String>",
+        "Predicate<String>",
+        "Supplier<Boolean>"
+      ],
+      "answerIndex": 2,
+      "explanation": "Den tar ett argument och returnerar en boolean - det är Predicate<String>. En Function returnerar ett godtyckligt R, en Consumer returnerar void, en Supplier tar inget argument."
+    },
+    {
+      "question": "Vad är resultattypen av `orders.stream().collect(groupingBy(Order::status))`?",
+      "options": [
+        "List<Order>",
+        "Map<Status, List<Order>>",
+        "Map<Status, Order>",
+        "Optional<Order>"
+      ],
+      "answerIndex": 1,
+      "explanation": "groupingBy med bara en klassificerare producerar Map<K, List<V>> - varje distinkt nyckel mappad till listan av element som föll i den. En downstream-collector (counting, mapping, maxBy...) ändrar värdetypen."
+    },
+    {
+      "question": "`people.stream().filter(p -> p.age() > 90).findFirst()` på en lista med 10 miljoner element där den 3:e personen matchar. Ungefär hur många element inspekteras?",
+      "options": [
+        "Alla 10 miljoner",
+        "Ungefär 3",
+        "Hälften, i genomsnitt",
+        "Inga - findFirst är lat också"
+      ],
+      "answerIndex": 1,
+      "explanation": "findFirst kortsluter. Element dras igenom filter ett i taget och strömmen stannar så snart findFirst har sitt svar - här efter det 3:e elementet."
+    },
+    {
+      "question": "När är en vanlig for-loop fortfarande det bättre valet framför en stream?",
+      "options": [
+        "Aldrig - streams är alltid att föredra",
+        "När du behöver indexet, måste mutera källan på plats, eller vill bryta tidigt med en sidoeffekt",
+        "Bara för arrayer, aldrig för listor",
+        "När samlingen har färre än 100 element"
+      ],
+      "answerIndex": 1,
+      "explanation": "Streams lyser för deklarativ transformera-och-samla. Indexbaserad logik, mutation på plats och tidig utgång med sidoeffekter är alla mer direkta och läsbara som en vanlig loop."
+    }
+  ]
+}

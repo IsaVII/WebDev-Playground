@@ -1,0 +1,34 @@
+{
+  "topics": [
+    {
+      "id": 1,
+      "key": "diagrams",
+      "title": "Class & ER Diagrams",
+      "description": "Model before you code: UML class diagrams, the four relationship types, ER diagrams, cardinality, turning a class model into database tables, and normalization to 3NF",
+      "route": "/diagrams",
+      "screenshot": "/images/diagrams.png",
+      "difficulty": "beginner",
+      "estimatedTime": "2 hours"
+    },
+    {
+      "id": 2,
+      "key": "streams",
+      "title": "Lambda & Stream API",
+      "description": "Java's functional side: lambda expressions, functional interfaces, method references, and building lazy stream pipelines with map/filter/reduce, collectors, and Optional",
+      "route": "/streams",
+      "screenshot": "/images/streams.png",
+      "difficulty": "beginner",
+      "estimatedTime": "2.5 hours"
+    },
+    {
+      "id": 3,
+      "key": "spring",
+      "title": "Spring Framework Fundamentals",
+      "description": "The mental model behind Spring and Spring Boot: inversion of control, dependency injection, beans and stereotypes, auto-configuration, the Controller/Service/Repository layering, and Spring Data JPA",
+      "route": "/spring",
+      "screenshot": "/images/spring.png",
+      "difficulty": "intermediate",
+      "estimatedTime": "3 hours"
+    }
+  ]
+}

@@ -45,6 +45,16 @@ Topics are ordered to roughly match how you'd want to learn them — language fu
 | 10  | **Express.js**                     | Routing, middleware, error handling, and building a REST API                                      |
 | 11  | **Authentication & Authorization** | Sessions vs. tokens, password hashing, JWTs, protected routes, and role-based access              |
 
+## Java Backend
+
+A separate track for the Java side of full-stack work — the concepts a Spring course assumes you already have. Each lesson ends with a **Self-Check**: a short retrieval-practice quiz (recall the idea from memory, then get immediate feedback) that counts toward the lesson's completion ring.
+
+| #   | Topic                             | What you'll learn                                                                                                          |
+| --- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| 1   | **Class & ER Diagrams**           | UML class boxes, the four relationship types, multiplicity/cardinality, turning a class model into tables, normalization to 3NF |
+| 2   | **Lambda & Stream API**           | Lambdas, functional interfaces, method references, lazy stream pipelines, `map`/`filter`/`reduce`, collectors, `Optional`  |
+| 3   | **Spring Framework Fundamentals** | Inversion of control & dependency injection, beans and stereotypes, Spring Boot auto-configuration, Controller/Service/Repository layering, Spring Data JPA |
+
 ## Cheat Sheets
 
 Task-focused references for setup work you'd otherwise have to look up across a dozen tabs:
@@ -120,7 +130,11 @@ src/
 │       ├── redux-demos/           # Redux demos
 │       ├── testing-demos/         # Testing demos
 │       ├── typescript-demos/      # TypeScript demos
-│       └── websockets-demos/      # WebSockets demos
+│       ├── websockets-demos/      # WebSockets demos
+│       ├── diagrams-demos/        # Class & ER diagram demos
+│       ├── streams-demos/         # Lambda & Stream API demos
+│       └── spring-demos/          # Spring Framework demos
+│   └── SelfCheckQuiz.jsx          # Retrieval-practice quiz shown at the end of a lesson
 ├── context/
 │   └── ProgressContext.jsx     # Topic/sub-topic completion state, backed by a cookie
 ├── hooks/
@@ -129,6 +143,7 @@ src/
 ├── data/                      # JSON content that drives each page
 │   ├── learningContent.json      # Topics shown on the home page, in learning order
 │   ├── cheatsheets.json          # Cheat sheets shown on the home page
+│   ├── javaBackend.json          # Java Backend category topics (per language, en/ + sv/)
 │   ├── learning/
 │   │   ├── javascriptContent.json
 │   │   ├── typescriptContent.json
@@ -172,6 +187,8 @@ Lesson and cheat sheet content lives in JSON so the copy can change without touc
 3. Build any interactive demos in a new `src/components/demos/<topic>-demos/` folder.
 4. Create `src/pages/learning/<Topic>.jsx`, following the pattern in `Git.jsx`, `React.jsx`, or `Redux.jsx`. When rendering `<PracticeTopicCard>` for each practice topic, pass `topicKey="<the same key from step 1>"` so its sub-topic checkboxes save correctly.
 5. Register the route in `src/App.jsx` and add a link in `src/components/Header.jsx`.
+
+A **Java Backend** topic is the same, except its index entry goes in `src/data/{en,sv}/javaBackend.json` (which the home page, header menu, and search all read automatically), and its content JSON can include an optional `quiz` array (`{ question, options, answerIndex, explanation }`) — `LearningTopicLayout` renders it as the lesson's Self-Check and counts it as one item on the completion ring.
 
 ## Adding a New Cheat Sheet
 

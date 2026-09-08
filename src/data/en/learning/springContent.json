@@ -1,0 +1,167 @@
+{
+  "title": "Spring Framework Fundamentals",
+  "introduction": {
+    "heading": "Who Builds Your Objects?",
+    "description": "In plain Java, your code creates the objects it needs: `new OrderService(new OrderRepository(new DataSource(...)))`. Spring inverts that. You declare which classes are components and which dependencies they need, and Spring's container builds them, wires them together in the right order, and hands you finished objects. That single idea - inversion of control through dependency injection - is what everything else in Spring sits on top of. Spring Boot then adds auto-configuration: it looks at what's on your classpath (a database driver, a web server, a JSON library) and configures sensible defaults so you write almost no setup code. The rest of this lesson is the vocabulary the course will assume you already have: beans, stereotypes, the Controller/Service/Repository layering, and Spring Data JPA repositories that you declare as an interface and never implement."
+  },
+  "coreConcepts": {
+    "heading": "Core Concepts",
+    "concepts": [
+      {
+        "title": "Inversion of Control (IoC)",
+        "description": "Instead of your code calling a library to get things done, the framework holds the flow of control and calls into your code. Applied to object creation, it means you stop writing `new` for your services and let the container assemble them"
+      },
+      {
+        "title": "Dependency Injection & the ApplicationContext",
+        "description": "The container (ApplicationContext) reads your configuration, creates each bean once, and passes each bean's dependencies into its constructor. Constructor injection is preferred because it makes dependencies explicit and the object immutable"
+      },
+      {
+        "title": "Beans",
+        "description": "A bean is just an object the container manages. By default beans are singletons - one shared instance for the whole application - created eagerly when the context starts"
+      },
+      {
+        "title": "Stereotype Annotations",
+        "description": "@Component marks a class as a bean to be discovered by component scanning. @Service, @Repository, and @Controller / @RestController are specializations that say the same thing plus signal the class's role (and, for @Repository, translate persistence exceptions)"
+      },
+      {
+        "title": "Spring Boot Auto-Configuration",
+        "description": "@SpringBootApplication turns on component scanning and auto-configuration. Auto-configuration classes back off if you've defined your own bean of that type, so defaults are easy to override"
+      },
+      {
+        "title": "Layered Architecture",
+        "description": "A request flows Controller (HTTP in/out, no business rules) to Service (the business logic and transaction boundary) to Repository (database access only). Each layer depends only on the one below it, injected as an interface"
+      },
+      {
+        "title": "Spring Data JPA Repositories",
+        "description": "Declare an interface extending JpaRepository<Entity, IdType> and Spring generates the implementation at startup. Method names like findByLastNameAndActiveTrue are parsed into queries; @Query supplies JPQL/SQL when the name would get unwieldy"
+      }
+    ]
+  },
+  "layers": {
+    "heading": "A Request Through the Layers",
+    "description": "The layering isn't ceremony - it's what keeps HTTP concerns out of your business logic and SQL out of both. Follow a GET request for one customer as it crosses each boundary: the controller turns a URL into a method call, the service applies rules and owns the transaction, the repository runs exactly one query, and the result maps back out to JSON. Click a layer to see what it is and isn't responsible for."
+  },
+  "gettingStarted": {
+    "heading": "Getting Started",
+    "steps": [
+      "Generate a project at start.spring.io with the Spring Web and Spring Data JPA dependencies (add a driver like PostgreSQL or the H2 in-memory database)",
+      "Let @SpringBootApplication on your main class do the component scanning - keep every other class in a package below it",
+      "Annotate each class by its role: @RestController for HTTP endpoints, @Service for business logic, @Entity for a persisted table row",
+      "Inject dependencies through the constructor, not with field @Autowired - a single constructor needs no annotation at all",
+      "Declare repositories as interfaces extending JpaRepository<Entity, Long>; don't write an implementation",
+      "Add derived query methods by naming (findByEmail, findByStatusAndCreatedAfter) and switch to @Query only when the name gets long",
+      "Put @Transactional on service methods that write, so a failure rolls the whole unit of work back",
+      "Configure the datasource in application.properties (or application.yml) - URL, username, password, and spring.jpa.hibernate.ddl-auto for local schema handling"
+    ]
+  },
+  "practiceTopics": [
+    {
+      "title": "The IoC Container Wiring Beans",
+      "description": "Register components, declare their dependencies, and watch the container resolve the graph - then break it with a missing or ambiguous bean"
+    },
+    {
+      "title": "Derived Query Methods",
+      "description": "Type a Spring Data repository method name and see the JPQL it generates - and where the naming rules stop"
+    },
+    {
+      "title": "Which Stereotype Goes Where",
+      "description": "Match @RestController, @Service, @Repository, @Component, and @Configuration to the class that should carry them"
+    }
+  ],
+  "fullExample": {
+    "heading": "Full Example, Step by Step",
+    "title": "A minimal Spring Boot CRUD slice: entity, repository, service, controller",
+    "description": "The four classes behind one REST resource - GET/POST /api/customers - with nothing extra. It shows constructor injection, a derived query method, a transactional service, and a controller that only speaks HTTP. Click through to see how the layers connect and who creates what.",
+    "steps": [
+      {
+        "label": "The entity: a row in the customers table",
+        "lines": [1, 17],
+        "explanation": "@Entity marks this class as JPA-managed; @Id + @GeneratedValue make id an auto-assigned primary key. This class has no Spring annotations beyond persistence - it is not a bean, it's data the repository loads and saves."
+      },
+      {
+        "label": "The repository: an interface Spring implements for you",
+        "lines": [19, 27],
+        "explanation": "Extending JpaRepository<Customer, Long> brings save, findById, findAll, deleteById for free. findByEmail is a derived query - Spring parses the name into 'select c from Customer c where c.email = ?1' at startup. You never write the class that implements this."
+      },
+      {
+        "label": "The service: business rules and the transaction boundary",
+        "lines": [29, 54],
+        "explanation": "@Service makes it a bean; the constructor takes the repository, so Spring injects the generated implementation - no @Autowired needed for a single constructor. @Transactional on create() means the uniqueness check and the save commit or roll back together."
+      },
+      {
+        "label": "The controller: HTTP in, HTTP out, nothing else",
+        "lines": [56, 80],
+        "explanation": "@RestController + @RequestMapping(\"/api/customers\") bind methods to URLs. It calls the service and returns objects - Spring serializes them to JSON. There are no business rules and no repository reference here; skipping the service to inject the repository directly is the most common layering mistake."
+      },
+      {
+        "label": "The main class: where the container starts",
+        "lines": [82, 91],
+        "explanation": "@SpringBootApplication switches on component scanning (finding @Service and @RestController in this package and below) and auto-configuration (seeing JPA + a driver on the classpath and configuring an EntityManager and a DataSource). run() builds the ApplicationContext and every singleton bean in it."
+      }
+    ],
+    "files": [
+      "code-examples/java/spring/Customer.java",
+      "code-examples/java/spring/CustomerRepository.java",
+      "code-examples/java/spring/CustomerService.java",
+      "code-examples/java/spring/CustomerController.java",
+      "code-examples/java/spring/Application.java"
+    ]
+  },
+  "quiz": [
+    {
+      "question": "What does 'inversion of control' actually invert, in the context of Spring's container?",
+      "options": [
+        "The order methods run in",
+        "Who creates and wires your objects - the container does it instead of your code calling `new`",
+        "The direction of database queries",
+        "Inheritance, so subclasses control superclasses"
+      ],
+      "answerIndex": 1,
+      "explanation": "IoC here means you no longer construct and connect your service objects by hand. You declare the components and their dependencies; the container instantiates them and injects the dependencies."
+    },
+    {
+      "question": "You have a single-constructor @Service that takes a CustomerRepository. What do you need to inject it?",
+      "options": [
+        "@Autowired on the field",
+        "@Autowired on the constructor",
+        "Nothing - Spring injects a single constructor's arguments automatically",
+        "An @Bean method in a @Configuration class"
+      ],
+      "answerIndex": 2,
+      "explanation": "Since Spring 4.3, a bean with exactly one constructor needs no @Autowired - the container uses that constructor and resolves each parameter as a bean. Constructor injection is preferred over field injection."
+    },
+    {
+      "question": "You declare `interface CustomerRepository extends JpaRepository<Customer, Long>` and write no implementation. Who provides one?",
+      "options": [
+        "You must, or it won't compile",
+        "Spring Data generates a proxy implementation at startup",
+        "The JVM, via default methods",
+        "Hibernate, but only at the first query"
+      ],
+      "answerIndex": 1,
+      "explanation": "Spring Data creates a runtime implementation of the repository interface when the context starts, backed by an EntityManager, including derived queries parsed from method names."
+    },
+    {
+      "question": "In the Controller/Service/Repository layering, where do business rules and the @Transactional boundary belong?",
+      "options": [
+        "The controller",
+        "The service",
+        "The repository",
+        "The entity"
+      ],
+      "answerIndex": 1,
+      "explanation": "The controller only translates HTTP; the repository only runs queries. The service holds the business logic and is the natural transaction boundary - one service call = one unit of work."
+    },
+    {
+      "question": "Spring Boot auto-configures a DataSource for you. How do you override it with your own?",
+      "options": [
+        "You can't - auto-configuration always wins",
+        "Delete spring-boot-autoconfigure from the classpath",
+        "Just define your own DataSource bean - matching auto-configuration backs off",
+        "Set auto.config=false in application.properties"
+      ],
+      "answerIndex": 2,
+      "explanation": "Auto-configuration is conditional. Most auto-config classes are annotated @ConditionalOnMissingBean, so defining your own bean of that type disables the default automatically."
+    }
+  ]
+}

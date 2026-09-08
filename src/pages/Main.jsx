@@ -1,8 +1,10 @@
 import { useTranslation } from "react-i18next";
 import learningContentEn from "../data/en/learningContent.json";
 import cheatSheetsEn from "../data/en/cheatsheets.json";
+import javaBackendEn from "../data/en/javaBackend.json";
 import learningContentSv from "../data/sv/learningContent.json";
 import cheatSheetsSv from "../data/sv/cheatsheets.json";
+import javaBackendSv from "../data/sv/javaBackend.json";
 import Reveal from "../components/motion/Reveal";
 import TextReveal from "../components/motion/TextReveal";
 import TopicCard from "../components/TopicCard";
@@ -14,15 +16,17 @@ const CONTENT_MAP = {
   en: {
     learning: learningContentEn,
     cheatsheets: cheatSheetsEn,
+    javaBackend: javaBackendEn,
   },
   sv: {
     learning: learningContentSv,
     cheatsheets: cheatSheetsSv,
+    javaBackend: javaBackendSv,
   },
 };
 
 function Main() {
-  const { getTotalCheckedTopics } = useProgress();
+  const { isTopicDone } = useProgress();
   const { t, i18n } = useTranslation();
 
   const currentLang = i18n.language;
@@ -30,8 +34,14 @@ function Main() {
     CONTENT_MAP[currentLang]?.learning || CONTENT_MAP.en.learning;
   const cheatSheets =
     CONTENT_MAP[currentLang]?.cheatsheets || CONTENT_MAP.en.cheatsheets;
+  const javaBackend =
+    CONTENT_MAP[currentLang]?.javaBackend || CONTENT_MAP.en.javaBackend;
 
-  const checkedTopics = getTotalCheckedTopics();
+  // Count only this section's topics as done - getTotalCheckedTopics() is
+  // global, and Java Backend topics now have their own done checkboxes too.
+  const checkedTopics = learningContent.topics.filter((topic) =>
+    isTopicDone(topic.key),
+  ).length;
   const totalTopics = learningContent.topics.length;
 
   return (
@@ -62,6 +72,29 @@ function Main() {
         </div>
         <div className="stagger-children w-full max-w-210 justify-self-center grid grid-cols-1 md:grid-cols-2 gap-8 ">
           {learningContent.topics.map((topic, i) => (
+            <Reveal key={topic.id} index={i % 4}>
+              <TopicCard topic={topic} />
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
+      <section className="py-8 px-4">
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="text-3xl text-heading">
+            {t("main.javaBackendSection")}
+          </h2>
+          <ProgressRing
+            completed={
+              javaBackend.topics.filter((topic) => isTopicDone(topic.key))
+                .length
+            }
+            total={javaBackend.topics.length}
+            label="Java Backend progress"
+          />
+        </div>
+        <div className="stagger-children w-full max-w-210 justify-self-center grid grid-cols-1 md:grid-cols-2 gap-8">
+          {javaBackend.topics.map((topic, i) => (
             <Reveal key={topic.id} index={i % 4}>
               <TopicCard topic={topic} />
             </Reveal>

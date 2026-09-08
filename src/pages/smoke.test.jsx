@@ -5,8 +5,15 @@ import Deployment from "./learning/Deployment";
 import Git from "./learning/Git";
 import SQL from "./cheatsheets/SQL";
 import CiCd from "./cheatsheets/CiCd";
+import Diagrams from "./learning/Diagrams";
+import Streams from "./learning/Streams";
+import Spring from "./learning/Spring";
 import learningContent from "../data/en/learningContent.json";
 import cheatsheets from "../data/en/cheatsheets.json";
+import javaBackend from "../data/en/javaBackend.json";
+import diagramsContent from "../data/en/learning/diagramsContent.json";
+import streamsContent from "../data/en/learning/streamsContent.json";
+import springContent from "../data/en/learning/springContent.json";
 
 /**
  * These don't try to cover every interaction on every page - the practice
@@ -40,7 +47,41 @@ describe("Main (home page)", () => {
         screen.getByRole("heading", { name: sheet.title, level: 3 }),
       ).toBeInTheDocument();
     }
+    for (const topic of javaBackend.topics) {
+      expect(
+        screen.getByRole("heading", { name: topic.title, level: 3 }),
+      ).toBeInTheDocument();
+    }
   });
+});
+
+describe("Java Backend category (new)", () => {
+  const cases = [
+    { name: "Diagrams", Page: Diagrams, content: diagramsContent },
+    { name: "Streams", Page: Streams, content: streamsContent },
+    { name: "Spring", Page: Spring, content: springContent },
+  ];
+
+  for (const { name, Page, content } of cases) {
+    it(`${name} renders its heading, every practice topic, and the Self-Check`, () => {
+      renderWithProviders(<Page />);
+
+      expect(
+        screen.getByRole("heading", { name: content.title, level: 1 }),
+      ).toBeInTheDocument();
+
+      for (const topic of content.practiceTopics) {
+        expect(screen.getByText(topic.title)).toBeInTheDocument();
+      }
+
+      expect(
+        screen.getByRole("heading", { name: "Self-Check", level: 3 }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(content.quiz[0].question, { exact: false }),
+      ).toBeInTheDocument();
+    });
+  }
 });
 
 describe("Deployment (new learning topic)", () => {

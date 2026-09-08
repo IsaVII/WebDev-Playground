@@ -2,6 +2,7 @@
   "header": {
     "home": "Hem",
     "learning": "Lärande",
+    "javaBackend": "Java Backend",
     "cheatsheets": "Snabbguider"
   },
   "footer": {
@@ -12,6 +13,7 @@
     "title": "WebDev Playground",
     "subtitle": "Lär dig webbutveckling genom interaktiva exempel",
     "learningSection": "Lärande Ämnen",
+    "javaBackendSection": "Java Backend",
     "cheatsheetsSection": "Snabbguider",
     "searchPlaceholder": "Sök ämnen..."
   },

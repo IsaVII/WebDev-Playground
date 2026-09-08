@@ -1,0 +1,169 @@
+{
+  "title": "Class & ER Diagrams",
+  "introduction": {
+    "heading": "Why Draw It First?",
+    "description": "Before you write a single class or CREATE TABLE, it pays to sketch the shape of the problem. A class diagram is a picture of your object model - which types exist, what data they hold, and how they're connected. An ER (entity-relationship) diagram is the same idea aimed at the database - which tables exist, their columns, and the keys that link them. The two are close cousins: most classes become tables, most fields become columns, and every \"has a\" line between classes becomes a foreign key or a join table. Getting the relationships and their multiplicity right on paper is far cheaper than discovering, three weeks into the course project, that an Order can only ever have one line item because you modeled it that way without noticing."
+  },
+  "coreConcepts": {
+    "heading": "Core Concepts",
+    "concepts": [
+      {
+        "title": "Class Box",
+        "description": "A class is drawn as a three-part box: the name, then its attributes (fields), then its operations (methods). A leading - means private, + means public, # protected"
+      },
+      {
+        "title": "Association, Aggregation, Composition",
+        "description": "All three are \"has a\" links. A plain association is just \"knows about\"; aggregation (hollow diamond) is a whole-part where the part can outlive the whole; composition (filled diamond) is a whole-part where the part dies with the whole"
+      },
+      {
+        "title": "Inheritance & Dependency",
+        "description": "Inheritance (hollow triangle, \"is a\") means one class extends another; a dependency (dashed arrow, \"uses\") is a passing reference - a parameter or local variable - not a stored field"
+      },
+      {
+        "title": "Multiplicity / Cardinality",
+        "description": "The numbers at each end of a line - 1, 0..1, 1..*, * - say how many objects on this side relate to one object on the other. In ER terms this is one-to-one, one-to-many, or many-to-many"
+      },
+      {
+        "title": "Entity, Attribute, Primary & Foreign Key",
+        "description": "An ER entity is a table; attributes are columns; the primary key uniquely identifies a row; a foreign key is a column holding another table's primary key, which is how rows in different tables are linked"
+      },
+      {
+        "title": "Normalization (1NF - 3NF)",
+        "description": "A disciplined way of splitting tables so each fact is stored once: 1NF removes repeating groups, 2NF removes fields that depend on only part of a composite key, 3NF removes fields that depend on another non-key field"
+      }
+    ]
+  },
+  "mapping": {
+    "heading": "From a Class Diagram to Tables",
+    "description": "Turning an object model into a relational schema is mostly mechanical once you know the rules. A class becomes a table. A single-valued field becomes a column. A one-to-many association puts a foreign key on the 'many' side. A many-to-many association becomes its own join table with a foreign key to each side. Inheritance has a few options, but the simplest is one table per concrete class. Pick a domain below and watch the class diagram become CREATE TABLE statements."
+  },
+  "gettingStarted": {
+    "heading": "Getting Started",
+    "steps": [
+      "List the nouns in the problem statement - most become classes/entities, and the verbs between them hint at the relationships",
+      "For each class, write only the attributes you actually need; give every entity a primary key (an id column is the safe default)",
+      "Draw the line between two related classes and immediately label both ends with a multiplicity - don't leave an end blank",
+      "Decide whether a whole-part link is aggregation or composition by asking: if the whole is deleted, should the part be deleted too?",
+      "Convert one-to-many by putting a foreign key on the 'many' side; convert many-to-many by creating a join table with two foreign keys",
+      "Check each table against 3NF: does every non-key column depend on the whole key and nothing but the key?",
+      "Use a tool (draw.io, dbdiagram.io, or Mermaid) so the diagram stays editable - you will change it as the design settles"
+    ]
+  },
+  "practiceTopics": [
+    {
+      "title": "The Four Relationship Types",
+      "description": "Switch between association, aggregation, composition, and inheritance and see the notation, a real code example, and whether the part can outlive the whole"
+    },
+    {
+      "title": "Cardinality & How It Maps to Keys",
+      "description": "Set the multiplicity on each end of a relationship and see the crow's-foot notation plus whether it becomes a foreign key or a join table"
+    },
+    {
+      "title": "Normalizing a Table to 3NF",
+      "description": "Take one messy table with repeating groups and partial dependencies and step it through 1NF, 2NF, and 3NF"
+    }
+  ],
+  "fullExample": {
+    "heading": "Full Example, Step by Step",
+    "title": "Model a small library: class diagram, ER diagram, and the SQL schema",
+    "description": "A worked model of a lending library - members borrow book copies, books have authors - shown three ways: as a UML class model, as an ER diagram, and as the CREATE TABLE statements they translate into. Click through the steps to see how each relationship crosses from one representation to the next.",
+    "steps": [
+      {
+        "label": "The classes and their attributes",
+        "lines": [1, 7],
+        "explanation": "Five classes. Book is the abstract title ('Clean Code'); BookCopy is a physical copy on a shelf with its own barcode. Splitting them is the single most common modeling fix - a library owns many copies of one book. Loan gets its own class because it carries dates that belong to neither a Member nor a BookCopy alone."
+      },
+      {
+        "label": "A one-to-many: Book to BookCopy",
+        "lines": [16, 18],
+        "explanation": "One Book has 1..* BookCopy, and each BookCopy belongs to exactly one Book. This is composition - a copy has no meaning without its book - so in SQL the copy table carries a NOT NULL foreign key back to book."
+      },
+      {
+        "label": "A many-to-many: Book to Author",
+        "lines": [20, 22],
+        "explanation": "A book can have several authors and an author writes many books, so neither side can hold a single foreign key. It becomes the book_author join table, whose primary key is the pair (book_id, author_id)."
+      },
+      {
+        "label": "A one-to-many with history: Member to Loan",
+        "lines": [24, 28],
+        "explanation": "A Member has many Loans; each Loan points at one Member and one BookCopy and records the dates. Loan is an entity in its own right precisely because it holds attributes (borrowed_on, due_on, returned_on) that belong to the relationship, not to either end."
+      },
+      {
+        "label": "The ER diagram: the same model as tables",
+        "lines": [30, 44],
+        "explanation": "Every class became a table, every attribute a column, and the crow's-foot marks (the fork = 'many', the bar = 'one') restate the multiplicities. book_author is the only table with no surrogate id - its identity is the two foreign keys together."
+      },
+      {
+        "label": "SQL: the composition becomes ON DELETE CASCADE",
+        "lines": [58, 64],
+        "explanation": "book_copy holds a NOT NULL foreign key to book, so no copy can exist without a book. ON DELETE CASCADE is the direct translation of the filled diamond: remove the book row and the database removes its copies for you."
+      },
+      {
+        "label": "SQL: the join table and the loan table",
+        "lines": [66, 87],
+        "explanation": "book_author has no id of its own - PRIMARY KEY (book_id, author_id) makes the pair unique, so the same author can't be attached to the same book twice. loan became a full table because it carries its own columns (borrowed_on, due_on, returned_on) on top of the two foreign keys."
+      }
+    ],
+    "files": [
+      "code-examples/java/diagrams/library-model.txt",
+      "code-examples/java/diagrams/library.sql"
+    ]
+  },
+  "quiz": [
+    {
+      "question": "You delete an Invoice and its InvoiceLine rows should be deleted with it. Which relationship did you model?",
+      "options": [
+        "Aggregation (hollow diamond)",
+        "Composition (filled diamond)",
+        "A plain association",
+        "A dependency (dashed arrow)"
+      ],
+      "answerIndex": 1,
+      "explanation": "Composition is a whole-part where the part cannot exist without the whole - deleting the whole deletes the parts. Aggregation would let the lines survive on their own."
+    },
+    {
+      "question": "A Student can enroll in many Courses and a Course has many Students. How is this stored relationally?",
+      "options": [
+        "A foreign key on the student table",
+        "A foreign key on the course table",
+        "A join table with a foreign key to student and one to course",
+        "It can't be represented in SQL"
+      ],
+      "answerIndex": 2,
+      "explanation": "A many-to-many needs a third table (enrollment) holding one foreign key to each side. A single foreign key on either table could only express one-to-many."
+    },
+    {
+      "question": "In the class box notation, what does a leading '-' before an attribute name mean?",
+      "options": [
+        "It is static",
+        "It is private",
+        "It is a foreign key",
+        "It is deprecated"
+      ],
+      "answerIndex": 1,
+      "explanation": "'-' is private, '+' is public, '#' is protected. It has nothing to do with keys or persistence - that's the ER diagram's job."
+    },
+    {
+      "question": "A table has columns (order_id, product_id, quantity, product_name). The key is (order_id, product_id). Which normal form does it violate?",
+      "options": [
+        "1NF, because of a repeating group",
+        "2NF, because product_name depends on only part of the key",
+        "3NF, because quantity depends on product_name",
+        "It's already in 3NF"
+      ],
+      "answerIndex": 1,
+      "explanation": "product_name depends on product_id alone, which is only part of the composite key - that's a partial dependency, the exact thing 2NF forbids. Move product_name to the product table."
+    },
+    {
+      "question": "Which link would you draw as a dependency (dashed arrow) rather than an association?",
+      "options": [
+        "Order holds a List<LineItem> field",
+        "Customer has an Address field",
+        "A method takes a PricingService parameter and uses it, but never stores it",
+        "Manager extends Employee"
+      ],
+      "answerIndex": 2,
+      "explanation": "A dependency is a transient 'uses' - a parameter or local variable. A stored field is an association; extends is inheritance."
+    }
+  ]
+}

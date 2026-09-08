@@ -1,0 +1,169 @@
+{
+  "title": "Klass- & ER-diagram",
+  "introduction": {
+    "heading": "Varför rita först?",
+    "description": "Innan du skriver en enda klass eller ett CREATE TABLE lönar det sig att skissa problemets form. Ett klassdiagram är en bild av din objektmodell - vilka typer som finns, vilken data de håller och hur de hänger ihop. Ett ER-diagram (entity-relationship) är samma idé riktad mot databasen - vilka tabeller som finns, deras kolumner och nycklarna som länkar dem. De två är nära släkt: de flesta klasser blir tabeller, de flesta fält blir kolumner, och varje \"har en\"-linje mellan klasser blir en främmande nyckel eller en kopplingstabell. Att få relationerna och deras multiplicitet rätt på papper är mycket billigare än att upptäcka, tre veckor in i kursprojektet, att en Order bara kan ha en orderrad för att du modellerade det så utan att märka det."
+  },
+  "coreConcepts": {
+    "heading": "Kärnbegrepp",
+    "concepts": [
+      {
+        "title": "Klassbox",
+        "description": "En klass ritas som en tredelad box: namnet, sedan dess attribut (fält), sedan dess operationer (metoder). Ett inledande - betyder privat, + betyder publik, # skyddad"
+      },
+      {
+        "title": "Association, aggregering, komposition",
+        "description": "Alla tre är \"har en\"-länkar. En vanlig association är bara \"känner till\"; aggregering (ihålig romb) är en helhet-del där delen kan överleva helheten; komposition (fylld romb) är en helhet-del där delen dör med helheten"
+      },
+      {
+        "title": "Arv & beroende",
+        "description": "Arv (ihålig triangel, \"är en\") betyder att en klass utökar en annan; ett beroende (streckad pil, \"använder\") är en tillfällig referens - en parameter eller lokal variabel - inte ett lagrat fält"
+      },
+      {
+        "title": "Multiplicitet / kardinalitet",
+        "description": "Siffrorna i varje ände av en linje - 1, 0..1, 1..*, * - säger hur många objekt på den här sidan som relaterar till ett objekt på andra sidan. I ER-termer är detta en-till-en, en-till-många eller många-till-många"
+      },
+      {
+        "title": "Entitet, attribut, primär- & främmande nyckel",
+        "description": "En ER-entitet är en tabell; attribut är kolumner; primärnyckeln identifierar en rad unikt; en främmande nyckel är en kolumn som håller en annan tabells primärnyckel, vilket är hur rader i olika tabeller länkas"
+      },
+      {
+        "title": "Normalisering (1NF - 3NF)",
+        "description": "Ett disciplinerat sätt att dela upp tabeller så att varje faktum lagras en gång: 1NF tar bort upprepade grupper, 2NF tar bort fält som beror på bara en del av en sammansatt nyckel, 3NF tar bort fält som beror på ett annat icke-nyckelfält"
+      }
+    ]
+  },
+  "mapping": {
+    "heading": "Från klassdiagram till tabeller",
+    "description": "Att göra en objektmodell till ett relationsschema är mestadels mekaniskt när du kan reglerna. En klass blir en tabell. Ett enkelt fält blir en kolumn. En en-till-många-association lägger en främmande nyckel på \"många\"-sidan. En många-till-många-association blir en egen kopplingstabell med en främmande nyckel till varje sida. Arv har några alternativ, men det enklaste är en tabell per konkret klass. Välj en domän nedan och se klassdiagrammet bli CREATE TABLE-satser."
+  },
+  "gettingStarted": {
+    "heading": "Kom igång",
+    "steps": [
+      "Lista substantiven i problembeskrivningen - de flesta blir klasser/entiteter, och verben mellan dem antyder relationerna",
+      "För varje klass, skriv bara de attribut du faktiskt behöver; ge varje entitet en primärnyckel (en id-kolumn är det säkra standardvalet)",
+      "Rita linjen mellan två relaterade klasser och märk direkt båda ändarna med en multiplicitet - lämna ingen ände tom",
+      "Avgör om en helhet-del-länk är aggregering eller komposition genom att fråga: om helheten tas bort, ska delen tas bort också?",
+      "Omvandla en-till-många genom att lägga en främmande nyckel på \"många\"-sidan; omvandla många-till-många genom att skapa en kopplingstabell med två främmande nycklar",
+      "Kontrollera varje tabell mot 3NF: beror varje icke-nyckelkolumn på hela nyckeln och inget annat än nyckeln?",
+      "Använd ett verktyg (draw.io, dbdiagram.io eller Mermaid) så att diagrammet förblir redigerbart - du kommer att ändra det medan designen sätter sig"
+    ]
+  },
+  "practiceTopics": [
+    {
+      "title": "De fyra relationstyperna",
+      "description": "Växla mellan association, aggregering, komposition och arv och se notationen, ett riktigt kodexempel och om delen kan överleva helheten"
+    },
+    {
+      "title": "Kardinalitet & hur den blir nycklar",
+      "description": "Sätt multipliciteten på varje ände av en relation och se crow's-foot-notationen plus om den blir en främmande nyckel eller en kopplingstabell"
+    },
+    {
+      "title": "Normalisera en tabell till 3NF",
+      "description": "Ta en stökig tabell med upprepade grupper och partiella beroenden och stega den genom 1NF, 2NF och 3NF"
+    }
+  ],
+  "fullExample": {
+    "heading": "Fullständigt exempel, steg för steg",
+    "title": "Modellera ett litet bibliotek: klassdiagram, ER-diagram och SQL-schemat",
+    "description": "En genomarbetad modell av ett utlåningsbibliotek - medlemmar lånar bokexemplar, böcker har författare - visad på tre sätt: som en UML-klassmodell, som ett ER-diagram och som de CREATE TABLE-satser de översätts till. Klicka dig igenom stegen för att se hur varje relation korsar från en representation till nästa.",
+    "steps": [
+      {
+        "label": "Klasserna och deras attribut",
+        "lines": [1, 7],
+        "explanation": "Fem klasser. Book är den abstrakta titeln ('Clean Code'); BookCopy är ett fysiskt exemplar på en hylla med sin egen streckkod. Att dela dem är den enskilt vanligaste modelleringsfixen - ett bibliotek äger många exemplar av en bok. Loan får en egen klass eftersom den bär datum som varken hör till en Member eller en BookCopy ensam."
+      },
+      {
+        "label": "En en-till-många: Book till BookCopy",
+        "lines": [16, 18],
+        "explanation": "En Book har 1..* BookCopy, och varje BookCopy hör till exakt en Book. Detta är komposition - ett exemplar har ingen mening utan sin bok - så i SQL bär exemplartabellen en NOT NULL främmande nyckel tillbaka till book."
+      },
+      {
+        "label": "En många-till-många: Book till Author",
+        "lines": [20, 22],
+        "explanation": "En bok kan ha flera författare och en författare skriver många böcker, så ingen sida kan hålla en enda främmande nyckel. Det blir kopplingstabellen book_author, vars primärnyckel är paret (book_id, author_id)."
+      },
+      {
+        "label": "En en-till-många med historik: Member till Loan",
+        "lines": [24, 28],
+        "explanation": "En Member har många Loan; varje Loan pekar på en Member och en BookCopy och registrerar datumen. Loan är en egen entitet just för att den håller attribut (borrowed_on, due_on, returned_on) som hör till relationen, inte till någon av ändarna."
+      },
+      {
+        "label": "ER-diagrammet: samma modell som tabeller",
+        "lines": [30, 44],
+        "explanation": "Varje klass blev en tabell, varje attribut en kolumn, och crow's-foot-markeringarna (gaffeln = \"många\", strecket = \"en\") upprepar multipliciteterna. book_author är den enda tabellen utan ett surrogat-id - dess identitet är de två främmande nycklarna tillsammans."
+      },
+      {
+        "label": "SQL: kompositionen blir ON DELETE CASCADE",
+        "lines": [58, 64],
+        "explanation": "book_copy håller en NOT NULL främmande nyckel till book, så inget exemplar kan finnas utan en bok. ON DELETE CASCADE är den direkta översättningen av den fyllda romben: ta bort book-raden och databasen tar bort dess exemplar åt dig."
+      },
+      {
+        "label": "SQL: kopplingstabellen och loan-tabellen",
+        "lines": [66, 87],
+        "explanation": "book_author har inget eget id - PRIMARY KEY (book_id, author_id) gör paret unikt, så samma författare kan inte kopplas till samma bok två gånger. loan blev en full tabell eftersom den bär sina egna kolumner (borrowed_on, due_on, returned_on) utöver de två främmande nycklarna."
+      }
+    ],
+    "files": [
+      "code-examples/java/diagrams/library-model.txt",
+      "code-examples/java/diagrams/library.sql"
+    ]
+  },
+  "quiz": [
+    {
+      "question": "Du tar bort en Invoice och dess InvoiceLine-rader ska tas bort med den. Vilken relation modellerade du?",
+      "options": [
+        "Aggregering (ihålig romb)",
+        "Komposition (fylld romb)",
+        "En vanlig association",
+        "Ett beroende (streckad pil)"
+      ],
+      "answerIndex": 1,
+      "explanation": "Komposition är en helhet-del där delen inte kan finnas utan helheten - att ta bort helheten tar bort delarna. Aggregering skulle låta raderna överleva på egen hand."
+    },
+    {
+      "question": "En Student kan registrera sig på många Course och en Course har många Student. Hur lagras detta relationellt?",
+      "options": [
+        "En främmande nyckel på student-tabellen",
+        "En främmande nyckel på course-tabellen",
+        "En kopplingstabell med en främmande nyckel till student och en till course",
+        "Det kan inte representeras i SQL"
+      ],
+      "answerIndex": 2,
+      "explanation": "En många-till-många behöver en tredje tabell (enrollment) som håller en främmande nyckel till varje sida. En enda främmande nyckel på någon av tabellerna kunde bara uttrycka en-till-många."
+    },
+    {
+      "question": "I klassboxnotationen, vad betyder ett inledande '-' före ett attributnamn?",
+      "options": [
+        "Det är statiskt",
+        "Det är privat",
+        "Det är en främmande nyckel",
+        "Det är föråldrat"
+      ],
+      "answerIndex": 1,
+      "explanation": "'-' är privat, '+' är publik, '#' är skyddad. Det har inget med nycklar eller persistens att göra - det är ER-diagrammets uppgift."
+    },
+    {
+      "question": "En tabell har kolumnerna (order_id, product_id, quantity, product_name). Nyckeln är (order_id, product_id). Vilken normalform bryter den mot?",
+      "options": [
+        "1NF, på grund av en upprepad grupp",
+        "2NF, eftersom product_name beror på bara en del av nyckeln",
+        "3NF, eftersom quantity beror på product_name",
+        "Den är redan i 3NF"
+      ],
+      "answerIndex": 1,
+      "explanation": "product_name beror på product_id ensam, vilket bara är en del av den sammansatta nyckeln - det är ett partiellt beroende, precis det 2NF förbjuder. Flytta product_name till product-tabellen."
+    },
+    {
+      "question": "Vilken länk skulle du rita som ett beroende (streckad pil) snarare än en association?",
+      "options": [
+        "Order håller ett List<LineItem>-fält",
+        "Customer har ett Address-fält",
+        "En metod tar en PricingService-parameter och använder den, men lagrar den aldrig",
+        "Manager extends Employee"
+      ],
+      "answerIndex": 2,
+      "explanation": "Ett beroende är ett tillfälligt \"använder\" - en parameter eller lokal variabel. Ett lagrat fält är en association; extends är arv."
+    }
+  ]
+}

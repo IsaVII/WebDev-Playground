@@ -1,0 +1,34 @@
+{
+  "topics": [
+    {
+      "id": 1,
+      "key": "diagrams",
+      "title": "Klass- & ER-diagram",
+      "description": "Modellera innan du kodar: UML-klassdiagram, de fyra relationstyperna, ER-diagram, kardinalitet, hur en klassmodell blir databastabeller, och normalisering till 3NF",
+      "route": "/diagrams",
+      "screenshot": "/images/diagrams.png",
+      "difficulty": "beginner",
+      "estimatedTime": "2 timmar"
+    },
+    {
+      "id": 2,
+      "key": "streams",
+      "title": "Lambda & Stream API",
+      "description": "Javas funktionella sida: lambda-uttryck, funktionella gränssnitt, metodreferenser, och att bygga lata stream-pipelines med map/filter/reduce, collectors och Optional",
+      "route": "/streams",
+      "screenshot": "/images/streams.png",
+      "difficulty": "beginner",
+      "estimatedTime": "2.5 timmar"
+    },
+    {
+      "id": 3,
+      "key": "spring",
+      "title": "Spring Framework - Grunderna",
+      "description": "Den mentala modellen bakom Spring och Spring Boot: inversion of control, dependency injection, beans och stereotyper, auto-konfiguration, lagren Controller/Service/Repository, och Spring Data JPA",
+      "route": "/spring",
+      "screenshot": "/images/spring.png",
+      "difficulty": "intermediate",
+      "estimatedTime": "3 timmar"
+    }
+  ]
+}

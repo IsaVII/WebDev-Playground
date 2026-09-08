@@ -3,6 +3,7 @@ import ProgressRing from "./ProgressRing";
 import ContentCard from "./ContentCard";
 import PracticeTopicCard from "./PracticeTopicCard";
 import StepByStepExample from "./StepByStepExample";
+import SelfCheckQuiz from "./SelfCheckQuiz";
 import { useProgress } from "../context/ProgressContext";
 import Reveal from "./motion/Reveal";
 import TextReveal from "./motion/TextReveal";
@@ -34,6 +35,7 @@ function LearningTopicLayout({
   practiceTopics,
   practiceDemos,
   practiceTopicsIntro = "Click a topic to open a live, editable example.",
+  quiz = [],
   topicKey,
 }) {
   useEffect(() => {
@@ -42,7 +44,8 @@ function LearningTopicLayout({
 
   const { getTopicSubtopicCount } = useProgress();
   const checkedCount = getTopicSubtopicCount(topicKey);
-  const totalCount = practiceTopics?.length || 0;
+  const hasQuiz = quiz?.length > 0;
+  const totalCount = (practiceTopics?.length || 0) + (hasQuiz ? 1 : 0);
   return (
     <>
       <div className="flex justify-between items-center mb-4">
@@ -157,6 +160,18 @@ function LearningTopicLayout({
             </div>
           </div>
         </Reveal>
+
+        {hasQuiz && (
+          <Reveal variant="fade" index={sections.length + 5}>
+            <div className="bg-content1 w-full border-l-4 border-content1-border p-3 pl-5 mb-3">
+              <h3 className="text-2xl text-heading-alt mt-6 mb-3">Self-Check</h3>
+              <p className="text-muted text-sm mb-4">
+                Recall, don&apos;t re-read - answer before you check.
+              </p>
+              <SelfCheckQuiz questions={quiz} topicKey={topicKey} />
+            </div>
+          </Reveal>
+        )}
       </ContentCard>
     </>
   );
