@@ -5,6 +5,15 @@ import Reveal from "./motion/Reveal";
 import TextReveal from "./motion/TextReveal";
 import { loadCodeFile } from "../utils/codeExamples";
 
+// Notes are plain strings in the content JSON, but occasionally need to
+// emphasize one word (e.g. a key to press). Rather than pull in a markdown
+// renderer for that, split on **bold** markers and wrap the matched parts.
+function renderNote(note) {
+  return note.split(/\*\*(.+?)\*\*/g).map((part, index) =>
+    index % 2 === 1 ? <strong key={index}>{part}</strong> : part,
+  );
+}
+
 /**
  * Shared page layout for every cheat sheet under src/pages/cheatsheets/.
  * Mirrors the pattern used for learning topics (see LearningTopicLayout):
@@ -106,7 +115,7 @@ function CheatSheetLayout({
 
                 {step.note && (
                   <p className="bg-content2 border-l-4 border-content2-border text-muted text-sm p-3 pl-4 leading-relaxed text-left">
-                    {step.note}
+                    {renderNote(step.note)}
                   </p>
                 )}
 
@@ -142,7 +151,7 @@ function CheatSheetLayout({
 
                         {subStep.note && (
                           <p className="bg-surface border-l-4 border-content1-border text-muted text-sm p-2 pl-3 leading-relaxed text-left">
-                            {subStep.note}
+                            {renderNote(subStep.note)}
                           </p>
                         )}
                       </div>

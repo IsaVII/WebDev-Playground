@@ -49,10 +49,10 @@ Topics are ordered to roughly match how you'd want to learn them — language fu
 
 A separate track for the Java side of full-stack work — the concepts a Spring course assumes you already have. Each lesson ends with a **Self-Check**: a short retrieval-practice quiz (recall the idea from memory, then get immediate feedback) that counts toward the lesson's completion ring.
 
-| #   | Topic                             | What you'll learn                                                                                                          |
-| --- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| 1   | **Class & ER Diagrams**           | UML class boxes, the four relationship types, multiplicity/cardinality, turning a class model into tables, normalization to 3NF |
-| 2   | **Lambda & Stream API**           | Lambdas, functional interfaces, method references, lazy stream pipelines, `map`/`filter`/`reduce`, collectors, `Optional`  |
+| #   | Topic                             | What you'll learn                                                                                                                                           |
+| --- | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | **Class & ER Diagrams**           | UML class boxes, the four relationship types, multiplicity/cardinality, turning a class model into tables, normalization to 3NF                             |
+| 2   | **Lambda & Stream API**           | Lambdas, functional interfaces, method references, lazy stream pipelines, `map`/`filter`/`reduce`, collectors, `Optional`                                   |
 | 3   | **Spring Framework Fundamentals** | Inversion of control & dependency injection, beans and stereotypes, Spring Boot auto-configuration, Controller/Service/Repository layering, Spring Data JPA |
 
 ## Cheat Sheets

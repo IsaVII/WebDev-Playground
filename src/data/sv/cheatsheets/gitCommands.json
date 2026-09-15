@@ -62,7 +62,7 @@
       "title": "Granska Historik",
       "description": "När du har några commits låter dessa kommandon dig se vem som ändrade vad, när, och exakt vilka rader.",
       "language": "bash",
-      "note": "git diff ensamt jämför dina arbetsfiler med senaste commit; lägg till ett commit-intervall (t.ex. git diff HEAD~1) för att jämföra två punkter längre bak i historiken.",
+      "note": "git log och git diff öppnas i en pager om utskriften är lång - **tryck Q** för att avsluta och komma tillbaka till terminalen. git diff ensamt jämför dina arbetsfiler med senaste commit; lägg till ett commit-intervall (t.ex. git diff HEAD~1) för att jämföra två punkter längre bak i historiken.",
       "codeFile": "code-examples/cheatsheets/gitCommands-sv/07-inspect-history.sh"
     },
     {

@@ -62,7 +62,7 @@
       "title": "Inspect History",
       "description": "Once you have a few commits, these commands let you see who changed what, when, and exactly which lines.",
       "language": "bash",
-      "note": "git diff on its own compares your working files to the last commit; add a commit range (e.g. git diff HEAD~1) to compare two points further back in history.",
+      "note": "git log and git diff open in a pager if the output is long - **press Q** to quit back to your terminal. git diff on its own compares your working files to the last commit; add a commit range (e.g. git diff HEAD~1) to compare two points further back in history.",
       "codeFile": "code-examples/cheatsheets/gitCommands/07-inspect-history.sh"
     },
     {
