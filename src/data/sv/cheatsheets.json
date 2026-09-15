@@ -84,7 +84,7 @@
       "id": 10,
       "key": "gitcommands",
       "title": "Git-kommandon Cheat Sheet",
-      "description": "Vardaglig Git-referens: kolla din konfiguration, starta ett projekt, stage:a och commit:a, granska historik och ångra misstag",
+      "description": "Vardaglig Git-referens: kolla din konfiguration, starta ett projekt, stage:a, commit:a, push:a, granska historik och ångra misstag",
       "route": "/gitcommands",
       "screenshot": "/images/gitcommands.png",
       "difficulty": "beginner",

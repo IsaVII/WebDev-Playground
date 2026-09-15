@@ -94,7 +94,7 @@
       "id": 10,
       "key": "gitcommands",
       "title": "Git Commands Cheat Sheet",
-      "description": "Everyday Git reference: checking your config, starting a project, staging and committing, reviewing history, and undoing mistakes",
+      "description": "Everyday Git reference: checking your config, starting a project, staging, committing, pushing, reviewing history, and undoing mistakes",
       "route": "/gitcommands",
       "screenshot": "/images/gitcommands.png",
       "difficulty": "beginner",

@@ -51,19 +51,27 @@
     },
     {
       "id": 6,
+      "title": "Push:a Till En Remote",
+      "description": "När du är nöjd med en commit, skicka den till ett remote-repository (som GitHub) så att den säkerhetskopieras och blir synlig för andra.",
+      "language": "bash",
+      "note": "<branch> är bara en platshållare - byt ut den mot den du faktiskt är på, t.ex. git push -u origin main. Ingen remote än? Kolla med git remote -v och lägg till en med git remote add origin <url>. -u-flaggan behövs bara första gången du push:ar en branch - efter det räcker vanlig git push, den kommer ihåg vart den ska.",
+      "codeFile": "code-examples/cheatsheets/gitCommands-sv/06-push-to-a-remote.sh"
+    },
+    {
+      "id": 7,
       "title": "Granska Historik",
       "description": "När du har några commits låter dessa kommandon dig se vem som ändrade vad, när, och exakt vilka rader.",
       "language": "bash",
       "note": "git diff ensamt jämför dina arbetsfiler med senaste commit; lägg till ett commit-intervall (t.ex. git diff HEAD~1) för att jämföra två punkter längre bak i historiken.",
-      "codeFile": "code-examples/cheatsheets/gitCommands-sv/06-inspect-history.sh"
+      "codeFile": "code-examples/cheatsheets/gitCommands-sv/07-inspect-history.sh"
     },
     {
-      "id": 7,
+      "id": 8,
       "title": "Ångra & Kasta Bort Ändringar",
       "description": "Alla gör misstag - dessa är de tre vanligaste sätten att backa dem.",
       "language": "bash",
       "note": "git checkout <commit-id> försätter dig i ett skrivskyddat \"detached HEAD\"-tillstånd - helt okej för att titta runt, men skapa en branch först om du vill göra ändringar där.",
-      "codeFile": "code-examples/cheatsheets/gitCommands-sv/07-undo-and-discard-changes.sh"
+      "codeFile": "code-examples/cheatsheets/gitCommands-sv/08-undo-and-discard-changes.sh"
     }
   ],
   "gettingStarted": {
@@ -73,7 +81,9 @@
       "git config --list --global - kolla din identitet och konfiguration",
       "git init eller git clone <url> - starta eller kopiera ett repository",
       "git status - kör den här före och efter varje ändring",
-      "git add <file> och sedan git commit -m \"...\" - stage:a och spara en ögonblicksbild",
+      "git add . - stage:a allt du har ändrat",
+      "git commit -m \"comment\" - spara en ögonblicksbild med ett meddelande",
+      "git push - skicka dina commits till remoten",
       "git log --oneline / git diff - granska historik och exakta ändringar",
       "git restore <file> - kasta bort ett misstag innan det commit:as"
     ]

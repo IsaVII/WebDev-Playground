@@ -51,19 +51,27 @@
     },
     {
       "id": 6,
+      "title": "Push to a Remote",
+      "description": "Once you're happy with a commit, send it to a remote repository (like GitHub) so it's backed up and visible to others.",
+      "language": "bash",
+      "note": "<branch> is just a placeholder - swap it for whatever you're actually on, e.g. git push -u origin main. No remote yet? Check with git remote -v and add one with git remote add origin <url>. The -u flag is only needed the first time you push a branch - after that, plain git push remembers where to go.",
+      "codeFile": "code-examples/cheatsheets/gitCommands/06-push-to-a-remote.sh"
+    },
+    {
+      "id": 7,
       "title": "Inspect History",
       "description": "Once you have a few commits, these commands let you see who changed what, when, and exactly which lines.",
       "language": "bash",
       "note": "git diff on its own compares your working files to the last commit; add a commit range (e.g. git diff HEAD~1) to compare two points further back in history.",
-      "codeFile": "code-examples/cheatsheets/gitCommands/06-inspect-history.sh"
+      "codeFile": "code-examples/cheatsheets/gitCommands/07-inspect-history.sh"
     },
     {
-      "id": 7,
+      "id": 8,
       "title": "Undo & Discard Changes",
       "description": "Everyone makes mistakes - these are the three most common ways to walk them back.",
       "language": "bash",
       "note": "git checkout <commit-id> puts you in a read-only \"detached HEAD\" state - fine for looking around, but create a branch first if you want to make changes there.",
-      "codeFile": "code-examples/cheatsheets/gitCommands/07-undo-and-discard-changes.sh"
+      "codeFile": "code-examples/cheatsheets/gitCommands/08-undo-and-discard-changes.sh"
     }
   ],
   "gettingStarted": {
@@ -73,7 +81,9 @@
       "git config --list --global - check your identity and config",
       "git init or git clone <url> - start or copy a repository",
       "git status - run this before and after every change",
-      "git add <file> then git commit -m \"...\" - stage and save a snapshot",
+      "git add . - stage everything you've changed",
+      "git commit -m \"comment\" - save a snapshot with a message",
+      "git push - send your commits to the remote",
       "git log --oneline / git diff - review history and exact changes",
       "git restore <file> - discard a mistake before it's committed"
     ]
