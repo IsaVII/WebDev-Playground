@@ -1,4 +1,4 @@
-import{n as e}from"./rolldown-runtime-CbXtAM7H.js";import{a as t,c as n,i as r}from"./TextReveal-BmuH47v_.js";import{o as i,w as a}from"./index-BZVcii-7.js";import{i as o}from"./codeExamples-CZXLLn1j.js";import{t as s}from"./LearningTopicLayout-BekbIxpA.js";var c=e(n(),1),l=r(),u={Blog:{model:`class Author  { Long id; String name }
+import{n as e}from"./rolldown-runtime-CbXtAM7H.js";import{a as t,c as n,i as r}from"./TextReveal-BmuH47v_.js";import{o as i,w as a}from"./index-Cq9CCscV.js";import{i as o}from"./codeExamples-DXIbVTKt.js";import{t as s}from"./LearningTopicLayout-BgBjkVnO.js";var c=e(n(),1),l=r(),u={Blog:{model:`class Author  { Long id; String name }
 class Post    { Long id; String title; String body }
 class Tag     { Long id; String label }
 

@@ -166,6 +166,94 @@ Fix: Lägg till det permissions-blocket i deploy-jobbet, och byt Pages-källa ti
 Fel: En secret visas som en tom sträng i loggen
 Orsak: Referens till secrets.NAME från en pull_request-triggad workflow på en fork, där secrets medvetet hålls tillbaka.
 Fix: Använd pull_request_target med försiktighet, eller strukturera om så att steget som behöver secreten bara körs vid push till ditt eget repo.
+`,"/src/data/code-examples/cheatsheets/gitCommands/01-check-your-setup.sh":`# Confirm Git is installed
+git --version
+
+# List all settings (system, global, and local combined)
+git config --list
+
+# List only your global (user-level) settings - the ones you'll check most often
+git config --list --global
+
+# List settings for the current repository only (must be run inside a repo)
+git config --list --local
+
+# List system-wide settings (rare - shared by every user on the machine)
+git config --list --system
+`,"/src/data/code-examples/cheatsheets/gitCommands/02-start-a-project.sh":`# Turn the current folder into a new, empty Git repository
+git init
+
+# Copy an existing repository (and its full history) to your computer
+git clone <url>
+`,"/src/data/code-examples/cheatsheets/gitCommands/03-check-the-status.sh":`# Show what's changed, what's staged, and what Git isn't tracking yet
+git status
+`,"/src/data/code-examples/cheatsheets/gitCommands/04-stage-your-changes.sh":`# Stage one specific file
+git add <file>
+
+# Stage every changed file in the current folder
+git add .
+`,"/src/data/code-examples/cheatsheets/gitCommands/05-commit-your-changes.sh":`# Save a snapshot of everything currently staged
+git commit -m "Add login button"
+`,"/src/data/code-examples/cheatsheets/gitCommands/06-inspect-history.sh":`# Full commit history: author, date, message, hash
+git log
+
+# The same history, one line per commit - easier to scan
+git log --oneline
+
+# Exact lines added/removed since your last commit
+git diff
+`,"/src/data/code-examples/cheatsheets/gitCommands/07-undo-and-discard-changes.sh":`# Throw away uncommitted changes to a file, back to the last commit
+git restore <file>
+
+# Temporarily look at an older commit
+git checkout <commit-id>
+
+# Edit the message (or add forgotten files) on your last commit
+git commit --amend
+`,"/src/data/code-examples/cheatsheets/gitCommands-sv/01-check-your-setup.sh":`# Bekräfta att Git är installerat
+git --version
+
+# Lista alla inställningar (system, global och lokal kombinerat)
+git config --list
+
+# Lista bara dina globala (användarnivå) inställningar - de du kollar oftast
+git config --list --global
+
+# Lista inställningar för nuvarande repository (måste köras inuti ett repo)
+git config --list --local
+
+# Lista systemomfattande inställningar (ovanligt - delas av alla användare på maskinen)
+git config --list --system
+`,"/src/data/code-examples/cheatsheets/gitCommands-sv/02-start-a-project.sh":`# Gör om nuvarande mapp till ett nytt, tomt Git-repository
+git init
+
+# Kopiera ett befintligt repository (med hela dess historik) till din dator
+git clone <url>
+`,"/src/data/code-examples/cheatsheets/gitCommands-sv/03-check-the-status.sh":`# Visa vad som ändrats, vad som är stage:at, och vad Git inte spårar än
+git status
+`,"/src/data/code-examples/cheatsheets/gitCommands-sv/04-stage-your-changes.sh":`# Stage:a en specifik fil
+git add <file>
+
+# Stage:a alla ändrade filer i nuvarande mapp
+git add .
+`,"/src/data/code-examples/cheatsheets/gitCommands-sv/05-commit-your-changes.sh":`# Spara en ögonblicksbild av allt som just nu är stage:at
+git commit -m "Add login button"
+`,"/src/data/code-examples/cheatsheets/gitCommands-sv/06-inspect-history.sh":`# Fullständig commit-historik: författare, datum, meddelande, hash
+git log
+
+# Samma historik, en rad per commit - lättare att scanna
+git log --oneline
+
+# Exakta rader som lagts till/tagits bort sedan din senaste commit
+git diff
+`,"/src/data/code-examples/cheatsheets/gitCommands-sv/07-undo-and-discard-changes.sh":`# Kasta bort ostage:ade ändringar i en fil, tillbaka till senaste commit
+git restore <file>
+
+# Titta tillfälligt på en äldre commit
+git checkout <commit-id>
+
+# Redigera meddelandet (eller lägg till glömda filer) på din senaste commit
+git commit --amend
 `,"/src/data/code-examples/cheatsheets/githubPages/01-install-gh-pages.sh":`npm install gh-pages --save-dev
 `,"/src/data/code-examples/cheatsheets/githubPages/02-add-a-homepage-property-to-package-json.json":`// vite.config.js - Vite projects set the sub-path here
 import { defineConfig } from 'vite'
