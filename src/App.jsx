@@ -38,6 +38,7 @@ const GithubPages = lazy(() => import("./pages/cheatsheets/GithubPages"));
 const NpmLibraries = lazy(() => import("./pages/cheatsheets/NpmLibraries"));
 const MongoDB = lazy(() => import("./pages/cheatsheets/MongoDB"));
 const SQL = lazy(() => import("./pages/cheatsheets/SQL"));
+const GitCommands = lazy(() => import("./pages/cheatsheets/GitCommands"));
 const TextReveal = lazy(() => import("./pages/cheatsheets/TextReveal"));
 const I18n = lazy(() => import("./pages/cheatsheets/I18n"));
 const LlmIntegration = lazy(() =>
@@ -78,6 +79,7 @@ function App() {
                 <Route path="/npmlibraries" element={<NpmLibraries />} />
                 <Route path="/mongodb" element={<MongoDB />} />
                 <Route path="/sql" element={<SQL />} />
+                <Route path="/gitcommands" element={<GitCommands />} />
                 <Route path="/textreveal" element={<TextReveal />} />
                 <Route path="/i18n" element={<I18n />} />
                 <Route

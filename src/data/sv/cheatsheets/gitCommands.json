@@ -1,0 +1,81 @@
+{
+  "title": "Git-kommandon Cheat Sheet",
+  "introduction": {
+    "heading": "Git-kommandona Du Faktiskt Använder Varje Dag",
+    "description": "Att spara sitt arbete i Git är en tvåstegsprocess - stage:a, sedan commit:a - och allt nedan bygger kring det. Använd det här som en snabbreferens för att kolla din setup, starta ett projekt, spara ögonblicksbilder av ditt arbete, granska historik och ångra misstag."
+  },
+  "prerequisites": [
+    "Git installerat lokalt (kör git --version för att bekräfta)",
+    "En terminal öppen i en projektmapp - antingen ett befintligt repository eller ett du är på väg att skapa"
+  ],
+  "steps": [
+    {
+      "id": 1,
+      "title": "Kolla Din Setup",
+      "description": "Innan du gör något annat, bekräfta att Git är installerat och se vilken identitet och konfiguration det använder. Inställningar kan finnas på tre nivåer - system (alla användare), global (du, på den här maskinen) och lokal (bara detta repository) - och lokal vinner alltid över global, som vinner över system.",
+      "language": "bash",
+      "note": "git config --list --global är den du kommer använda mest - den visar ditt namn, e-post och editor utan repo-specifikt brus blandat in.",
+      "codeFile": "code-examples/cheatsheets/gitCommands-sv/01-check-your-setup.sh"
+    },
+    {
+      "id": 2,
+      "title": "Starta Ett Projekt",
+      "description": "Innan Git kan spåra något behöver det veta vilken mapp det ska bevaka. Det finns två sätt att börja: skapa ett helt nytt, tomt repository, eller kopiera ett som redan finns.",
+      "language": "bash",
+      "note": "git init skapar en dold .git-mapp som lagrar all historik. git clone kopierar den mappen plus varje commit från en remote - använd det när ett projekt redan finns på GitHub.",
+      "codeFile": "code-examples/cheatsheets/gitCommands-sv/02-start-a-project.sh"
+    },
+    {
+      "id": 3,
+      "title": "Kolla Statusen",
+      "description": "Det här är kommandot du kommer köra hela tiden - det visar exakt var varje fil står just nu.",
+      "language": "bash",
+      "note": "Röd = ändrad men inte stage:ad än. Grön = stage:ad och redo att commit:as.",
+      "codeFile": "code-examples/cheatsheets/gitCommands-sv/03-check-the-status.sh"
+    },
+    {
+      "id": 4,
+      "title": "Stage:a Dina Ändringar",
+      "description": "Staging är \"lastzonen\" mellan dina redigeringar och en sparad commit - den låter dig välja exakt vad som ska ingå i nästa ögonblicksbild istället för att commit:a allt blint.",
+      "language": "bash",
+      "note": "Tänk på det som att packa saker i en låda innan du tejpar igen den: git add lägger något i lådan, git commit tejpar den och ställer den på hyllan.",
+      "codeFile": "code-examples/cheatsheets/gitCommands-sv/04-stage-your-changes.sh"
+    },
+    {
+      "id": 5,
+      "title": "Commit:a Dina Ändringar",
+      "description": "En commit är en permanent, namngiven ögonblicksbild av allt som just nu är stage:at.",
+      "language": "bash",
+      "note": "Skriv meddelanden som beskriver vad som ändrades och varför (\"Add login button\"), inte vaga sådana (\"fix\") - du själv i framtiden (och git log) kommer tacka dig.",
+      "codeFile": "code-examples/cheatsheets/gitCommands-sv/05-commit-your-changes.sh"
+    },
+    {
+      "id": 6,
+      "title": "Granska Historik",
+      "description": "När du har några commits låter dessa kommandon dig se vem som ändrade vad, när, och exakt vilka rader.",
+      "language": "bash",
+      "note": "git diff ensamt jämför dina arbetsfiler med senaste commit; lägg till ett commit-intervall (t.ex. git diff HEAD~1) för att jämföra två punkter längre bak i historiken.",
+      "codeFile": "code-examples/cheatsheets/gitCommands-sv/06-inspect-history.sh"
+    },
+    {
+      "id": 7,
+      "title": "Ångra & Kasta Bort Ändringar",
+      "description": "Alla gör misstag - dessa är de tre vanligaste sätten att backa dem.",
+      "language": "bash",
+      "note": "git checkout <commit-id> försätter dig i ett skrivskyddat \"detached HEAD\"-tillstånd - helt okej för att titta runt, men skapa en branch först om du vill göra ändringar där.",
+      "codeFile": "code-examples/cheatsheets/gitCommands-sv/07-undo-and-discard-changes.sh"
+    }
+  ],
+  "gettingStarted": {
+    "heading": "Snabb Checklista",
+    "steps": [
+      "git --version - bekräfta att Git är installerat",
+      "git config --list --global - kolla din identitet och konfiguration",
+      "git init eller git clone <url> - starta eller kopiera ett repository",
+      "git status - kör den här före och efter varje ändring",
+      "git add <file> och sedan git commit -m \"...\" - stage:a och spara en ögonblicksbild",
+      "git log --oneline / git diff - granska historik och exakta ändringar",
+      "git restore <file> - kasta bort ett misstag innan det commit:as"
+    ]
+  }
+}
