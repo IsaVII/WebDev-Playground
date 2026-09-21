@@ -99,6 +99,16 @@
       "screenshot": "/images/gitcommands.png",
       "difficulty": "beginner",
       "estimatedTime": "10 minutes"
+    },
+    {
+      "id": 11,
+      "key": "markdown",
+      "title": "Markdown Cheat Sheet",
+      "description": "Formatting reference for Markdown: headings, emphasis, lists, task lists, links, images, code blocks, blockquotes, tables, and GitHub Flavored Markdown extras",
+      "route": "/markdown",
+      "screenshot": "/images/markdown.png",
+      "difficulty": "beginner",
+      "estimatedTime": "10 minutes"
     }
 ]
 }

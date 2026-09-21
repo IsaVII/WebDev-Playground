@@ -45,6 +45,7 @@ const LlmIntegration = lazy(() =>
   import("./pages/cheatsheets/LlmIntegration"),
 );
 const CiCd = lazy(() => import("./pages/cheatsheets/CiCd"));
+const Markdown = lazy(() => import("./pages/cheatsheets/Markdown"));
 
 function App() {
   return (
@@ -87,6 +88,7 @@ function App() {
                   element={<LlmIntegration />}
                 />
                 <Route path="/cicd" element={<CiCd />} />
+                <Route path="/markdown" element={<Markdown />} />
               </Routes>
             </PageTransition>
           </Suspense>

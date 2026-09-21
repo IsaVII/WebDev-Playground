@@ -1,0 +1,4 @@
+- [x] Skriv disposition
+- [x] Utkast till inledning
+- [ ] Lägg till kodexempel
+- [ ] Korrekturläs och publicera

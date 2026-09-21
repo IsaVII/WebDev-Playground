@@ -89,6 +89,16 @@
       "screenshot": "/images/gitcommands.png",
       "difficulty": "beginner",
       "estimatedTime": "10 minuter"
+    },
+    {
+      "id": 11,
+      "key": "markdown",
+      "title": "Markdown Cheat Sheet",
+      "description": "Formateringsreferens för Markdown: rubriker, betoning, listor, att-göra-listor, länkar, bilder, kodblock, citat, tabeller och GitHub Flavored Markdown-tillägg",
+      "route": "/markdown",
+      "screenshot": "/images/markdown.png",
+      "difficulty": "beginner",
+      "estimatedTime": "10 minuter"
     }
 ]
 }

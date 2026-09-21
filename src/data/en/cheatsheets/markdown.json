@@ -1,0 +1,107 @@
+{
+  "title": "Markdown Cheat Sheet",
+  "introduction": {
+    "heading": "Markdown Formatting Reference",
+    "description": "Markdown is a lightweight syntax for formatting plain text - README files, GitHub comments, issues and PRs, docs sites, and most chat/note apps all render it. Everything below is CommonMark plus the GitHub Flavored Markdown (GFM) extensions (task lists, tables, strikethrough, footnotes) that GitHub and most modern renderers support."
+  },
+  "prerequisites": [
+    "Any plain text editor - Markdown needs no special tooling to write",
+    "A place that renders it, e.g. a GitHub README/PR, VS Code's preview (Ctrl+Shift+V), or a Markdown-aware app"
+  ],
+  "steps": [
+    {
+      "id": 1,
+      "title": "Headings",
+      "description": "Six levels of headings, made by prefixing a line with 1-6 # characters and a space. A single H1 is typically reserved for the page/document title.",
+      "language": "markdown",
+      "note": "Leave a blank line before and after a heading - some renderers get it wrong without one.",
+      "codeFile": "code-examples/cheatsheets/markdown/01-headings.md"
+    },
+    {
+      "id": 2,
+      "title": "Emphasis",
+      "description": "Bold, italic, and strikethrough text, plus combinations of the two.",
+      "language": "markdown",
+      "note": "Pick one style (* or _) and stick with it in a document - mixing both for the same purpose just makes the raw text harder to scan.",
+      "codeFile": "code-examples/cheatsheets/markdown/02-emphasis.md"
+    },
+    {
+      "id": 3,
+      "title": "Lists",
+      "description": "Unordered and ordered lists, with nesting via a 2-4 space indent. Ordered list numbers don't actually need to be sequential - Markdown renumbers them for you - but sequential is easier to read in the source.",
+      "language": "markdown",
+      "note": "A list item followed by a blank line and then 4-space-indented text keeps that text inside the same item, e.g. for a longer explanation under a bullet.",
+      "codeFile": "code-examples/cheatsheets/markdown/03-lists.md"
+    },
+    {
+      "id": 4,
+      "title": "Task Lists",
+      "description": "GitHub Flavored Markdown extension: checkboxes inside a list, checked with an x. Renders as interactive checkboxes on GitHub (clickable if you have write access to the file).",
+      "language": "markdown",
+      "note": "The space inside the brackets matters - [ ] is unchecked, [x] is checked, [X] also works.",
+      "codeFile": "code-examples/cheatsheets/markdown/04-task-lists.md"
+    },
+    {
+      "id": 5,
+      "title": "Links & Images",
+      "description": "Inline links, optional-title links, reusable reference-style links, bare-URL autolinks, and images - which use the exact same syntax as a link with a ! in front.",
+      "language": "markdown",
+      "note": "Image alt text isn't just decoration - it's what screen readers announce and what shows if the image fails to load, so keep it descriptive.",
+      "codeFile": "code-examples/cheatsheets/markdown/05-links-and-images.md"
+    },
+    {
+      "id": 6,
+      "title": "Code",
+      "description": "Inline code with single backticks for short snippets, and fenced code blocks (triple backticks) for anything longer. Add a language name right after the opening fence to get syntax highlighting.",
+      "language": "markdown",
+      "note": "Need a literal backtick inside inline code? Wrap it in double backticks instead: `` `backtick` ``.",
+      "codeFile": "code-examples/cheatsheets/markdown/06-code.md"
+    },
+    {
+      "id": 7,
+      "title": "Blockquotes",
+      "description": "Quoted text, prefixed with >. Consecutive > lines join into one quoted paragraph; a blank >  line separates paragraphs within the quote, and quotes can nest or contain other Markdown.",
+      "language": "markdown",
+      "note": "Blockquotes are commonly (mis)used for callout boxes - GFM alerts (see the Extras step) are the purpose-built version of that.",
+      "codeFile": "code-examples/cheatsheets/markdown/07-blockquotes.md"
+    },
+    {
+      "id": 8,
+      "title": "Tables",
+      "description": "GFM tables: a header row, a separator row of dashes, then data rows, all pipe-delimited. Colons in the separator row set column alignment (left, center, right).",
+      "language": "markdown",
+      "note": "Pipes don't need to line up visually in the source - renderers only care about the pipe characters, not the whitespace around them.",
+      "codeFile": "code-examples/cheatsheets/markdown/08-tables.md"
+    },
+    {
+      "id": 9,
+      "title": "Horizontal Rules & Line Breaks",
+      "description": "A horizontal rule (---, ***, or ___ on its own line) draws a divider. Markdown normally collapses single newlines into spaces within a paragraph - forcing a line break needs two trailing spaces or an explicit <br>.",
+      "language": "markdown",
+      "note": "Trailing spaces are invisible and easy to lose (e.g. to an editor's trim-on-save setting) - <br> is more explicit and safer to rely on.",
+      "codeFile": "code-examples/cheatsheets/markdown/09-rules-and-breaks.md"
+    },
+    {
+      "id": 10,
+      "title": "Extras (GFM)",
+      "description": "A few more GitHub Flavored Markdown extensions: footnotes, a collapsible <details> section (raw HTML, which Markdown always allows inline), escaping characters that would otherwise trigger formatting, and GFM alert callouts (NOTE, TIP, IMPORTANT, WARNING, CAUTION).",
+      "language": "markdown",
+      "note": "Alert callouts (> [!NOTE] etc.) are GitHub-specific - they render as plain blockquotes on renderers that don't support them, so they degrade gracefully.",
+      "codeFile": "code-examples/cheatsheets/markdown/10-extras.md"
+    }
+  ],
+  "gettingStarted": {
+    "heading": "Quick Syntax Reference",
+    "steps": [
+      "# H1 through ###### H6 - headings",
+      "**bold**, *italic*, ~~strikethrough~~ - emphasis",
+      "- item or 1. item - lists (indent 2-4 spaces to nest)",
+      "- [ ] todo / - [x] done - task lists",
+      "[text](url) and ![alt](url) - links and images",
+      "`code` and ```lang ... ``` - inline and fenced code",
+      "> quoted text - blockquotes",
+      "| a | b | with a |---|---| separator row - tables",
+      "--- - horizontal rule; two trailing spaces or <br> - line break"
+    ]
+  }
+}

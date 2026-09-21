@@ -1,0 +1,107 @@
+{
+  "title": "Markdown Cheat Sheet",
+  "introduction": {
+    "heading": "Formateringsreferens för Markdown",
+    "description": "Markdown är en enkel syntax för att formatera vanlig text - README-filer, GitHub-kommentarer, issues och PR:ar, dokumentationssajter och de flesta chatt-/anteckningsappar renderar den. Allt nedan är CommonMark plus de GitHub Flavored Markdown-tillägg (GFM) (task lists, tabeller, genomstrykning, fotnoter) som GitHub och de flesta moderna renderare stödjer."
+  },
+  "prerequisites": [
+    "Vilken vanlig texteditor som helst - Markdown kräver inga specialverktyg för att skriva",
+    "En plats som renderar den, t.ex. en GitHub README/PR, VS Codes förhandsgranskning (Ctrl+Shift+V), eller en Markdown-medveten app"
+  ],
+  "steps": [
+    {
+      "id": 1,
+      "title": "Rubriker",
+      "description": "Sex rubriknivåer, skapas genom att inleda en rad med 1-6 #-tecken och ett mellanslag. En enda H1 reserveras vanligtvis för sidans/dokumentets titel.",
+      "language": "markdown",
+      "note": "Lämna en tom rad före och efter en rubrik - vissa renderare hanterar det fel annars.",
+      "codeFile": "code-examples/cheatsheets/markdown-sv/01-headings.md"
+    },
+    {
+      "id": 2,
+      "title": "Betoning",
+      "description": "Fet text, kursiv text, genomstrykning, samt kombinationer av dem.",
+      "language": "markdown",
+      "note": "Välj en stil (* eller _) och håll dig till den i ett dokument - att blanda båda för samma syfte gör bara råtexten svårare att skumläsa.",
+      "codeFile": "code-examples/cheatsheets/markdown-sv/02-emphasis.md"
+    },
+    {
+      "id": 3,
+      "title": "Listor",
+      "description": "Osorterade och numrerade listor, med nästling via ett indrag på 2-4 mellanslag. Siffrorna i en numrerad lista behöver faktiskt inte vara sekventiella - Markdown numrerar om dem åt dig - men sekventiellt är lättare att läsa i källkoden.",
+      "language": "markdown",
+      "note": "En listpunkt följt av en tom rad och sedan text indenterad 4 mellanslag håller kvar den texten inuti samma punkt, t.ex. för en längre förklaring under en punkt.",
+      "codeFile": "code-examples/cheatsheets/markdown-sv/03-lists.md"
+    },
+    {
+      "id": 4,
+      "title": "Att-göra-listor",
+      "description": "GitHub Flavored Markdown-tillägg: kryssrutor inuti en lista, ikryssade med ett x. Renderas som interaktiva kryssrutor på GitHub (klickbara om du har skrivbehörighet till filen).",
+      "language": "markdown",
+      "note": "Mellanslaget inuti hakparenteserna spelar roll - [ ] är okryssad, [x] är ikryssad, [X] fungerar också.",
+      "codeFile": "code-examples/cheatsheets/markdown-sv/04-task-lists.md"
+    },
+    {
+      "id": 5,
+      "title": "Länkar & Bilder",
+      "description": "Vanliga länkar, länkar med valfri titel, återanvändbara referens-länkar, automatiska länkar för bara URL:er, och bilder - som använder exakt samma syntax som en länk med ett ! framför.",
+      "language": "markdown",
+      "note": "Alt-text för bilder är inte bara dekoration - det är vad skärmläsare läser upp och vad som visas om bilden inte laddas, så håll den beskrivande.",
+      "codeFile": "code-examples/cheatsheets/markdown-sv/05-links-and-images.md"
+    },
+    {
+      "id": 6,
+      "title": "Kod",
+      "description": "Kod i löptext med enkla backticks för korta snuttar, och fenced kodblock (tre backticks) för allt längre. Lägg till ett språknamn direkt efter den öppnande fence:en för syntax-färgning.",
+      "language": "markdown",
+      "note": "Behöver du en bokstavlig backtick inuti kod i löptext? Omslut den med dubbla backticks istället: `` `backtick` ``.",
+      "codeFile": "code-examples/cheatsheets/markdown-sv/06-code.md"
+    },
+    {
+      "id": 7,
+      "title": "Citat",
+      "description": "Citerad text, inledd med >. Rader med > efter varandra slås ihop till ett citerat stycke; en tom >-rad separerar stycken inuti citatet, och citat kan nästlas eller innehålla annan Markdown.",
+      "language": "markdown",
+      "note": "Citat används ofta (felaktigt) för utropsrutor - GFM-alerts (se steget Extra) är den syftesbyggda versionen av det.",
+      "codeFile": "code-examples/cheatsheets/markdown-sv/07-blockquotes.md"
+    },
+    {
+      "id": 8,
+      "title": "Tabeller",
+      "description": "GFM-tabeller: en rubrikrad, en separatorrad med bindestreck, sedan dataraderna, allt pipe-avgränsat. Kolon i separatorraden styr kolumnjustering (vänster, centrerad, höger).",
+      "language": "markdown",
+      "note": "Piparna behöver inte radas upp visuellt i källkoden - renderare bryr sig bara om själva pipe-tecknen, inte mellanslagen runt dem.",
+      "codeFile": "code-examples/cheatsheets/markdown-sv/08-tables.md"
+    },
+    {
+      "id": 9,
+      "title": "Horisontella linjer & Radbrytningar",
+      "description": "En horisontell linje (---, *** eller ___ på egen rad) ritar en avdelare. Markdown slår normalt ihop enkla radbrytningar till mellanslag inuti ett stycke - att tvinga fram en radbrytning kräver två mellanslag i slutet av raden eller en explicit <br>.",
+      "language": "markdown",
+      "note": "Mellanslag i slutet av en rad är osynliga och lätta att tappa bort (t.ex. via en editors trim-on-save-inställning) - <br> är mer explicit och säkrare att lita på.",
+      "codeFile": "code-examples/cheatsheets/markdown-sv/09-rules-and-breaks.md"
+    },
+    {
+      "id": 10,
+      "title": "Extra (GFM)",
+      "description": "Några fler GitHub Flavored Markdown-tillägg: fotnoter, en hopfällbar <details>-sektion (rå HTML, vilket Markdown alltid tillåter inline), att escapa tecken som annars skulle trigga formatering, samt GFM-alerts (NOTE, TIP, IMPORTANT, WARNING, CAUTION).",
+      "language": "markdown",
+      "note": "Alert-rutor (> [!NOTE] osv.) är GitHub-specifika - de renderas som vanliga citat i renderare som inte stödjer dem, så de degraderar snyggt.",
+      "codeFile": "code-examples/cheatsheets/markdown-sv/10-extras.md"
+    }
+  ],
+  "gettingStarted": {
+    "heading": "Snabb Syntaxreferens",
+    "steps": [
+      "# H1 till ###### H6 - rubriker",
+      "**fet**, *kursiv*, ~~genomstruken~~ - betoning",
+      "- punkt eller 1. punkt - listor (indrag 2-4 mellanslag för att nästla)",
+      "- [ ] att göra / - [x] klart - att-göra-listor",
+      "[text](url) och ![alt](url) - länkar och bilder",
+      "`kod` och ```språk ... ``` - kod i löptext och fenced kodblock",
+      "> citerad text - citat",
+      "| a | b | med en |---|---| separatorrad - tabeller",
+      "--- - horisontell linje; två mellanslag i slutet eller <br> - radbrytning"
+    ]
+  }
+}

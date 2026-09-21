@@ -1,0 +1,4 @@
+- [x] Write the outline
+- [x] Draft the introduction
+- [ ] Add code examples
+- [ ] Proofread and publish
