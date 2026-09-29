@@ -24,6 +24,7 @@ import paymentsContent from "../data/en/learning/paymentsContent.json";
 import diagramsContent from "../data/en/learning/diagramsContent.json";
 import streamsContent from "../data/en/learning/streamsContent.json";
 import springContent from "../data/en/learning/springContent.json";
+import heapStackContent from "../data/en/learning/heapStackContent.json";
 
 // Map topic keys to their learning content (to access practice topics)
 const CONTENT_BY_KEY = {
@@ -44,6 +45,7 @@ const CONTENT_BY_KEY = {
   diagrams: diagramsContent,
   streams: streamsContent,
   spring: springContent,
+  heapstack: heapStackContent,
 };
 
 // Everything the user has checked off lives in a single cookie, so

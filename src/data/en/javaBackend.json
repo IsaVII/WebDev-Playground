@@ -29,6 +29,16 @@
       "screenshot": "/images/spring.png",
       "difficulty": "intermediate",
       "estimatedTime": "3 hours"
+    },
+    {
+      "id": 4,
+      "key": "heapstack",
+      "title": "Heap vs Stack Memory",
+      "description": "The two places Java memory lives: stack frames per method call, heap objects shared by reference, why everything is passed by value, and what that means for mutation versus reassignment",
+      "route": "/heapstack",
+      "screenshot": "/images/heapstack.png",
+      "difficulty": "beginner",
+      "estimatedTime": "1.5 hours"
     }
   ]
 }

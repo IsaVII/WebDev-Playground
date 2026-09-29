@@ -28,6 +28,7 @@ import paymentsContentEn from "../data/en/learning/paymentsContent.json";
 import diagramsContentEn from "../data/en/learning/diagramsContent.json";
 import streamsContentEn from "../data/en/learning/streamsContent.json";
 import springContentEn from "../data/en/learning/springContent.json";
+import heapStackContentEn from "../data/en/learning/heapStackContent.json";
 
 // Swedish content
 import cheatsheetsSv from "../data/sv/cheatsheets.json";
@@ -50,6 +51,7 @@ import paymentsContentSv from "../data/sv/learning/paymentsContent.json";
 import diagramsContentSv from "../data/sv/learning/diagramsContent.json";
 import streamsContentSv from "../data/sv/learning/streamsContent.json";
 import springContentSv from "../data/sv/learning/springContent.json";
+import heapStackContentSv from "../data/sv/learning/heapStackContent.json";
 
 // Content maps
 const CONTENT_BY_LANG = {
@@ -75,6 +77,7 @@ const CONTENT_BY_LANG = {
       diagrams: diagramsContentEn,
       streams: streamsContentEn,
       spring: springContentEn,
+      heapstack: heapStackContentEn,
     },
   },
   sv: {
@@ -99,6 +102,7 @@ const CONTENT_BY_LANG = {
       diagrams: diagramsContentSv,
       streams: streamsContentSv,
       spring: springContentSv,
+      heapstack: heapStackContentSv,
     },
   },
 };

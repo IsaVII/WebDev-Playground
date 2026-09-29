@@ -1,0 +1,140 @@
+{
+  "title": "Heap vs Stack-minne",
+  "introduction": {
+    "heading": "Två väldigt olika sorters minne",
+    "description": "Varje körande Java-program delar upp sitt minne i två platser som beter sig helt olika. Stacken håller varje metodanrops egna lokala variabler och parametrar i en frame som dyker upp när metoden anropas och försvinner i samma ögonblick den returnerar - den är snabb, strikt ordnad och städas automatiskt. Heapen håller varje objekt skapat med `new` så länge något fortfarande refererar till det, delat mellan alla metoder som kan nå det, och städas senare och oförutsägbart av garbage collectorn. Nästan varje förvirrande bugg om \"varför satte sig inte min ändring\" eller \"varför såg den metoden min uppdatering\" handlar om vilken av de två en viss data faktiskt lever i."
+  },
+  "coreConcepts": {
+    "heading": "Kärnbegrepp",
+    "concepts": [
+      {
+        "title": "Stacken håller frames",
+        "description": "Att anropa en metod skjuter upp en ny frame på stacken som innehåller dess parametrar och lokala variabler. Att returnera plockar bort den framen - allt i den är borta, vilket är varför en lokal variabel aldrig överlever sitt metodanrop"
+      },
+      {
+        "title": "Heapen håller objekt",
+        "description": "Varje `new`-uttryck - inte bara egna klasser, utan även arrayer och boxade typer - allokerar sitt objekt på heapen. Ett objekt förblir vid liv så länge något, var som helst, fortfarande har en referens till det"
+      },
+      {
+        "title": "En referensvariabel är inte objektet",
+        "description": "En variabel av en objekttyp innehåller inte objektet; den innehåller en adress som pekar på det på heapen. Själva variabeln - adressen - lever där den deklarerades: en lokal variabels referens lever på stacken även om det den pekar på lever på heapen"
+      },
+      {
+        "title": "Allt skickas med värde",
+        "description": "Java har ingen pass-by-reference. Att skicka en primitiv kopierar dess värde; att skicka en objektreferens kopierar adressen. Kopian pekar fortfarande på samma objekt, så att mutera genom den syns för anroparen - men att omtilldela kopian till ett nytt objekt gör det inte"
+      },
+      {
+        "title": "Primitiver vs objekt",
+        "description": "De åtta primitiva typerna (int, double, boolean, ...) lagras direkt där de deklareras - stacken om lokal, inuti objektet om ett fält. Allt annat är en referens till ett heap-objekt, inklusive String och arrayer"
+      },
+      {
+        "title": "Livslängderna är motsatta",
+        "description": "En stack-frames livslängd är deterministisk och kort - knuten exakt till ett metodanrop. Ett heap-objekts livslängd är obestämd - det överlever tills ingen referens till det längre är nåbar, sedan återvinner garbage collectorn det på sitt eget schema"
+      }
+    ]
+  },
+  "callTrace": {
+    "heading": "Att se ett metodanrop hända",
+    "description": "Att läsa om stack-frames och heap-objekt räcker bara en bit - att se ett metodanrop utspela sig gör det konkret. Stega igenom `MemoryDemo.main()` som anropar `levelUp()` och se exakt vilka värden som får sin egen kopia på en ny stack-frame, och vilket värde som är ett delat objekt på heapen som båda framerna kan se."
+  },
+  "gettingStarted": {
+    "heading": "Kom igång",
+    "steps": [
+      "När du ser en bugg där en metods ändring av en parameter inte syns efter att den returnerar, fråga först: omtilldelades parametern till ett nytt objekt, eller muterades det befintliga objektets tillstånd genom den?",
+      "Kom ihåg att `StackOverflowError` betyder för många stack-frames samtidigt - nästan alltid okontrollerad eller basfallslös rekursion, inte \"för många objekt\"",
+      "Kom ihåg att `OutOfMemoryError: Java heap space` betyder för många nåbara objekt, inte för många metodanrop",
+      "När du felsöker med en debugger, använd call stack-panelen för att se exakt vilka frames som är aktiva just nu, och inspektera en variabels värde för att se om det är en primitiv eller en referens (en adress/id) in i heapen",
+      "Föredra oföränderliga objekt (final-fält, inga settrar) när du vill garantera att en metod inte kan mutera något som anroparen fortfarande har en referens till"
+    ]
+  },
+  "practiceTopics": [
+    {
+      "title": "Stack eller heap?",
+      "description": "Klassificera lokala variabler, referenser, objekt, arrayer och fält efter var de faktiskt lever vid körning"
+    },
+    {
+      "title": "Förutsäg utskriften: pass by value",
+      "description": "Tre korta kodsnuttar som muterar, omtilldelar eller inkrementerar en parameter - förutsäg vad anroparen ser efteråt"
+    }
+  ],
+  "fullExample": {
+    "heading": "Fullständigt exempel, steg för steg",
+    "title": "Ett anrop, två stack-frames, ett delat heap-objekt",
+    "description": "main() skapar en Player och anropar levelUp() på den. Gå igenom vad varje rad lägger på stacken respektive heapen, och varför hälsoändringen gjord inuti levelUp() fortfarande syns tillbaka i main() efter att den framen är borta.",
+    "steps": [
+      {
+        "label": "main() börjar: en primitiv och en referens, båda på stacken",
+        "lines": [3, 8],
+        "explanation": "`score` är en primitiv int lagrad direkt i main()s frame. `hero` är en referensvariabel också lagrad i main()s frame - men `new Player(...)` allokerar det faktiska objektet på heapen; stacken håller bara dess adress."
+      },
+      {
+        "label": "levelUp(): en ny frame, inte ett nytt objekt",
+        "lines": [10, 13],
+        "explanation": "Att anropa levelUp() skjuter upp en andra frame med sina egna lokala variabler: `player` och `bonus` är oberoende kopior av referensen och int-värdet. `player`s kopia pekar fortfarande på samma heap-objekt som `hero`, så `player.setHealth(...)` muterar det enda objektet båda framerna kan se. När levelUp() returnerar kastas dess frame - inklusive `player`, `bonus` och `newHealth` - men heap-objektet den muterade gör det inte."
+      },
+      {
+        "label": "Player: klassen vars instanser lever på heapen",
+        "lines": [16, 32],
+        "explanation": "Varje `new Player(...)`-anrop skapar ett objekt på heapen med sina egna name- och health-fält. Själva klassdeklarationen är varken heap- eller stack-data - det är bara instanser, skapade med `new`, som allokeras där."
+      }
+    ],
+    "files": ["code-examples/java/heapstack/MemoryDemo.java"]
+  },
+  "quiz": [
+    {
+      "question": "En lokal variabel `Player hero = new Player(...)` deklareras inuti main(). Var lever varje del?",
+      "options": [
+        "Både variabeln `hero` och Player-objektet är på stacken",
+        "Båda är på heapen",
+        "Referensen `hero` är på stacken; Player-objektet den pekar på är på heapen",
+        "Referensen `hero` är på heapen; Player-objektet är på stacken"
+      ],
+      "answerIndex": 2,
+      "explanation": "Lokala variabler - inklusive referensvariabler - lever i stack-framen för metoden som deklarerade dem. Det de pekar på, om det skapades med `new`, lever på heapen."
+    },
+    {
+      "question": "En metod returnerar efter att ha muterat ett objekt genom en av sina parametrar (t.ex. genom att anropa en setter). Syns muteringen för anroparen?",
+      "options": [
+        "Nej - parametern var en lokal kopia, så ändringar går förlorade",
+        "Ja - kopian pekade på samma heap-objekt, så muteringen kvarstår",
+        "Bara om metoden använde `return` för att lämna tillbaka objektet",
+        "Bara för primitiva parametrar"
+      ],
+      "answerIndex": 1,
+      "explanation": "Parametern är en kopia av referensen, inte av objektet. Att mutera objektet genom den kopian ändrar det enda delade heap-objektet, så anroparen ser det - men att omtilldela parametern till att peka på ett annat objekt skulle inte påverka anroparen."
+    },
+    {
+      "question": "Vad orsakar en `StackOverflowError`?",
+      "options": [
+        "Att skapa för många objekt med `new`",
+        "För många stack-frames aktiva samtidigt, oftast från rekursion utan basfall",
+        "Att heapen tar slut på utrymme",
+        "Att deklarera för många lokala variabler i en metod"
+      ],
+      "answerIndex": 1,
+      "explanation": "Varje aktivt metodanrop behöver en frame på stacken, och stacken har en fast, mycket mindre storlek än heapen. Skenande eller oändlig rekursion fortsätter att skjuta upp frames tills utrymmet tar slut."
+    },
+    {
+      "question": "Inuti en metod omtilldelas en parameter av en objekttyp till att peka på ett helt nytt objekt. Vad händer med anroparens ursprungliga referens?",
+      "options": [
+        "Den pekar nu också på det nya objektet",
+        "Den pekar fortfarande på det ursprungliga objektet - omtilldelningen påverkar bara den lokala kopian",
+        "Den blir null",
+        "Ett kompileringsfel uppstår"
+      ],
+      "answerIndex": 1,
+      "explanation": "Java kopierar referensens värde (adressen) när den skickas. Att omtilldela den lokala kopian till en ny adress når inte tillbaka till anroparens egen variabel, som är en separat bit stackminne som håller den ursprungliga adressen."
+    },
+    {
+      "question": "När blir ett heap-objekt berättigat för garbage collection?",
+      "options": [
+        "Så fort metoden som skapade det returnerar",
+        "Bara när programmet avslutas",
+        "Så snart ingen nåbar referens till det längre finns någonstans i programmet",
+        "Efter exakt en garbage collection-cykel, oavsett referenser"
+      ],
+      "answerIndex": 2,
+      "explanation": "Till skillnad från en stack-frame är ett heap-objekts livslängd inte knuten till något enskilt metodanrop. Det överlever så länge det är nåbart från något som fortfarande körs, och blir först berättigat för insamling när ingenting längre refererar till det."
+    }
+  ]
+}

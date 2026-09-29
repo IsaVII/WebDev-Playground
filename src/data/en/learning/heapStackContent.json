@@ -1,0 +1,140 @@
+{
+  "title": "Heap vs Stack Memory",
+  "introduction": {
+    "heading": "Two Very Different Kinds of Memory",
+    "description": "Every running Java program splits its memory into two places that behave nothing alike. The stack holds each method call's own local variables and parameters in a frame that appears when the method is entered and disappears the moment it returns - it's fast, strictly ordered, and automatically cleaned up. The heap holds every object created with `new` for as long as something still references it, shared across every method that can reach it, and cleaned up later and unpredictably by the garbage collector. Almost every confusing bug about \"why didn't my change stick\" or \"why did that method see my update\" comes down to which of these two a piece of data actually lives in."
+  },
+  "coreConcepts": {
+    "heading": "Core Concepts",
+    "concepts": [
+      {
+        "title": "The Stack Holds Frames",
+        "description": "Calling a method pushes a new frame onto the stack containing its parameters and local variables. Returning pops that frame off - everything in it is gone, which is why a local variable never outlives its method call"
+      },
+      {
+        "title": "The Heap Holds Objects",
+        "description": "Every `new` expression - not just custom classes, but arrays and boxed types too - allocates its object on the heap. An object stays alive as long as anything, anywhere, still holds a reference to it"
+      },
+      {
+        "title": "A Reference Variable Is Not the Object",
+        "description": "A variable of an object type doesn't contain the object; it contains an address pointing to it on the heap. The variable itself - the address - lives wherever it was declared: a local variable's reference lives on the stack even though what it points to lives on the heap"
+      },
+      {
+        "title": "Everything Is Passed By Value",
+        "description": "Java has no pass-by-reference. Passing a primitive copies its value; passing an object reference copies the address. The copy still points at the same object, so mutating through it is visible to the caller - but reassigning the copy to a new object is not"
+      },
+      {
+        "title": "Primitives vs Objects",
+        "description": "The eight primitive types (int, double, boolean, ...) are stored directly wherever they're declared - stack if local, inside the object if a field. Everything else is a reference to a heap object, including String and arrays"
+      },
+      {
+        "title": "Lifetimes Are Opposite",
+        "description": "A stack frame's lifetime is deterministic and short - tied exactly to one method call. A heap object's lifetime is indeterminate - it survives until no reference to it remains reachable, then the garbage collector reclaims it on its own schedule"
+      }
+    ]
+  },
+  "callTrace": {
+    "heading": "Watching a Method Call Happen",
+    "description": "Reading about stack frames and heap objects only goes so far - watching one method call unfold makes it concrete. Step through `MemoryDemo.main()` calling `levelUp()` and see exactly which values get their own copy on a new stack frame, and which value is a shared object on the heap that both frames can see."
+  },
+  "gettingStarted": {
+    "heading": "Getting Started",
+    "steps": [
+      "When you see a bug where a method's change to a parameter isn't visible after it returns, ask first: was that parameter reassigned to a new object, or was the existing object's state mutated through it?",
+      "Remember that `StackOverflowError` means too many stack frames at once - almost always uncontrolled or missing-base-case recursion, not \"too many objects\"",
+      "Remember that `OutOfMemoryError: Java heap space` means too many reachable objects, not too many method calls",
+      "When debugging with a debugger, use the call stack panel to see exactly which frames are active right now, and inspect a variable's value to see whether it's a primitive or a reference (an address/id) into the heap",
+      "Favor immutable objects (final fields, no setters) when you want to guarantee a method can't mutate something the caller still holds a reference to"
+    ]
+  },
+  "practiceTopics": [
+    {
+      "title": "Stack or Heap?",
+      "description": "Classify local variables, references, objects, arrays, and fields by where they actually live at runtime"
+    },
+    {
+      "title": "Predict the Output: Pass By Value",
+      "description": "Three short snippets that mutate, reassign, or increment a parameter - predict what the caller sees afterward"
+    }
+  ],
+  "fullExample": {
+    "heading": "Full Example, Step by Step",
+    "title": "One call, two stack frames, one shared heap object",
+    "description": "main() creates a Player and calls levelUp() on it. Walk through what each line puts on the stack versus the heap, and why the health change made inside levelUp() is still visible back in main() after that frame is gone.",
+    "steps": [
+      {
+        "label": "main() begins: a primitive and a reference, both on the stack",
+        "lines": [3, 8],
+        "explanation": "`score` is a primitive int stored directly in main()'s frame. `hero` is a reference variable also stored in main()'s frame - but `new Player(...)` allocates the actual object on the heap; the stack only holds its address."
+      },
+      {
+        "label": "levelUp(): a new frame, not a new object",
+        "lines": [10, 13],
+        "explanation": "Calling levelUp() pushes a second frame with its own locals: `player` and `bonus` are independent copies of the reference and the int. `player`'s copy still points at the same heap object as `hero`, so `player.setHealth(...)` mutates the one object both frames can see. When levelUp() returns, its frame - including `player`, `bonus`, and `newHealth` - is discarded, but the heap object it mutated is not."
+      },
+      {
+        "label": "Player: the class whose instances live on the heap",
+        "lines": [16, 32],
+        "explanation": "Every `new Player(...)` call creates one object on the heap with its own name and health fields. The class declaration itself isn't heap or stack data - it's only instances, created with `new`, that get allocated there."
+      }
+    ],
+    "files": ["code-examples/java/heapstack/MemoryDemo.java"]
+  },
+  "quiz": [
+    {
+      "question": "A local variable `Player hero = new Player(...)` is declared inside main(). Where does each part live?",
+      "options": [
+        "Both the `hero` variable and the Player object are on the stack",
+        "Both are on the heap",
+        "The `hero` reference is on the stack; the Player object it points to is on the heap",
+        "The `hero` reference is on the heap; the Player object is on the stack"
+      ],
+      "answerIndex": 2,
+      "explanation": "Local variables - including reference variables - live in the stack frame of the method that declared them. What they point to, if it was created with `new`, lives on the heap."
+    },
+    {
+      "question": "A method returns after mutating an object through one of its parameters (e.g. calling a setter). Is the mutation visible to the caller?",
+      "options": [
+        "No - the parameter was a local copy, so changes are lost",
+        "Yes - the copy pointed at the same heap object, so the mutation persists",
+        "Only if the method used `return` to hand the object back",
+        "Only for primitive parameters"
+      ],
+      "answerIndex": 1,
+      "explanation": "The parameter is a copy of the reference, not the object. Mutating the object through that copy changes the single shared heap object, so the caller sees it - but reassigning the parameter to point at a different object would not affect the caller."
+    },
+    {
+      "question": "What causes a `StackOverflowError`?",
+      "options": [
+        "Creating too many objects with `new`",
+        "Too many stack frames active at once, typically from recursion with no base case",
+        "The heap running out of space",
+        "Declaring too many local variables in one method"
+      ],
+      "answerIndex": 1,
+      "explanation": "Each active method call needs a frame on the stack, and the stack has a fixed, much smaller size than the heap. Runaway or infinite recursion keeps pushing frames until it runs out."
+    },
+    {
+      "question": "Inside a method, a parameter of an object type is reassigned to point at a brand-new object. What happens to the caller's original reference?",
+      "options": [
+        "It now points at the new object too",
+        "It still points at the original object - the reassignment only affects the local copy",
+        "It becomes null",
+        "A compile error occurs"
+      ],
+      "answerIndex": 1,
+      "explanation": "Java copies the reference's value (the address) when passing it. Reassigning the local copy to a new address doesn't reach back into the caller's own variable, which is a separate piece of stack storage holding the original address."
+    },
+    {
+      "question": "When is a heap object eligible for garbage collection?",
+      "options": [
+        "As soon as the method that created it returns",
+        "Only when the program exits",
+        "Once no reachable reference to it remains anywhere in the program",
+        "After exactly one garbage collection cycle, regardless of references"
+      ],
+      "answerIndex": 2,
+      "explanation": "Unlike a stack frame, a heap object's lifetime isn't tied to any single method call. It survives as long as it's reachable from somewhere still running, and only becomes eligible for collection once nothing references it anymore."
+    }
+  ]
+}

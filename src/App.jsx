@@ -33,6 +33,7 @@ const Payments = lazy(() => import("./pages/learning/Payments"));
 const Diagrams = lazy(() => import("./pages/learning/Diagrams"));
 const Streams = lazy(() => import("./pages/learning/Streams"));
 const Spring = lazy(() => import("./pages/learning/Spring"));
+const HeapStack = lazy(() => import("./pages/learning/HeapStack"));
 const ProjectSetup = lazy(() => import("./pages/cheatsheets/ProjectSetup"));
 const GithubPages = lazy(() => import("./pages/cheatsheets/GithubPages"));
 const NpmLibraries = lazy(() => import("./pages/cheatsheets/NpmLibraries"));
@@ -75,6 +76,7 @@ function App() {
                 <Route path="/diagrams" element={<Diagrams />} />
                 <Route path="/streams" element={<Streams />} />
                 <Route path="/spring" element={<Spring />} />
+                <Route path="/heapstack" element={<HeapStack />} />
                 <Route path="/projectsetup" element={<ProjectSetup />} />
                 <Route path="/githubpages" element={<GithubPages />} />
                 <Route path="/npmlibraries" element={<NpmLibraries />} />

@@ -29,6 +29,16 @@
       "screenshot": "/images/spring.png",
       "difficulty": "intermediate",
       "estimatedTime": "3 timmar"
+    },
+    {
+      "id": 4,
+      "key": "heapstack",
+      "title": "Heap vs Stack-minne",
+      "description": "De två platserna Java-minne lever: stack-frames per metodanrop, heap-objekt delade via referens, varför allt skickas med värde, och vad det betyder för mutering kontra omtilldelning",
+      "route": "/heapstack",
+      "screenshot": "/images/heapstack.png",
+      "difficulty": "beginner",
+      "estimatedTime": "1.5 timmar"
     }
   ]
 }
