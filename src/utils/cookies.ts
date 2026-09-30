@@ -4,7 +4,11 @@ const DEFAULT_MAX_AGE_DAYS = 365;
  * Write a cookie. Values are URI-encoded so JSON strings (commas, quotes,
  * etc.) survive the round trip through document.cookie.
  */
-export function setCookie(name, value, days = DEFAULT_MAX_AGE_DAYS) {
+export function setCookie(
+  name: string,
+  value: string,
+  days: number = DEFAULT_MAX_AGE_DAYS,
+) {
   if (typeof document === "undefined") return;
 
   const maxAgeSeconds = days * 24 * 60 * 60;
@@ -13,7 +17,7 @@ export function setCookie(name, value, days = DEFAULT_MAX_AGE_DAYS) {
 }
 
 /** Read a cookie by name, or null if it isn't set. */
-export function getCookie(name) {
+export function getCookie(name: string): string | null {
   if (typeof document === "undefined") return null;
 
   const prefix = `${name}=`;
@@ -26,7 +30,7 @@ export function getCookie(name) {
 }
 
 /** Remove a cookie by name. */
-export function deleteCookie(name) {
+export function deleteCookie(name: string) {
   if (typeof document === "undefined") return;
   document.cookie = `${name}=; max-age=0; path=/; SameSite=Lax`;
 }

@@ -6,10 +6,10 @@ import CodeBlock from "../../CodeBlock";
 // whether or not this environment has outbound network access.
 function WebSocketDemo() {
   const [state, setState] = useState("closed"); // closed | connecting | open
-  const [log, setLog] = useState([]);
-  const timersRef = useRef([]);
+  const [log, setLog] = useState<string[]>([]);
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
-  const track = (fn, delay) => {
+  const track = (fn: () => void, delay: number) => {
     const id = setTimeout(fn, delay);
     timersRef.current.push(id);
   };

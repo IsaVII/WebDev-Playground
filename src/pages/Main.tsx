@@ -11,8 +11,12 @@ import TopicCard from "../components/TopicCard";
 import { useProgress } from "../context/ProgressContext";
 import HeroGlow from "../components/motion/HeroGlow";
 import ProgressRing from "../components/ProgressRing";
+import type { TopicIndex } from "../types/content";
 
-const CONTENT_MAP = {
+const CONTENT_MAP: Record<
+  string,
+  { learning: TopicIndex; cheatsheets: TopicIndex; javaBackend: TopicIndex }
+> = {
   en: {
     learning: learningContentEn,
     cheatsheets: cheatSheetsEn,

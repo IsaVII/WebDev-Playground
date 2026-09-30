@@ -25,7 +25,7 @@ const OPERATIONS = {
 
 function ArrayMethodsDemo() {
   const [op, setOp] = useState("map");
-  const current = OPERATIONS[op];
+  const current = OPERATIONS[op as keyof typeof OPERATIONS];
   const result = current.run();
 
   return (

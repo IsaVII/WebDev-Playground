@@ -2,7 +2,7 @@ import { useState } from "react";
 import CodeBlock from "../../CodeBlock";
 
 function BufferDemo() {
-  const [log, setLog] = useState([]);
+  const [log, setLog] = useState<string[]>([]);
 
   const fromString = () => {
     const text = "Hello Node.js";

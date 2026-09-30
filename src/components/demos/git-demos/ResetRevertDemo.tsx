@@ -8,7 +8,7 @@ function ResetRevertDemo() {
   const [staged, setStaged] = useState(false);
   const [message, setMessage] = useState("");
 
-  const reset = (mode) => {
+  const reset = (mode: string) => {
     if (mode === "soft") {
       setCommits(ORIGINAL.slice(0, 2));
       setStaged(true);

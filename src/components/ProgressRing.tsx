@@ -21,7 +21,19 @@ const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
  * (role="img") rather than read twice, so the centered number is
  * aria-hidden - it's a visual restatement of the same value.
  */
-function ProgressRing({ completed, total, label, className = "" }) {
+interface ProgressRingProps {
+  completed: number;
+  total: number;
+  label: string;
+  className?: string;
+}
+
+function ProgressRing({
+  completed,
+  total,
+  label,
+  className = "",
+}: ProgressRingProps) {
   const reducedMotion = useReducedMotion();
   const safeTotal = total > 0 ? total : 0;
   const percent = safeTotal > 0 ? Math.min(completed / safeTotal, 1) : 0;

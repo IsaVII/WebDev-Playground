@@ -10,7 +10,7 @@ import ProtectedRouteDemo from "../../components/demos/auth-demos/ProtectedRoute
 import RbacDemo from "../../components/demos/auth-demos/RbacDemo";
 import SessionsDemo from "../../components/demos/auth-demos/SessionsDemo";
 
-const CONTENT_MAP = {
+const CONTENT_MAP: Record<string, typeof authContentEn> = {
   en: authContentEn,
   sv: authContentSv,
 };

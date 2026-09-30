@@ -12,7 +12,7 @@ import ResetRevertDemo from "../../components/demos/git-demos/ResetRevertDemo";
 import StagingCommitDemo from "../../components/demos/git-demos/StagingCommitDemo";
 import StashDemo from "../../components/demos/git-demos/StashDemo";
 
-const CONTENT_MAP = {
+const CONTENT_MAP: Record<string, typeof gitContentEn> = {
   en: gitContentEn,
   sv: gitContentSv,
 };

@@ -4,11 +4,20 @@ import ContentCard from "./ContentCard";
 import Reveal from "./motion/Reveal";
 import TextReveal from "./motion/TextReveal";
 import { loadCodeFile } from "../utils/codeExamples";
+import type {
+  BackendSetup,
+  CheatSheetStep,
+  FolderStructure,
+  CheatSheetGettingStarted,
+  Introduction,
+  SourceLink,
+  WhatYouMightBeMissing,
+} from "../types/content";
 
 // Notes are plain strings in the content JSON, but occasionally need to
 // emphasize one word (e.g. a key to press). Rather than pull in a markdown
 // renderer for that, split on **bold** markers and wrap the matched parts.
-function renderNote(note) {
+function renderNote(note: string) {
   return note.split(/\*\*(.+?)\*\*/g).map((part, index) =>
     index % 2 === 1 ? <strong key={index}>{part}</strong> : part,
   );
@@ -28,6 +37,18 @@ function renderNote(note) {
  * callout note, or a list of sub-steps (for steps that are themselves a
  * short click-through, like a settings page).
  */
+interface CheatSheetLayoutProps {
+  title: string;
+  introduction?: Introduction;
+  prerequisites?: string[];
+  steps?: CheatSheetStep[];
+  folderStructure?: FolderStructure;
+  backendSetup?: BackendSetup;
+  whatYouMightBeMissing?: WhatYouMightBeMissing;
+  gettingStarted?: CheatSheetGettingStarted;
+  source?: SourceLink;
+}
+
 function CheatSheetLayout({
   title,
   introduction,
@@ -38,7 +59,7 @@ function CheatSheetLayout({
   whatYouMightBeMissing,
   gettingStarted,
   source,
-} = {}) {
+}: CheatSheetLayoutProps) {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [title]);

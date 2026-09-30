@@ -2,7 +2,7 @@ import { useState } from "react";
 import CodeBlock from "../../CodeBlock";
 
 function ErrorHandlingDemo() {
-  const [log, setLog] = useState([]);
+  const [log, setLog] = useState<string[]>([]);
   const [uncaughtHandler, setUncaughtHandler] = useState(false);
 
   const syncError = () => {
@@ -12,7 +12,7 @@ function ErrorHandlingDemo() {
     } catch (err) {
       setLog((l) => [
         ...l,
-        `catch → Error: ${err.message}`,
+        `catch → Error: ${(err as Error).message}`,
         "✓ Error handled gracefully",
       ]);
     }
@@ -25,7 +25,7 @@ function ErrorHandlingDemo() {
     } catch (err) {
       setLog((l) => [
         ...l,
-        `catch → Error: ${err.message}`,
+        `catch → Error: ${(err as Error).message}`,
         "✓ Promise rejection caught",
       ]);
     }
@@ -44,7 +44,9 @@ function ErrorHandlingDemo() {
 
   const customError = () => {
     class ValidationError extends Error {
-      constructor(message) {
+      statusCode: number;
+
+      constructor(message: string) {
         super(message);
         this.name = "ValidationError";
         this.statusCode = 400;
@@ -54,10 +56,11 @@ function ErrorHandlingDemo() {
     try {
       throw new ValidationError("Invalid email format");
     } catch (err) {
+      const error = err as ValidationError;
       setLog((l) => [
         ...l,
-        `${err.name}: ${err.message}`,
-        `Status code: ${err.statusCode}`,
+        `${error.name}: ${error.message}`,
+        `Status code: ${error.statusCode}`,
         "✓ Custom error with metadata",
       ]);
     }
@@ -65,7 +68,7 @@ function ErrorHandlingDemo() {
 
   const errorFirst = () => {
     // Simulating Node.js callback pattern
-    const callback = (err, data) => {
+    const callback = (err: Error | null, data: string | null) => {
       if (err) {
         setLog((l) => [
           ...l,

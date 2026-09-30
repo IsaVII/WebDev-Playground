@@ -9,7 +9,9 @@ const USERS = [
 
 const POST = { id: 7, authorId: 1, title: "My first post" };
 
-function ProtectedRouteResult({ user }) {
+type User = (typeof USERS)[number];
+
+function ProtectedRouteResult({ user }: { user: User }) {
   const isOwner = POST.authorId === user.id;
   const isAdmin = user.role === "admin";
   const allowed = isOwner || isAdmin;
@@ -36,7 +38,7 @@ function ProtectedRouteResult({ user }) {
 }
 
 function RbacDemo() {
-  const [log, setLog] = useState([]);
+  const [log, setLog] = useState<User[]>([]);
 
   return (
     <div className="bg-surface-alt border border-line rounded p-6">

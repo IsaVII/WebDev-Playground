@@ -4,12 +4,12 @@ import CodeBlock from "../../CodeBlock";
 const HEADER = { alg: "HS256", typ: "JWT" };
 const PAYLOAD = { sub: 42, role: "user", exp: 1735689600 };
 
-function b64url(obj) {
+function b64url(obj: unknown) {
   return btoa(JSON.stringify(obj)).replace(/=+$/, "");
 }
 
 // Illustrative signature only - real JWTs use HMAC-SHA256, not this.
-function fakeSignature(header, payload, secret) {
+function fakeSignature(header: string, payload: string, secret: string) {
   const input = `${header}.${payload}.${secret}`;
   let h = 0;
   for (let i = 0; i < input.length; i++) {

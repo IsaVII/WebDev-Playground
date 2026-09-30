@@ -79,7 +79,20 @@ const LITERALS = new Set(["true", "false", "null", "undefined"]);
 // Colors match VS Code's default "Dark+" theme - defined once as CSS
 // variables in index.css (--color-syntax-*) and exposed here as the
 // matching Tailwind utilities.
-const TOKEN_COLORS = {
+type TokenType =
+  | "comment"
+  | "string"
+  | "number"
+  | "control"
+  | "declaration"
+  | "literal"
+  | "tag"
+  | "component"
+  | "call"
+  | "attribute"
+  | "plain";
+
+const TOKEN_COLORS: Record<TokenType, string> = {
   comment: "text-syntax-comment italic",
   string: "text-syntax-string",
   number: "text-syntax-number",
@@ -108,19 +121,19 @@ const TOKEN_REGEX = new RegExp(
 /**
  * Splits a line of code into `{ text, type }` tokens.
  */
-function tokenize(code) {
-  const tokens = [];
+function tokenize(code: string) {
+  const tokens: { text: string; type: TokenType }[] = [];
   let lastIndex = 0;
   let insideTag = false;
   let prevWasFunctionKeyword = false;
-  let match;
+  let match: RegExpExecArray | null;
 
   while ((match = TOKEN_REGEX.exec(code))) {
     if (match.index > lastIndex) {
       tokens.push({ text: code.slice(lastIndex, match.index), type: "plain" });
     }
 
-    const g = match.groups;
+    const g = match.groups!;
 
     if (g.comment) {
       tokens.push({ text: g.comment, type: "comment" });
@@ -140,7 +153,7 @@ function tokenize(code) {
     } else if (g.word) {
       const word = g.word;
       const after = code.slice(TOKEN_REGEX.lastIndex, TOKEN_REGEX.lastIndex + 20);
-      let type;
+      let type: TokenType;
 
       if (insideTag) {
         // Only the identifier right after `<` / `</` is the tag name -
@@ -185,7 +198,7 @@ function tokenize(code) {
  * Renders one line of code with VS Code-style syntax colors.
  * Pass a single line - `CodeBlock` handles splitting multi-line code.
  */
-function SyntaxHighlightedCode({ code }) {
+function SyntaxHighlightedCode({ code }: { code: string }) {
   const tokens = tokenize(code);
 
   return tokens.map((token, index) => (

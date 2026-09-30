@@ -2,9 +2,11 @@ import { useState } from "react";
 import CodeBlock from "../../CodeBlock";
 
 function SessionsDemo() {
-  const [store, setStore] = useState({});
-  const [cookie, setCookie] = useState(null);
-  const [log, setLog] = useState([]);
+  const [store, setStore] = useState<
+    Record<string, { userId: number; email: string }>
+  >({});
+  const [cookie, setCookie] = useState<string | null>(null);
+  const [log, setLog] = useState<string[]>([]);
 
   const login = () => {
     const sid = "sess_" + Math.random().toString(36).slice(2, 8);

@@ -1,5 +1,6 @@
 import {
   createContext,
+  type ReactNode,
   useCallback,
   useContext,
   useEffect,
@@ -27,7 +28,7 @@ import springContent from "../data/en/learning/springContent.json";
 import heapStackContent from "../data/en/learning/heapStackContent.json";
 
 // Map topic keys to their learning content (to access practice topics)
-const CONTENT_BY_KEY = {
+const CONTENT_BY_KEY: Record<string, { practiceTopics?: { title: string }[] }> = {
   javascript: javascriptContent,
   typescript: typescriptContent,
   git: gitContent,
@@ -51,9 +52,14 @@ const CONTENT_BY_KEY = {
 // Everything the user has checked off lives in a single cookie, so
 // progress survives a refresh (and a new tab) without any backend.
 const COOKIE_NAME = "learningToolProgress";
-const EMPTY_PROGRESS = { topics: {}, subtopics: {} };
+type Progress = {
+  topics: Record<string, boolean>;
+  subtopics: Record<string, Record<string, boolean>>;
+};
 
-function readProgressFromCookie() {
+const EMPTY_PROGRESS: Progress = { topics: {}, subtopics: {} };
+
+function readProgressFromCookie(): Progress {
   const raw = getCookie(COOKIE_NAME);
   if (!raw) return EMPTY_PROGRESS;
 
@@ -69,21 +75,32 @@ function readProgressFromCookie() {
   }
 }
 
-const ProgressContext = createContext(null);
+type ProgressContextValue = {
+  isTopicDone: (topicKey: string) => boolean;
+  toggleTopic: (topicKey: string) => void;
+  toggleTopicWithSubtopics: (topicKey: string) => void;
+  isSubtopicDone: (topicKey: string, subtopicTitle: string) => boolean;
+  toggleSubtopic: (topicKey: string, subtopicTitle: string) => void;
+  getTopicSubtopicCount: (topicKey: string) => number;
+  getTotalCheckedTopics: () => number;
+  resetProgress: () => void;
+};
+
+const ProgressContext = createContext<ProgressContextValue | null>(null);
 
 /**
  * Tracks which topics (home page cards) and sub-topics (the practice
  * topics/demos inside each lesson) the user has checked off. State is
  * kept in memory and mirrored to a cookie on every change.
  */
-export function ProgressProvider({ children }) {
-  const [progress, setProgress] = useState(readProgressFromCookie);
+export function ProgressProvider({ children }: { children: ReactNode }) {
+  const [progress, setProgress] = useState<Progress>(readProgressFromCookie);
 
   useEffect(() => {
     setCookie(COOKIE_NAME, JSON.stringify(progress));
   }, [progress]);
 
-  const toggleTopic = useCallback((topicKey) => {
+  const toggleTopic = useCallback((topicKey: string) => {
     if (!topicKey) return;
     setProgress((prev) => ({
       ...prev,
@@ -91,7 +108,7 @@ export function ProgressProvider({ children }) {
     }));
   }, []);
 
-  const toggleTopicWithSubtopics = useCallback((topicKey) => {
+  const toggleTopicWithSubtopics = useCallback((topicKey: string) => {
     if (!topicKey) return;
     setProgress((prev) => {
       const newTopicState = !prev.topics[topicKey];
@@ -116,7 +133,7 @@ export function ProgressProvider({ children }) {
     });
   }, []);
 
-  const toggleSubtopic = useCallback((topicKey, subtopicTitle) => {
+  const toggleSubtopic = useCallback((topicKey: string, subtopicTitle: string) => {
     if (!topicKey || !subtopicTitle) return;
     setProgress((prev) => {
       const topicSubtopics = prev.subtopics[topicKey] ?? {};
@@ -134,12 +151,12 @@ export function ProgressProvider({ children }) {
   }, []);
 
   const isTopicDone = useCallback(
-    (topicKey) => Boolean(progress.topics[topicKey]),
+    (topicKey: string) => Boolean(progress.topics[topicKey]),
     [progress.topics],
   );
 
   const isSubtopicDone = useCallback(
-    (topicKey, subtopicTitle) =>
+    (topicKey: string, subtopicTitle: string) =>
       Boolean(progress.subtopics[topicKey]?.[subtopicTitle]),
     [progress.subtopics],
   );
@@ -148,7 +165,7 @@ export function ProgressProvider({ children }) {
   // "3 sub-topics done" on the home page card without needing to know the
   // total up front.
   const getTopicSubtopicCount = useCallback(
-    (topicKey) => {
+    (topicKey: string) => {
       const topicSubtopics = progress.subtopics[topicKey];
       if (!topicSubtopics) return 0;
       return Object.values(topicSubtopics).filter(Boolean).length;

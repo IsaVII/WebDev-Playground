@@ -3,10 +3,11 @@ import { fileURLToPath } from "node:url";
 import learningContent from "./en/learningContent.json";
 import cheatsheets from "./en/cheatsheets.json";
 import javaBackend from "./en/javaBackend.json";
+import type { TopicSummary } from "../types/content";
 
 const ALLOWED_DIFFICULTIES = ["beginner", "intermediate", "advanced"];
 
-function readSource(relativePath) {
+function readSource(relativePath: string) {
   return readFileSync(fileURLToPath(new URL(relativePath, import.meta.url)), {
     encoding: "utf8",
   });
@@ -15,20 +16,23 @@ function readSource(relativePath) {
 /**
  * learningContent.json/cheatsheets.json drive the home page and the header
  * nav automatically, but a topic's `key` still has to be hand-kept in sync
- * with App.jsx's routes and, for learning topics, the CONTENT_BY_KEY maps
- * in Header.jsx and ProgressContext.jsx (there's no compiler check tying
+ * with App.tsx's routes and, for learning topics, the CONTENT_BY_KEY maps
+ * in Header.tsx and ProgressContext.tsx (there's no compiler check tying
  * these together - see the webSocketsContent.json casing bug this caught
  * during development). These tests catch that whole class of "added an
  * entry to the JSON but forgot to wire it up somewhere" mistake without
  * having to render every single page.
  */
-function checkTopicIndex(topics, { requireContentMapping }) {
-  const appSource = readSource("../App.jsx");
+function checkTopicIndex(
+  topics: TopicSummary[],
+  { requireContentMapping }: { requireContentMapping: boolean },
+) {
+  const appSource = readSource("../App.tsx");
   const headerSource = requireContentMapping
-    ? readSource("../components/Header.jsx")
+    ? readSource("../components/Header.tsx")
     : null;
   const progressSource = requireContentMapping
-    ? readSource("../context/ProgressContext.jsx")
+    ? readSource("../context/ProgressContext.tsx")
     : null;
 
   const ids = topics.map((t) => t.id);
@@ -68,13 +72,13 @@ function checkTopicIndex(topics, { requireContentMapping }) {
     },
   );
 
-  it.each(topics)("$key's route is registered in App.jsx", (topic) => {
+  it.each(topics)("$key's route is registered in App.tsx", (topic) => {
     expect(appSource).toContain(`path="${topic.route}"`);
   });
 
   if (requireContentMapping) {
     it.each(topics)(
-      "$key is mapped to its content JSON in Header.jsx",
+      "$key is mapped to its content JSON in Header.tsx",
       (topic) => {
         expect(headerSource).toMatch(
           new RegExp(`\\b${topic.key}:\\s*\\w+Content(?:En|Sv)?\\b`),
@@ -83,7 +87,7 @@ function checkTopicIndex(topics, { requireContentMapping }) {
     );
 
     it.each(topics)(
-      "$key is mapped to its content JSON in ProgressContext.jsx",
+      "$key is mapped to its content JSON in ProgressContext.tsx",
       (topic) => {
         expect(progressSource).toMatch(
           new RegExp(`\\b${topic.key}:\\s*\\w+Content(?:En|Sv)?\\b`),
@@ -98,8 +102,8 @@ describe("learningContent.json", () => {
 });
 
 describe("javaBackend.json", () => {
-  // Same wiring rules as learning topics: each key must be routed in App.jsx
-  // and mapped to its content JSON in Header.jsx and ProgressContext.jsx.
+  // Same wiring rules as learning topics: each key must be routed in App.tsx
+  // and mapped to its content JSON in Header.tsx and ProgressContext.tsx.
   checkTopicIndex(javaBackend.topics, { requireContentMapping: true });
 });
 

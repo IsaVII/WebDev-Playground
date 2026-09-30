@@ -2,18 +2,20 @@ import { useEffect, useState } from "react";
 
 const STORAGE_KEY = "theme";
 
-function getSystemTheme() {
+type Theme = "light" | "dark";
+
+function getSystemTheme(): Theme {
   return window.matchMedia("(prefers-color-scheme: dark)").matches
     ? "dark"
     : "light";
 }
 
-function getStoredTheme() {
+function getStoredTheme(): Theme | null {
   const stored = window.localStorage.getItem(STORAGE_KEY);
   return stored === "light" || stored === "dark" ? stored : null;
 }
 
-function applyTheme(theme) {
+function applyTheme(theme: Theme) {
   document.documentElement.classList.remove("light", "dark");
   document.documentElement.classList.add(theme);
 }
@@ -29,7 +31,7 @@ function applyTheme(theme) {
  * index.html for how the flash of the wrong theme is avoided on load.
  */
 function ThemeToggle() {
-  const [theme, setTheme] = useState(
+  const [theme, setTheme] = useState<Theme>(
     () => getStoredTheme() ?? getSystemTheme(),
   );
 
@@ -43,7 +45,7 @@ function ThemeToggle() {
     if (getStoredTheme()) return undefined;
 
     const media = window.matchMedia("(prefers-color-scheme: dark)");
-    const handleChange = (event) => {
+    const handleChange = (event: MediaQueryListEvent) => {
       setTheme(event.matches ? "dark" : "light");
     };
 

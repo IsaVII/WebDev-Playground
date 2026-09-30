@@ -1,10 +1,13 @@
 /**
  * Load content based on current language
- * @param {string} basePath - The base path of the content file (without language prefix)
- * @param {string} language - Current language (en, sv)
- * @returns {Promise} - The loaded content
+ * @param basePath - The base path of the content file (without language prefix)
+ * @param language - Current language (en, sv)
+ * @returns The loaded content
  */
-export async function loadContent(basePath, language = "en") {
+export async function loadContent(
+  basePath: string,
+  language: string = "en",
+): Promise<unknown> {
   try {
     // Try to load language-specific version
     const langPath =
@@ -29,7 +32,10 @@ export async function loadContent(basePath, language = "en") {
 /**
  * Get the appropriate data file based on language
  */
-export function getLocalizedPath(basePath, language = "en") {
+export function getLocalizedPath(
+  basePath: string,
+  language: string = "en",
+): string {
   if (language === "en") {
     return basePath;
   }

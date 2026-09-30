@@ -40,9 +40,9 @@ const SCENARIOS = [
 ];
 
 function ErrorHandlingDemo() {
-  const [log, setLog] = useState([]);
+  const [log, setLog] = useState<(typeof SCENARIOS)[number][]>([]);
 
-  const run = (scenario) => {
+  const run = (scenario: (typeof SCENARIOS)[number]) => {
     setLog((l) => [...l, scenario]);
   };
 

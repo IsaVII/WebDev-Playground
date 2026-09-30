@@ -3,7 +3,7 @@ import CheatSheetLayout from "../../components/CheatSheetLayout";
 import npmLibrariesDataEn from "../../data/en/cheatsheets/npmLibraries.json";
 import npmLibrariesDataSv from "../../data/sv/cheatsheets/npmLibraries.json";
 
-const CONTENT_MAP = {
+const CONTENT_MAP: Record<string, typeof npmLibrariesDataEn> = {
   en: npmLibrariesDataEn,
   sv: npmLibrariesDataSv,
 };
@@ -11,7 +11,7 @@ const CONTENT_MAP = {
 function NpmLibraries() {
   const { i18n } = useTranslation();
   const npmLibrariesData = CONTENT_MAP[i18n.language] || CONTENT_MAP.en;
-  const npmLibrariesContent = npmLibrariesData.default || npmLibrariesData;
+  const npmLibrariesContent = npmLibrariesData;
 
   return (
     <CheatSheetLayout
@@ -20,8 +20,6 @@ function NpmLibraries() {
       introduction={npmLibrariesContent.introduction}
       prerequisites={npmLibrariesContent.prerequisites}
       steps={npmLibrariesContent.steps}
-      gettingStarted={npmLibrariesContent.gettingStarted}
-      source={npmLibrariesContent.source}
     />
   );
 }

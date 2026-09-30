@@ -16,6 +16,8 @@ const initialTest = `test("adding two items totals their price", () => {
   expect(getTotal(cart)).toBe(7);
 });`;
 
+type CartItem = { name?: string; price: number };
+
 function IntegrationTestDemo() {
   return (
     <FixTheTestDemo
@@ -33,8 +35,9 @@ function IntegrationTestDemo() {
       contextCode={contextCode}
       initialTest={initialTest}
       buildScope={() => ({
-        addItem: (cart, item) => [...cart, item],
-        getTotal: (cart) => cart.reduce((sum, item) => sum + item.price, 0),
+        addItem: (cart: CartItem[], item: CartItem) => [...cart, item],
+        getTotal: (cart: CartItem[]) =>
+          cart.reduce((sum, item) => sum + item.price, 0),
       })}
       hint="addItem returns a new array instead of mutating cart in place - is that return value being used both times?"
     />

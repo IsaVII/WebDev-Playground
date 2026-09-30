@@ -29,7 +29,7 @@ function TddDemo() {
       contextLabel="numberUtils.js"
       contextCode={contextCode}
       initialTest={initialTest}
-      buildScope={() => ({ isPositive: (n) => n > 0 })}
+      buildScope={() => ({ isPositive: (n: number) => n > 0 })}
       hint="isPositive(n) returns n > 0 - is 0 > 0 true or false?"
     />
   );

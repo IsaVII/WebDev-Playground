@@ -1,10 +1,11 @@
 import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "../../../redux/store";
 import { fetchRandomValue } from "../../../redux/asyncValueSlice";
 import CodeBlock from "../../CodeBlock";
 
 function AsyncThunkDemo() {
-  const { value, status } = useSelector((state) => state.asyncValue);
-  const dispatch = useDispatch();
+  const { value, status } = useSelector((state: RootState) => state.asyncValue);
+  const dispatch = useDispatch<AppDispatch>();
   const loading = status === "loading";
 
   return (

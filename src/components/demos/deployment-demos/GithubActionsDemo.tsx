@@ -8,10 +8,10 @@ const TRIGGERS = [
 ];
 
 function GithubActionsDemo() {
-  const [log, setLog] = useState([]);
+  const [log, setLog] = useState<string[]>([]);
   const [running, setRunning] = useState(false);
 
-  const trigger = (triggerId) => {
+  const trigger = (triggerId: string) => {
     setLog([]);
     setRunning(true);
 

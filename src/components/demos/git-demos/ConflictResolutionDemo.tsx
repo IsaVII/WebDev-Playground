@@ -7,9 +7,11 @@ const RESOLUTIONS = {
   both: 'const greeting = "Welcome back! Hello, friend!";',
 };
 
+type Resolution = keyof typeof RESOLUTIONS;
+
 function ConflictResolutionDemo() {
   const [conflict, setConflict] = useState(false);
-  const [resolution, setResolution] = useState(null);
+  const [resolution, setResolution] = useState<Resolution | null>(null);
   const [committed, setCommitted] = useState(false);
 
   const merge = () => {
@@ -18,7 +20,7 @@ function ConflictResolutionDemo() {
     setCommitted(false);
   };
 
-  const resolve = (choice) => {
+  const resolve = (choice: Resolution) => {
     setResolution(choice);
   };
 

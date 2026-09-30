@@ -3,18 +3,22 @@ import CodeBlock from "../../CodeBlock";
 
 function HeadersCookiesDemo() {
   const [sendAuth, setSendAuth] = useState(false);
-  const [log, setLog] = useState([]);
-  const [cookieJar, setCookieJar] = useState(null);
+  const [log, setLog] = useState<
+    { direction: string; headers: Record<string, string> }[]
+  >([]);
+  const [cookieJar, setCookieJar] = useState<string | null>(null);
 
   const send = () => {
-    const requestHeaders = { Accept: "application/json" };
+    const requestHeaders: Record<string, string> = {
+      Accept: "application/json",
+    };
     if (sendAuth) requestHeaders.Authorization = "Bearer demo-token-123";
     if (cookieJar) requestHeaders.Cookie = cookieJar;
 
     // The server "decides" what to send back based on what it received -
     // real servers set a fresh Set-Cookie on first contact and read the
     // Cookie header the browser re-attaches automatically after that.
-    const responseHeaders = {
+    const responseHeaders: Record<string, string> = {
       "Content-Type": "application/json",
     };
     if (!cookieJar) {

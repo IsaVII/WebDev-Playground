@@ -1,10 +1,11 @@
 import { useDispatch, useSelector } from "react-redux";
+import type { RootState } from "../../../redux/store";
 import { decremented, incremented } from "../../../redux/counterSlice";
 import CodeBlock from "../../CodeBlock";
 
 function ValueDisplay() {
   // Only reads state - this component never dispatches anything.
-  const value = useSelector((state) => state.counter.value);
+  const value = useSelector((state: RootState) => state.counter.value);
   return (
     <div className="bg-surface rounded p-4 border border-line flex-1 min-w-[120px]">
       <p className="text-sm text-subtle mb-1">useSelector only</p>

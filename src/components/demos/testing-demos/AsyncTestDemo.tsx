@@ -29,7 +29,7 @@ function AsyncTestDemo() {
       contextCode={contextCode}
       initialTest={initialTest}
       buildScope={() => ({
-        fetchUserName: (id) =>
+        fetchUserName: (id: number) =>
           new Promise((resolve) => {
             setTimeout(() => resolve(id === 1 ? "Ada" : "Unknown"), 50);
           }),

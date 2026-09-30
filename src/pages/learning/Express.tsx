@@ -10,7 +10,7 @@ import RouterDemo from "../../components/demos/express-demos/RouterDemo";
 import RoutingDemo from "../../components/demos/express-demos/RoutingDemo";
 import ThirdPartyMiddlewareDemo from "../../components/demos/express-demos/ThirdPartyMiddlewareDemo";
 
-const CONTENT_MAP = {
+const CONTENT_MAP: Record<string, typeof expressContentEn> = {
   en: expressContentEn,
   sv: expressContentSv,
 };

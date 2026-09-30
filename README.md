@@ -72,7 +72,7 @@ Task-focused references for setup work you'd otherwise have to look up across a 
 
 ## Tech Stack
 
-- [React 19](https://react.dev/) + [React Router](https://reactrouter.com/)
+- [React 19](https://react.dev/) + [React Router](https://reactrouter.com/), written in [TypeScript](https://www.typescriptlang.org/) (strict mode)
 - [Redux Toolkit](https://redux-toolkit.js.org/) / [React Redux](https://react-redux.js.org/)
 - [Tailwind CSS 4](https://tailwindcss.com/)
 - [Vite](https://vite.dev/) for dev/build tooling, [oxlint](https://oxc.rs/docs/guide/usage/linter.html) for linting
@@ -93,6 +93,8 @@ Other useful scripts:
 npm run build    # production build, output to dist/
 npm run preview  # preview the production build locally
 npm run lint     # lint with oxlint
+npm run typecheck # type-check the whole project with tsc (also runs as part of build)
+npm test         # run the test suite once (Vitest)
 npm run deploy   # build and publish dist/ to GitHub Pages
 ```
 
@@ -108,7 +110,7 @@ Every topic on the home page and every sub-topic (practice topic/demo) inside a 
 
 Clearing your browser cookies (or the site's cookies specifically) resets your progress. There's no sync between devices/browsers, since nothing is sent to a server.
 
-Under the hood this lives in `src/context/ProgressContext.jsx`, which reads/writes the cookie via the small helpers in `src/utils/cookies.js` and exposes a `useProgress()` hook (`isTopicDone`, `toggleTopic`, `isSubtopicDone`, `toggleSubtopic`, ...) to any component that needs it.
+Under the hood this lives in `src/context/ProgressContext.tsx`, which reads/writes the cookie via the small helpers in `src/utils/cookies.ts` and exposes a `useProgress()` hook (`isTopicDone`, `toggleTopic`, `isSubtopicDone`, `toggleSubtopic`, ...) to any component that needs it.
 
 ---
 
@@ -134,12 +136,12 @@ src/
 │       ├── diagrams-demos/        # Class & ER diagram demos
 │       ├── streams-demos/         # Lambda & Stream API demos
 │       └── spring-demos/          # Spring Framework demos
-│   └── SelfCheckQuiz.jsx          # Retrieval-practice quiz shown at the end of a lesson
+│   └── SelfCheckQuiz.tsx          # Retrieval-practice quiz shown at the end of a lesson
 ├── context/
-│   └── ProgressContext.jsx     # Topic/sub-topic completion state, backed by a cookie
+│   └── ProgressContext.tsx     # Topic/sub-topic completion state, backed by a cookie
 ├── hooks/
-│   ├── useReducedMotion.js     # Tracks prefers-reduced-motion
-│   └── useScrollReveal.js      # IntersectionObserver hook behind Reveal/TextReveal
+│   ├── useReducedMotion.ts     # Tracks prefers-reduced-motion
+│   └── useScrollReveal.ts      # IntersectionObserver hook behind Reveal/TextReveal
 ├── data/                      # JSON content that drives each page
 │   ├── learningContent.json      # Topics shown on the home page, in learning order
 │   ├── cheatsheets.json          # Cheat sheets shown on the home page
@@ -164,19 +166,21 @@ src/
 │       ├── sql.json
 │       └── textReveal.json
 ├── pages/
-│   ├── Main.jsx               # Home page, lists topics + cheat sheets
-│   ├── learning/               # One page per topic (JavaScript.jsx, Git.jsx, React.jsx, ...)
-│   └── cheatsheets/             # One page per cheat sheet (SQL.jsx, MongoDB.jsx, ...)
+│   ├── Main.tsx               # Home page, lists topics + cheat sheets
+│   ├── learning/               # One page per topic (JavaScript.tsx, Git.tsx, React.tsx, ...)
+│   └── cheatsheets/             # One page per cheat sheet (SQL.tsx, MongoDB.tsx, ...)
 ├── redux/                    # Redux store + slices used by the Redux demos
+├── types/
+│   └── content.ts              # Types describing the content JSON the shared layouts consume
 ├── styles/
 │   └── motion.css              # Design tokens + utility classes for every animation in the app
 ├── utils/
-│   └── cookies.js              # Tiny get/set/delete cookie helpers
-├── App.jsx                   # Routes
-└── main.jsx                  # Entry point
+│   └── cookies.ts              # Tiny get/set/delete cookie helpers
+├── App.tsx                   # Routes
+└── main.tsx                  # Entry point
 ```
 
-Lesson and cheat sheet content lives in JSON so the copy can change without touching component code; the interactive demos are real, hand-written components mapped to a lesson's "practice topics" by title. `CheatSheetLayout.jsx` and `LearningTopicLayout.jsx` hold the shared page chrome for cheat sheets and lessons respectively, so each page component is just its content JSON plus one layout call.
+Lesson and cheat sheet content lives in JSON so the copy can change without touching component code; the interactive demos are real, hand-written components mapped to a lesson's "practice topics" by title. `CheatSheetLayout.tsx` and `LearningTopicLayout.tsx` hold the shared page chrome for cheat sheets and lessons respectively, so each page component is just its content JSON plus one layout call.
 
 ---
 
@@ -185,8 +189,8 @@ Lesson and cheat sheet content lives in JSON so the copy can change without touc
 1. Add an entry to `src/data/learningContent.json` in the right spot for the learning order, including a unique `key` (used to store its progress-tracking checkbox state, e.g. `"key": "git"`).
 2. Create a `src/data/learning/<topic>Content.json` file with the same shape as the existing ones (`introduction`, `coreConcepts`, `gettingStarted`, `practiceTopics`, `fullExample`, ...).
 3. Build any interactive demos in a new `src/components/demos/<topic>-demos/` folder.
-4. Create `src/pages/learning/<Topic>.jsx`, following the pattern in `Git.jsx`, `React.jsx`, or `Redux.jsx`. When rendering `<PracticeTopicCard>` for each practice topic, pass `topicKey="<the same key from step 1>"` so its sub-topic checkboxes save correctly.
-5. Register the route in `src/App.jsx` and add a link in `src/components/Header.jsx`.
+4. Create `src/pages/learning/<Topic>.tsx`, following the pattern in `Git.tsx`, `React.tsx`, or `Redux.tsx`. When rendering `<PracticeTopicCard>` for each practice topic, pass `topicKey="<the same key from step 1>"` so its sub-topic checkboxes save correctly.
+5. Register the route in `src/App.tsx` and add a link in `src/components/Header.tsx`.
 
 A **Java Backend** topic is the same, except its index entry goes in `src/data/{en,sv}/javaBackend.json` (which the home page, header menu, and search all read automatically), and its content JSON can include an optional `quiz` array (`{ question, options, answerIndex, explanation }`) — `LearningTopicLayout` renders it as the lesson's Self-Check and counts it as one item on the completion ring.
 
@@ -194,8 +198,8 @@ A **Java Backend** topic is the same, except its index entry goes in `src/data/{
 
 1. Add an entry to `src/data/cheatsheets.json` with a unique `key` and a `route` (e.g. `"key": "sql"`, `"route": "/sql"`) — the home page and header nav both pull from this file automatically.
 2. Create a `src/data/cheatsheets/<name>.json` file shaped like the existing ones: `title`, `introduction`, `prerequisites`, `steps` (each with `title`, `description`, optional `code`/`highlightLines`/`note`/`substeps`/`subSteps`), and any of the optional sections `CheatSheetLayout` supports (`folderStructure`, `backendSetup`, `whatYouMightBeMissing`, `gettingStarted`, `source`).
-3. Create `src/pages/cheatsheets/<Name>.jsx`, following the pattern in `SQL.jsx` — import the JSON and pass its fields straight into `<CheatSheetLayout>`.
-4. Register the route in `src/App.jsx` as a lazy-loaded page (see the other cheat sheet imports).
+3. Create `src/pages/cheatsheets/<Name>.tsx`, following the pattern in `SQL.tsx` — import the JSON and pass its fields straight into `<CheatSheetLayout>`.
+4. Register the route in `src/App.tsx` as a lazy-loaded page (see the other cheat sheet imports).
 
 ---
 

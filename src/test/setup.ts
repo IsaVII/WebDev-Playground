@@ -40,7 +40,7 @@ window.matchMedia =
 // components mount without crashing - the observer is created but never
 // actually reports an intersection, so `isVisible` stays false. Tests that
 // need to simulate an element scrolling into view provide their own
-// implementation (see useScrollReveal.test.js).
+// implementation (see useScrollReveal.test.tsx).
 class IntersectionObserverStub {
   observe() {}
   unobserve() {}

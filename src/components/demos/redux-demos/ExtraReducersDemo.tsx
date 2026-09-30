@@ -1,10 +1,11 @@
 import { useDispatch, useSelector } from "react-redux";
+import type { RootState } from "../../../redux/store";
 import { incremented } from "../../../redux/counterSlice";
 import CodeBlock from "../../CodeBlock";
 
 function ExtraReducersDemo() {
-  const counter = useSelector((state) => state.counter.value);
-  const activityLog = useSelector((state) => state.activityLog.entries);
+  const counter = useSelector((state: RootState) => state.counter.value);
+  const activityLog = useSelector((state: RootState) => state.activityLog.entries);
   const dispatch = useDispatch();
 
   // Get the last few log entries

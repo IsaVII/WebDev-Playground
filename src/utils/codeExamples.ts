@@ -1,6 +1,6 @@
 /**
  * Resolves the `codeFile` / `files` references left in the cheatsheet and
- * learning content JSON (see scripts/extract-code-examples.mjs) back into
+ * learning content JSON (see scripts/extract-code-examples.ts) back into
  * plain strings/line-arrays for the components that render them.
  *
  * Every file under src/data/code-examples/** is pulled in as raw text at
@@ -9,7 +9,7 @@
  * runs. `import.meta.glob` with `eager: true` is what makes that happen
  * synchronously instead of returning dynamic `import()` promises.
  */
-const rawModules = import.meta.glob("/src/data/code-examples/**/*", {
+const rawModules = import.meta.glob<string>("/src/data/code-examples/**/*", {
   eager: true,
   query: "?raw",
   import: "default",
@@ -29,14 +29,14 @@ const FILES_BY_PATH = Object.fromEntries(
 
 /**
  * Returns the raw text content of one extracted code file.
- * @param {string} relativePath - e.g. "code-examples/cheatsheets/sql/03-join-tables.sql"
+ * @param relativePath - e.g. "code-examples/cheatsheets/sql/03-join-tables.sql"
  */
-export function loadCodeFile(relativePath) {
+export function loadCodeFile(relativePath: string): string {
   const content = FILES_BY_PATH[relativePath];
   if (content === undefined) {
     throw new Error(
       `codeExamples: no extracted file found for "${relativePath}". Run ` +
-        `\`node scripts/extract-code-examples.mjs\` if you just added it by hand.`,
+        `\`node scripts/extract-code-examples.ts\` if you just added it by hand.`,
     );
   }
   return content;
@@ -47,11 +47,11 @@ export function loadCodeFile(relativePath) {
  * StepByStepExample expects, with one blank line between files - matching
  * how the original hand-written `fullExample.code` arrays separated the
  * files they walked through.
- * @param {string[]} relativePaths
- * @returns {string[]} lines
+ * @param relativePaths
+ * @returns lines
  */
-export function loadCombinedExample(relativePaths) {
-  const lines = [];
+export function loadCombinedExample(relativePaths: string[]): string[] {
+  const lines: string[] = [];
   relativePaths.forEach((path, index) => {
     if (index > 0) lines.push("");
     lines.push(...loadCodeFile(path).split("\n"));

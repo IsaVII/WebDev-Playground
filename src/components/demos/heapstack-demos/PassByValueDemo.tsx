@@ -47,7 +47,7 @@ System.out.println(score);`,
 ];
 
 function PassByValueDemo() {
-  const [picks, setPicks] = useState({});
+  const [picks, setPicks] = useState<Record<string, string>>({});
 
   return (
     <div className="bg-surface-alt border border-line rounded p-6">

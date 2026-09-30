@@ -1,9 +1,10 @@
 import { useDispatch, useSelector } from "react-redux";
+import type { RootState } from "../../../redux/store";
 import { liked } from "../../../redux/likeSlice";
 import CodeBlock from "../../CodeBlock";
 
 function DataFlowDemo() {
-  const count = useSelector((state) => state.like.count);
+  const count = useSelector((state: RootState) => state.like.count);
   const dispatch = useDispatch();
 
   return (

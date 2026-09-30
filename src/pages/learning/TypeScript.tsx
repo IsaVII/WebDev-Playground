@@ -9,7 +9,7 @@ import typescriptContentEn from "../../data/en/learning/typescriptContent.json";
 import typescriptContentSv from "../../data/sv/learning/typescriptContent.json";
 import UnionIntersectionDemo from "../../components/demos/typescript-demos/UnionIntersectionDemo";
 
-const CONTENT_MAP = {
+const CONTENT_MAP: Record<string, typeof typescriptContentEn> = {
   en: typescriptContentEn,
   sv: typescriptContentSv,
 };

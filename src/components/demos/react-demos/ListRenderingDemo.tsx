@@ -17,7 +17,7 @@ function ListRenderingDemo() {
     setDraft("");
   };
 
-  const removeItem = (id) => {
+  const removeItem = (id: number) => {
     setItems((list) => list.filter((item) => item.id !== id));
   };
 

@@ -12,7 +12,7 @@ function useCounter(initial = 0, step = 1) {
   return { count, increment, decrement, reset };
 }
 
-function CounterWidget({ label, step }) {
+function CounterWidget({ label, step }: { label: string; step: number }) {
   const { count, increment, decrement, reset } = useCounter(0, step);
 
   return (

@@ -7,7 +7,19 @@ import CopyButton from "./CopyButton";
  * glance.
  *
  **/
-function CodeBlock({ children, showLineNumbers = false, highlightLines = [] }) {
+interface CodeBlockProps {
+  /** Code as one string, or already split into lines. */
+  children?: string | string[];
+  showLineNumbers?: boolean;
+  /** 1-indexed line numbers to highlight. */
+  highlightLines?: number[];
+}
+
+function CodeBlock({
+  children,
+  showLineNumbers = false,
+  highlightLines = [],
+}: CodeBlockProps) {
   const lines = Array.isArray(children)
     ? children
     : String(children ?? "").split("\n");

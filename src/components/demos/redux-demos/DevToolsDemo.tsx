@@ -16,7 +16,7 @@ function DevToolsDemo() {
     setSelectedIndex(actions.length);
   };
 
-  const jumpToAction = (index) => {
+  const jumpToAction = (index: number) => {
     setSelectedIndex(index);
   };
 

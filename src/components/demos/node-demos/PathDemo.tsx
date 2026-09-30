@@ -2,8 +2,8 @@ import { useState } from "react";
 import CodeBlock from "../../CodeBlock";
 
 function PathDemo() {
-  const [os, setOs] = useState("unix");
-  const [log, setLog] = useState([]);
+  const [os, setOs] = useState<"unix" | "windows">("unix");
+  const [log, setLog] = useState<string[]>([]);
 
   const examples = {
     unix: {

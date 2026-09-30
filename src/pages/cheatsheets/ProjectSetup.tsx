@@ -3,7 +3,7 @@ import CheatSheetLayout from "../../components/CheatSheetLayout";
 import projectSetupContentEn from "../../data/en/cheatsheets/projectSetup.json";
 import projectSetupContentSv from "../../data/sv/cheatsheets/projectSetup.json";
 
-const CONTENT_MAP = {
+const CONTENT_MAP: Record<string, typeof projectSetupContentEn> = {
   en: projectSetupContentEn,
   sv: projectSetupContentSv,
 };

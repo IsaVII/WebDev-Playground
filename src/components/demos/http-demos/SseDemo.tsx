@@ -4,9 +4,11 @@ import CodeBlock from "../../CodeBlock";
 // Simulates an EventSource pushing periodic events, standing in for a
 // real server "text/event-stream" connection so the demo works offline.
 function SseDemo() {
-  const [events, setEvents] = useState([]);
+  const [events, setEvents] = useState<string[]>([]);
   const [subscribed, setSubscribed] = useState(false);
-  const intervalRef = useRef(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>(
+    undefined,
+  );
   const countRef = useRef(0);
 
   const subscribe = () => {

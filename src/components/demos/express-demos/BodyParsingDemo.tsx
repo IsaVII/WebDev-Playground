@@ -28,22 +28,27 @@ const REQUESTS = [
   },
 ];
 
+type Parser =
+  | "express.json()"
+  | "express.urlencoded({ extended: true })"
+  | "express.text()";
+
 function BodyParsingDemo() {
-  const [installed, setInstalled] = useState({
+  const [installed, setInstalled] = useState<Record<Parser, boolean>>({
     "express.json()": true,
     "express.urlencoded({ extended: true })": true,
     "express.text()": false,
   });
-  const [log, setLog] = useState([]);
+  const [log, setLog] = useState<{ label: string; lines: string[] }[]>([]);
 
-  const toggle = (mw) => setInstalled((s) => ({ ...s, [mw]: !s[mw] }));
+  const toggle = (mw: Parser) => setInstalled((s) => ({ ...s, [mw]: !s[mw] }));
 
-  const send = (req) => {
+  const send = (req: (typeof REQUESTS)[number]) => {
     const lines = [`Content-Type: ${req.contentType}`, `Raw body: ${req.raw}`];
     if (!req.needs) {
       lines.push("No parser can handle this Content-Type");
       lines.push("→ req.body stays undefined");
-    } else if (installed[req.needs]) {
+    } else if (installed[req.needs as Parser]) {
       const parsed =
         req.needs === "express.json()"
           ? req.raw
@@ -70,7 +75,7 @@ function BodyParsingDemo() {
       </p>
 
       <div className="flex flex-wrap gap-2 mb-4">
-        {Object.keys(installed).map((mw) => (
+        {(Object.keys(installed) as Parser[]).map((mw) => (
           <button
             key={mw}
             onClick={() => toggle(mw)}

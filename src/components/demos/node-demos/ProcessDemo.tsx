@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import CodeBlock from "../../CodeBlock";
 
 function ProcessDemo() {
-  const [log, setLog] = useState([]);
+  const [log, setLog] = useState<string[]>([]);
   const [info, setInfo] = useState({
     platform: "linux",
     version: "v18.17.0",

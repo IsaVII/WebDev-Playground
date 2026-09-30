@@ -71,16 +71,16 @@ const RESPONSES = [
   },
 ];
 
-const CATEGORY_STYLES = {
+const CATEGORY_STYLES: Record<string, string> = {
   success: "text-green-600 dark:text-green-400",
   "client-error": "text-amber-600 dark:text-amber-400",
   "server-error": "text-red-600 dark:text-red-400",
 };
 
 function MethodsStatusDemo() {
-  const [log, setLog] = useState([]);
+  const [log, setLog] = useState<(typeof RESPONSES)[number][]>([]);
 
-  const send = (entry) => {
+  const send = (entry: (typeof RESPONSES)[number]) => {
     setLog((l) => [...l, entry]);
   };
 

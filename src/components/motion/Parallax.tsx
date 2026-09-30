@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import useReducedMotion from "../../hooks/useReducedMotion";
 
 /**
@@ -8,8 +8,14 @@ import useReducedMotion from "../../hooks/useReducedMotion";
  * IntersectionObserver gates the scroll listener) so idle sections cost
  * nothing. Disabled entirely under reduced motion.
  */
-function Parallax({ children, speed = 0.15, className = "" }) {
-  const ref = useRef(null);
+interface ParallaxProps {
+  children: ReactNode;
+  speed?: number;
+  className?: string;
+}
+
+function Parallax({ children, speed = 0.15, className = "" }: ParallaxProps) {
+  const ref = useRef<HTMLDivElement>(null);
   const reducedMotion = useReducedMotion();
 
   useEffect(() => {
@@ -20,7 +26,7 @@ function Parallax({ children, speed = 0.15, className = "" }) {
     let ticking = false;
     let inView = false;
 
-    const clamp = (n, min, max) => Math.min(Math.max(n, min), max);
+    const clamp = (n: number, min: number, max: number) => Math.min(Math.max(n, min), max);
 
     const update = () => {
       ticking = false;
@@ -41,7 +47,7 @@ function Parallax({ children, speed = 0.15, className = "" }) {
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        inView = entry.isIntersecting;
+        inView = entry?.isIntersecting ?? false;
         if (inView) onScroll();
       },
       { rootMargin: "20% 0px" }

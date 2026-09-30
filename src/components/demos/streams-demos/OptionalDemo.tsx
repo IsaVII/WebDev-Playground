@@ -8,7 +8,8 @@ const USERS = {
 
 function OptionalDemo() {
   const [id, setId] = useState("7");
-  const user = USERS[id] || null;
+  const user =
+    (USERS as Record<string, (typeof USERS)[keyof typeof USERS]>)[id] || null;
 
   // The two styles, evaluated on the chosen input.
   const nullStyle = (() => {

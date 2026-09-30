@@ -1,8 +1,9 @@
 import { useState } from "react";
 import CodeBlock from "./CodeBlock";
+import type { ExampleStep } from "../types/content";
 
-function linesInRange([start, end]) {
-  const lines = [];
+function linesInRange([start = 0, end = start]: number[]) {
+  const lines: number[] = [];
   for (let i = start; i <= end; i++) lines.push(i);
   return lines;
 }
@@ -18,7 +19,20 @@ function linesInRange([start, end]) {
  * `lines` is an inclusive [firstLine, lastLine] range, 1-indexed to match
  * what a reader sees in the code block's gutter.
  */
-function StepByStepExample({ title, description, code, steps }) {
+interface StepByStepExampleProps {
+  title?: string;
+  description?: string;
+  /** The example, one string per line. */
+  code: string[];
+  steps: ExampleStep[];
+}
+
+function StepByStepExample({
+  title,
+  description,
+  code,
+  steps,
+}: StepByStepExampleProps) {
   const [activeStep, setActiveStep] = useState(0);
   const current = steps[activeStep];
 

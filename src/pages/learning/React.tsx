@@ -10,7 +10,7 @@ import reactContentSv from "../../data/sv/learning/reactContent.json";
 import RenderCountDemo from "../../components/demos/react-demos/RenderCountDemo";
 import StopwatchDemo from "../../components/demos/react-demos/StopwatchDemo";
 
-const CONTENT_MAP = {
+const CONTENT_MAP: Record<string, typeof reactContentEn> = {
   en: reactContentEn,
   sv: reactContentSv,
 };

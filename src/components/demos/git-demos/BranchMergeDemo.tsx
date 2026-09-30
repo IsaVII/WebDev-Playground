@@ -3,7 +3,7 @@ import CodeBlock from "../../CodeBlock";
 
 function BranchMergeDemo() {
   const [main, setMain] = useState(["Initial commit"]);
-  const [feature, setFeature] = useState(null);
+  const [feature, setFeature] = useState<string[] | null>(null);
   const [current, setCurrent] = useState("main");
   const [merged, setMerged] = useState(false);
 
@@ -13,10 +13,10 @@ function BranchMergeDemo() {
   };
 
   const commitOnFeature = () => {
-    setFeature((f) => [...f, "Add login form"]);
+    setFeature((f) => [...(f ?? []), "Add login form"]);
   };
 
-  const checkout = (branch) => setCurrent(branch);
+  const checkout = (branch: string) => setCurrent(branch);
 
   const merge = () => {
     setMain((m) => [...m, "Merge branch 'feature'"]);

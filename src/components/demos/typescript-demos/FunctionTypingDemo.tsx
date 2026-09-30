@@ -10,8 +10,10 @@ const ARG_OPTIONS = [
   { label: "true", value: true, type: "boolean" },
 ];
 
-function checkCall(a, b) {
-  const errors = [];
+type ArgOption = (typeof ARG_OPTIONS)[number];
+
+function checkCall(a: ArgOption, b: ArgOption) {
+  const errors: string[] = [];
   if (a.type !== "number") {
     errors.push(
       `Argument of type '${a.type}' is not assignable to parameter of type 'number'.`,

@@ -5,10 +5,12 @@ const CLIENTS = ["Isa", "Priya", "Marcus"];
 
 // Simulates a server holding several open sockets and fanning one message
 // out to all of them, which is the part a single-client demo can't show.
+type LogEntry = { message: { user: string; text: string }; note: string };
+
 function BroadcastDemo() {
   const [sender, setSender] = useState(CLIENTS[0]);
   const [text, setText] = useState("hello everyone!");
-  const [logs, setLogs] = useState(() =>
+  const [logs, setLogs] = useState<Record<string, LogEntry[]>>(() =>
     Object.fromEntries(CLIENTS.map((name) => [name, []])),
   );
 
@@ -17,7 +19,7 @@ function BroadcastDemo() {
     const message = { user: sender, text };
 
     setLogs((prev) => {
-      const next = {};
+      const next: Record<string, LogEntry[]> = {};
       for (const name of CLIENTS) {
         const received = name !== sender;
         next[name] = [

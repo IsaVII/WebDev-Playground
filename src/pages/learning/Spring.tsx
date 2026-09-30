@@ -7,7 +7,7 @@ import DiContainerDemo from "../../components/demos/spring-demos/DiContainerDemo
 import JpaQueryDerivationDemo from "../../components/demos/spring-demos/JpaQueryDerivationDemo";
 import StereotypeAnnotationDemo from "../../components/demos/spring-demos/StereotypeAnnotationDemo";
 
-const CONTENT_MAP = {
+const CONTENT_MAP: Record<string, typeof springContentEn> = {
   en: springContentEn,
   sv: springContentSv,
 };

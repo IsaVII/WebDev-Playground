@@ -12,7 +12,7 @@ function Footer() {
         </p>
       </div>
 
-      <FooterLink href="/cookie-policy" className="hover:underline">
+      <FooterLink href="/cookie-policy">
         {t("footer.privacy")}
       </FooterLink>
     </footer>

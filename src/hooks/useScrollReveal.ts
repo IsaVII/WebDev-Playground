@@ -11,8 +11,11 @@ import useReducedMotion from "./useReducedMotion";
  * With reduced motion on, the element is just immediately visible - the
  * intent (content appearing) still happens, the travel doesn't.
  */
-function useScrollReveal({ threshold = 0.2, rootMargin = "0px 0px -10% 0px" } = {}) {
-  const ref = useRef(null);
+function useScrollReveal<T extends HTMLElement = HTMLElement>({
+  threshold = 0.2,
+  rootMargin = "0px 0px -10% 0px",
+}: { threshold?: number; rootMargin?: string } = {}) {
+  const ref = useRef<T>(null);
   const reducedMotion = useReducedMotion();
   const [isVisible, setIsVisible] = useState(reducedMotion);
 

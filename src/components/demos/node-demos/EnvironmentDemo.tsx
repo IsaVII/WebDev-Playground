@@ -7,10 +7,10 @@ function EnvironmentDemo() {
     PORT: "3000",
     DB_HOST: "localhost",
   });
-  const [log, setLog] = useState([]);
+  const [log, setLog] = useState<string[]>([]);
 
-  const readEnv = (key) => {
-    const value = env[key];
+  const readEnv = (key: string) => {
+    const value = env[key as keyof typeof env] as string | undefined;
     if (value) {
       setLog((l) => [...l, `process.env.${key} → "${value}"`]);
     } else {
@@ -18,7 +18,7 @@ function EnvironmentDemo() {
     }
   };
 
-  const changeEnv = (newEnv) => {
+  const changeEnv = (newEnv: string) => {
     setEnv({ ...env, NODE_ENV: newEnv });
     setLog((l) => [
       ...l,

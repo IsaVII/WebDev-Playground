@@ -11,12 +11,14 @@ const SUCCEED_ON_ATTEMPT = 3; // pretend the server comes back after 2 failed tr
 function ReconnectDemo() {
   const [status, setStatus] = useState("open"); // open | reconnecting | open-again
   const [attempt, setAttempt] = useState(0);
-  const [log, setLog] = useState([]);
-  const timerRef = useRef(null);
+  const [log, setLog] = useState<string[]>([]);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
 
-  const append = (line) => setLog((l) => [...l, line]);
+  const append = (line: string) => setLog((l) => [...l, line]);
 
-  const scheduleAttempt = (nextAttempt) => {
+  const scheduleAttempt = (nextAttempt: number) => {
     const delay = Math.min(BASE_DELAY * 2 ** (nextAttempt - 1), MAX_DELAY);
     append(`waiting ${delay}ms before attempt #${nextAttempt}...`);
 

@@ -154,9 +154,9 @@ describe("CI/CD (new cheat sheet)", () => {
 // userEvent isn't a project dependency, so this drives the same click via
 // fireEvent instead of pulling in another package for one interaction.
 import { fireEvent } from "@testing-library/react";
-function withUser(renderResult) {
+function withUser<T extends object>(renderResult: T) {
   return {
     ...renderResult,
-    user: { click: async (el) => fireEvent.click(el) },
+    user: { click: async (el: Element) => fireEvent.click(el) },
   };
 }

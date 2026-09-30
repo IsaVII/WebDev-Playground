@@ -8,7 +8,7 @@ import LayerCachingDemo from "../../components/demos/docker-demos/LayerCachingDe
 import LearningTopicLayout from "../../components/LearningTopicLayout";
 import MultiStageBuildDemo from "../../components/demos/docker-demos/MultiStageBuildDemo";
 
-const CONTENT_MAP = {
+const CONTENT_MAP: Record<string, typeof dockerContentEn> = {
   en: dockerContentEn,
   sv: dockerContentSv,
 };

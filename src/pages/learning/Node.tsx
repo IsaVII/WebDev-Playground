@@ -17,7 +17,7 @@ import PathDemo from "../../components/demos/node-demos/PathDemo";
 import ProcessDemo from "../../components/demos/node-demos/ProcessDemo";
 import StreamDemo from "../../components/demos/node-demos/StreamDemo";
 
-const CONTENT_MAP = {
+const CONTENT_MAP: Record<string, typeof nodeContentEn> = {
   en: nodeContentEn,
   sv: nodeContentSv,
 };

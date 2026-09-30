@@ -8,9 +8,14 @@ function RestJsonDemo() {
     { id: 1, title: "Learn REST", done: false },
     { id: 2, title: "Learn JSON", done: true },
   ]);
-  const [log, setLog] = useState([]);
+  const [log, setLog] = useState<string[]>([]);
 
-  const respond = (method, url, status, body) => {
+  const respond = (
+    method: string,
+    url: string,
+    status: number,
+    body: unknown,
+  ) => {
     setLog((l) => [
       ...l,
       `${method} ${url} → ${status}\n${JSON.stringify(body, null, 2)}`,

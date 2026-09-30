@@ -37,12 +37,14 @@ function ApiEndpointTestDemo() {
       contextCode={contextCode}
       initialTest={initialTest}
       buildScope={() => {
-        const users = { 1: { id: 1, name: "Ada" } };
+        const users: Record<string, { id: number; name: string }> = {
+          1: { id: 1, name: "Ada" },
+        };
         return {
-          handleRequest: (method, path) => {
+          handleRequest: (method: string, path: string) => {
             const match = path.match(/^\/users\/(\d+)$/);
             if (method === "GET" && match) {
-              const user = users[match[1]];
+              const user = users[match[1]!];
               return user ? { status: 200, body: user } : { status: 404, body: { error: "Not found" } };
             }
             return { status: 404, body: { error: "Not found" } };

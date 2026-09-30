@@ -4,13 +4,13 @@ import CodeBlock from "../../CodeBlock";
 // These really run - var is function-scoped, so all three timers close
 // over the *same* i, which is 3 by the time any of them fire. let creates
 // a fresh binding per iteration, so each timer keeps its own value.
-function runVarLoop(onLog) {
+function runVarLoop(onLog: (value: number) => void) {
   for (var i = 0; i < 3; i++) {
     setTimeout(() => onLog(i), (i + 1) * 150);
   }
 }
 
-function runLetLoop(onLog) {
+function runLetLoop(onLog: (value: number) => void) {
   for (let i = 0; i < 3; i++) {
     setTimeout(() => onLog(i), (i + 1) * 150);
   }
@@ -18,14 +18,14 @@ function runLetLoop(onLog) {
 
 function ScopeDemo() {
   const [mode, setMode] = useState("let");
-  const [log, setLog] = useState([]);
+  const [log, setLog] = useState<number[]>([]);
   const [running, setRunning] = useState(false);
 
   const run = () => {
     setLog([]);
     setRunning(true);
 
-    const onLog = (value) => {
+    const onLog = (value: number) => {
       setLog((l) => {
         const next = [...l, value];
         if (next.length === 3) setRunning(false);

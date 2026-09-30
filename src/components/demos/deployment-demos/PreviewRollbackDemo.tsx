@@ -3,12 +3,22 @@ import CodeBlock from "../../CodeBlock";
 
 let nextId = 1;
 
+type Deployment = {
+  id: number;
+  commit: string;
+  label: string;
+  isProd: boolean;
+};
+
 function PreviewRollbackDemo() {
-  const [history, setHistory] = useState([
+  const [history, setHistory] = useState<Deployment[]>([
     { id: 0, commit: "a1b2c3d", label: "Initial deploy", isProd: true },
   ]);
-  const [preview, setPreview] = useState(null);
-  const [log, setLog] = useState([]);
+  const [preview, setPreview] = useState<{
+    id: number;
+    commit: string;
+  } | null>(null);
+  const [log, setLog] = useState<string[]>([]);
 
   const openPr = () => {
     const id = nextId++;
@@ -40,7 +50,7 @@ function PreviewRollbackDemo() {
     setPreview(null);
   };
 
-  const rollback = (deployment) => {
+  const rollback = (deployment: Deployment) => {
     setHistory((h) => h.map((d) => ({ ...d, isProd: d.id === deployment.id })));
     setLog((l) => [
       ...l,

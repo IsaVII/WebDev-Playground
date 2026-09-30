@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, type ReactNode } from "react";
 import { useLocation } from "react-router-dom";
 import useReducedMotion from "../../hooks/useReducedMotion";
 
@@ -12,7 +12,7 @@ import useReducedMotion from "../../hooks/useReducedMotion";
  * Scroll position is reset on navigation so the entrance is never seen
  * from a mid-scroll position left over from the previous page.
  */
-function PageTransition({ children }) {
+function PageTransition({ children }: { children: ReactNode }) {
   const location = useLocation();
   const reducedMotion = useReducedMotion();
 

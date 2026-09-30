@@ -14,7 +14,7 @@ import testingContentEn from "../../data/en/learning/testingContent.json";
 import testingContentSv from "../../data/sv/learning/testingContent.json";
 import UnitTestDemo from "../../components/demos/testing-demos/UnitTestDemo";
 
-const CONTENT_MAP = {
+const CONTENT_MAP: Record<string, typeof testingContentEn> = {
   en: testingContentEn,
   sv: testingContentSv,
 };

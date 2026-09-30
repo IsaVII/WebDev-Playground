@@ -3,7 +3,7 @@ import CheatSheetLayout from "../../components/CheatSheetLayout";
 import markdownDataEn from "../../data/en/cheatsheets/markdown.json";
 import markdownDataSv from "../../data/sv/cheatsheets/markdown.json";
 
-const CONTENT_MAP = {
+const CONTENT_MAP: Record<string, typeof markdownDataEn> = {
   en: markdownDataEn,
   sv: markdownDataSv,
 };
@@ -11,7 +11,7 @@ const CONTENT_MAP = {
 function Markdown() {
   const { i18n } = useTranslation();
   const markdownData = CONTENT_MAP[i18n.language] || CONTENT_MAP.en;
-  const markdownContent = markdownData.default || markdownData;
+  const markdownContent = markdownData;
 
   return (
     <CheatSheetLayout
@@ -21,7 +21,6 @@ function Markdown() {
       prerequisites={markdownContent.prerequisites}
       steps={markdownContent.steps}
       gettingStarted={markdownContent.gettingStarted}
-      source={markdownContent.source}
     />
   );
 }

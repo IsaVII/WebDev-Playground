@@ -10,12 +10,19 @@ export const fetchRandomValue = createAsyncThunk(
   },
 );
 
+type AsyncValueState = {
+  value: number | null;
+  status: "idle" | "loading" | "succeeded" | "failed";
+};
+
+const initialState: AsyncValueState = {
+  value: null,
+  status: "idle",
+};
+
 const asyncValueSlice = createSlice({
   name: "asyncValue",
-  initialState: {
-    value: null,
-    status: "idle", // 'idle' | 'loading' | 'succeeded' | 'failed'
-  },
+  initialState,
   reducers: {},
   extraReducers: (builder) => {
     builder

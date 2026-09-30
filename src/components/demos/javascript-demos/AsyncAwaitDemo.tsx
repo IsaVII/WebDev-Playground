@@ -1,8 +1,10 @@
 import { useState } from "react";
 import CodeBlock from "../../CodeBlock";
 
-function fakeFetchUser(id) {
-  return new Promise((resolve) => {
+type User = { id: number; name: string };
+
+function fakeFetchUser(id: number) {
+  return new Promise<User>((resolve) => {
     setTimeout(() => resolve({ id, name: "Isa" }), 600);
   });
 }
@@ -10,7 +12,7 @@ function fakeFetchUser(id) {
 function AsyncAwaitDemo() {
   const [style, setStyle] = useState("async");
   const [status, setStatus] = useState("idle");
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState<User | null>(null);
 
   const runThen = () => {
     setStatus("loading");

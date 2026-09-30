@@ -1,4 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 const appSlice = createSlice({
   name: "app",
@@ -6,7 +6,7 @@ const appSlice = createSlice({
     title: "Learning Tool",
   },
   reducers: {
-    setTitle: (state, action) => {
+    setTitle: (state, action: PayloadAction<string>) => {
       state.title = action.payload;
     },
   },

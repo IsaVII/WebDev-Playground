@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type SVGProps } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import NavLink from "./NavLink";
@@ -6,6 +6,7 @@ import ThemeToggle from "./ThemeToggle";
 import LanguageSwitcher from "./LanguageSwitcher";
 import SearchBar from "./SearchBar";
 import { useProgress } from "../context/ProgressContext";
+import type { TopicIndex } from "../types/content";
 
 // English content
 import cheatsheetsEn from "../data/en/cheatsheets.json";
@@ -54,7 +55,18 @@ import springContentSv from "../data/sv/learning/springContent.json";
 import heapStackContentSv from "../data/sv/learning/heapStackContent.json";
 
 // Content maps
-const CONTENT_BY_LANG = {
+interface LanguageContent {
+  learning: TopicIndex;
+  cheatsheets: TopicIndex;
+  javaBackend: TopicIndex;
+  /** Per-topic lesson content, keyed by topic key (for practice-topic counts). */
+  details: Record<
+    string,
+    { practiceTopics?: { title: string }[]; quiz?: unknown[] }
+  >;
+}
+
+const CONTENT_BY_LANG: Record<string, LanguageContent> = {
   en: {
     learning: learningContentEn,
     cheatsheets: cheatsheetsEn,
@@ -107,7 +119,7 @@ const CONTENT_BY_LANG = {
   },
 };
 
-function HomeIcon(props) {
+function HomeIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -145,7 +157,7 @@ function ChevronIcon() {
   );
 }
 
-function StarIcon({ className = "" }) {
+function StarIcon({ className = "" }: { className?: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -161,8 +173,8 @@ function StarIcon({ className = "" }) {
 
 function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef(null);
-  const toggleRef = useRef(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const toggleRef = useRef<HTMLButtonElement>(null);
   const { pathname } = useLocation();
   const { getTopicSubtopicCount } = useProgress();
   const { t, i18n } = useTranslation();
@@ -206,18 +218,19 @@ function Header() {
   useEffect(() => {
     if (!menuOpen) return undefined;
 
-    function handlePointerDown(event) {
+    function handlePointerDown(event: MouseEvent) {
+      const target = event.target as Node;
       if (
         menuRef.current &&
-        !menuRef.current.contains(event.target) &&
+        !menuRef.current.contains(target) &&
         toggleRef.current &&
-        !toggleRef.current.contains(event.target)
+        !toggleRef.current.contains(target)
       ) {
         setMenuOpen(false);
       }
     }
 
-    function handleKeyDown(event) {
+    function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") setMenuOpen(false);
     }
 

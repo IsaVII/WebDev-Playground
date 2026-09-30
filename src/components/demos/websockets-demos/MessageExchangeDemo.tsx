@@ -23,10 +23,12 @@ const ACTIONS = [
 ];
 
 function MessageExchangeDemo() {
-  const [entries, setEntries] = useState([]);
+  const [entries, setEntries] = useState<
+    { direction: string; payload: Record<string, unknown> }[]
+  >([]);
   const [pending, setPending] = useState(false);
 
-  const send = (action) => {
+  const send = (action: (typeof ACTIONS)[number]) => {
     if (pending) return;
     const outgoing = { type: action.type, requestId: entries.length };
     setEntries((e) => [...e, { direction: "out", payload: outgoing }]);

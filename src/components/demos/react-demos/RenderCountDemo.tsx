@@ -1,7 +1,13 @@
 import { memo, useState } from "react";
 import CodeBlock from "../../CodeBlock";
 
-function RenderCounter({ label, renders }) {
+function RenderCounter({
+  label,
+  renders,
+}: {
+  label: string;
+  renders: number;
+}) {
   return (
     <div className="bg-surface rounded p-4 border border-line flex-1 min-w-[140px]">
       <p className="text-sm text-subtle mb-1">{label}</p>

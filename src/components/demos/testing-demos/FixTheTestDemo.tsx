@@ -1,6 +1,19 @@
-import { useState } from "react";
+import { useState, type KeyboardEvent, type ReactNode } from "react";
 import CodeBlock from "../../CodeBlock";
-import { runTests } from "./testEngine";
+import { runTests, type TestRun } from "./testEngine";
+
+// The globals the learner's test code can use. Learner code is arbitrary, so
+// the values are any.
+type TestScope = Record<string, any>;
+
+interface FixTheTestDemoProps {
+  description: ReactNode;
+  contextLabel?: string;
+  contextCode?: string;
+  initialTest: string;
+  buildScope: () => TestScope;
+  hint?: string;
+}
 
 /**
  * A small, self-contained "fix the failing test" exercise. Renders the
@@ -26,9 +39,9 @@ function FixTheTestDemo({
   initialTest,
   buildScope,
   hint,
-}) {
+}: FixTheTestDemoProps) {
   const [testCode, setTestCode] = useState(initialTest);
-  const [outcome, setOutcome] = useState(null);
+  const [outcome, setOutcome] = useState<TestRun | null>(null);
   const [running, setRunning] = useState(false);
   const [showHint, setShowHint] = useState(false);
 
@@ -44,15 +57,16 @@ function FixTheTestDemo({
     setOutcome(null);
   };
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Tab") {
       e.preventDefault();
-      const { selectionStart, selectionEnd, value } = e.target;
+      const { selectionStart, selectionEnd, value } = e.currentTarget;
       setTestCode(
         `${value.slice(0, selectionStart)}  ${value.slice(selectionEnd)}`,
       );
       requestAnimationFrame(() => {
-        e.target.selectionStart = e.target.selectionEnd = selectionStart + 2;
+        e.currentTarget.selectionStart = e.currentTarget.selectionEnd =
+          selectionStart + 2;
       });
     }
   };

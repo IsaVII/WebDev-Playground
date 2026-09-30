@@ -1,3 +1,4 @@
+import type { ElementType } from "react";
 import useScrollReveal from "../../hooks/useScrollReveal";
 
 /**
@@ -8,7 +9,19 @@ import useScrollReveal from "../../hooks/useScrollReveal";
  * rendered once, visually hidden, for anyone using assistive tech - see
  * MOTION_SYSTEM.md's text-reveal accessibility note).
  */
-function TextReveal({ text, as: Tag = "h2", className = "", wordDelay = 40 }) {
+interface TextRevealProps {
+  text: string;
+  as?: ElementType;
+  className?: string;
+  wordDelay?: number;
+}
+
+function TextReveal({
+  text,
+  as: Tag = "h2",
+  className = "",
+  wordDelay = 40,
+}: TextRevealProps) {
   const { ref, isVisible } = useScrollReveal({ threshold: 0.4 });
   const words = text.split(" ");
 

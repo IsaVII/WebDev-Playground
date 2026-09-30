@@ -37,7 +37,7 @@ const OPTIONS = [
 ];
 
 function StereotypeAnnotationDemo() {
-  const [picks, setPicks] = useState({});
+  const [picks, setPicks] = useState<Record<string, string>>({});
   const [checked, setChecked] = useState(false);
 
   const allPicked = CLASSES.every((c) => picks[c.id]);

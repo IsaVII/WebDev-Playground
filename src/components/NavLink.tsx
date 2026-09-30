@@ -1,6 +1,14 @@
+import type { MouseEventHandler, ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 
-function NavLink({ to, children, onClick, className = "" }) {
+interface NavLinkProps {
+  to: string;
+  children: ReactNode;
+  onClick?: MouseEventHandler<HTMLAnchorElement>;
+  className?: string;
+}
+
+function NavLink({ to, children, onClick, className = "" }: NavLinkProps) {
   const { pathname } = useLocation();
   const isActive = pathname === to;
 

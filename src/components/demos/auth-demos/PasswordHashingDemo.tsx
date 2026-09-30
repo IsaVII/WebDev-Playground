@@ -3,7 +3,7 @@ import CodeBlock from "../../CodeBlock";
 
 // A tiny illustrative hash - NOT bcrypt, just enough to show "same input
 // always produces the same fixed-length, unreadable output" for the demo.
-function fakeHash(str) {
+function fakeHash(str: string) {
   let h = 0;
   for (let i = 0; i < str.length; i++) {
     h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
@@ -14,9 +14,9 @@ function fakeHash(str) {
 
 function PasswordHashingDemo() {
   const [password, setPassword] = useState("correct horse");
-  const [stored, setStored] = useState(null);
+  const [stored, setStored] = useState<string | null>(null);
   const [attempt, setAttempt] = useState("");
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState<boolean | null>(null);
 
   const register = () => {
     setStored(fakeHash(password));

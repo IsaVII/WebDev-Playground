@@ -9,15 +9,20 @@ import { useEffect, useRef, useState } from "react";
  * document.execCommand("copy") otherwise, so it still works on http/older
  * browsers.
  **/
-function CopyButton({ text, className = "" }) {
+interface CopyButtonProps {
+  text: string;
+  className?: string;
+}
+
+function CopyButton({ text, className = "" }: CopyButtonProps) {
   const [copied, setCopied] = useState(false);
-  const timeoutRef = useRef(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
     return () => clearTimeout(timeoutRef.current);
   }, []);
 
-  const fallbackCopy = (value) => {
+  const fallbackCopy = (value: string) => {
     const textarea = document.createElement("textarea");
     textarea.value = value;
     // Keep it off-screen and out of the tab order.

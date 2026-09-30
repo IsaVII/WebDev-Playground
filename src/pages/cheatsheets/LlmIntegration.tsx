@@ -3,7 +3,7 @@ import CheatSheetLayout from "../../components/CheatSheetLayout";
 import llmIntegrationDataEn from "../../data/en/cheatsheets/llmIntegration.json";
 import llmIntegrationDataSv from "../../data/sv/cheatsheets/llmIntegration.json";
 
-const CONTENT_MAP = {
+const CONTENT_MAP: Record<string, typeof llmIntegrationDataEn> = {
   en: llmIntegrationDataEn,
   sv: llmIntegrationDataSv,
 };
@@ -11,7 +11,7 @@ const CONTENT_MAP = {
 function LlmIntegration() {
   const { i18n } = useTranslation();
   const llmIntegrationData = CONTENT_MAP[i18n.language] || CONTENT_MAP.en;
-  const llmIntegrationContent = llmIntegrationData.default || llmIntegrationData;
+  const llmIntegrationContent = llmIntegrationData;
 
   return (
     <CheatSheetLayout

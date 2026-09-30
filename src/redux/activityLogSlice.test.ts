@@ -25,7 +25,7 @@ describe("activityLogSlice", () => {
 
   it("also logs actions from other slices via the addMatcher fallback", () => {
     // This slice never imports likeSlice - the addMatcher in
-    // activityLogSlice.js is what picks this up, by checking that the
+    // activityLogSlice.ts is what picks this up, by checking that the
     // action type doesn't start with "counter/".
     const state = activityLogReducer({ entries: [] }, liked());
     expect(state.entries).toHaveLength(1);
@@ -40,7 +40,9 @@ describe("activityLogSlice", () => {
   });
 
   it("caps the log at 6 entries", () => {
-    let state = { entries: [] };
+    let state: { entries: { action: string; timestamp: string }[] } = {
+      entries: [],
+    };
     for (let i = 0; i < 10; i++) {
       state = activityLogReducer(state, incremented());
     }

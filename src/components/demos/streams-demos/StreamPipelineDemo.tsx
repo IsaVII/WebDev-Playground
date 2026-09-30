@@ -3,19 +3,27 @@ import CodeBlock from "../../CodeBlock";
 
 const SOURCE = [1, 2, 3, 4, 5, 6, 7, 8];
 
-const OPS = {
+type Op =
+  | { kind: "filter"; fn: (n: number) => boolean; label: string }
+  | { kind: "map"; fn: (n: number) => number; label: string }
+  | { kind: "limit"; n: number; label: string };
+
+type TraceRow = { start: number; steps: string[]; out: number | null };
+
+const OPS: Record<string, Op> = {
   "filter(even)": { kind: "filter", fn: (n) => n % 2 === 0, label: "filter(n -> n % 2 == 0)" },
   "map(*10)": { kind: "map", fn: (n) => n * 10, label: "map(n -> n * 10)" },
   "limit(2)": { kind: "limit", n: 2, label: "limit(2)" },
 };
 
-function runPipeline(active) {
+function runPipeline(active: string[]) {
   // Element-at-a-time trace: each source element is pushed through the whole
   // chain before the next one is pulled. limit short-circuits.
-  const trace = [];
+  const trace: TraceRow[] = [];
   let emitted = 0;
   const limitOp = active.find((k) => OPS[k].kind === "limit");
-  const limit = limitOp ? OPS[limitOp].n : Infinity;
+  const limitDef = limitOp ? OPS[limitOp] : undefined;
+  const limit = limitDef?.kind === "limit" ? limitDef.n : Infinity;
 
   for (const start of SOURCE) {
     if (emitted >= limit) {
@@ -23,7 +31,7 @@ function runPipeline(active) {
       break;
     }
     let value = start;
-    const steps = [];
+    const steps: string[] = [];
     let dropped = false;
     for (const key of active) {
       const op = OPS[key];
@@ -50,9 +58,9 @@ function runPipeline(active) {
 
 function StreamPipelineDemo() {
   const [active, setActive] = useState(["filter(even)", "map(*10)"]);
-  const [trace, setTrace] = useState(null);
+  const [trace, setTrace] = useState<TraceRow[] | null>(null);
 
-  const toggle = (key) => {
+  const toggle = (key: string) => {
     setTrace(null);
     setActive((prev) =>
       prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key],

@@ -3,7 +3,7 @@ import CheatSheetLayout from "../../components/CheatSheetLayout";
 import cicdDataEn from "../../data/en/cheatsheets/cicd.json";
 import cicdDataSv from "../../data/sv/cheatsheets/cicd.json";
 
-const CONTENT_MAP = {
+const CONTENT_MAP: Record<string, typeof cicdDataEn> = {
   en: cicdDataEn,
   sv: cicdDataSv,
 };
@@ -11,7 +11,7 @@ const CONTENT_MAP = {
 function CiCd() {
   const { i18n } = useTranslation();
   const cicdData = CONTENT_MAP[i18n.language] || CONTENT_MAP.en;
-  const cicdContent = cicdData.default || cicdData;
+  const cicdContent = cicdData;
 
   return (
     <CheatSheetLayout

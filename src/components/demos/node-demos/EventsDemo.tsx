@@ -2,10 +2,10 @@ import { useState } from "react";
 import CodeBlock from "../../CodeBlock";
 
 function EventsDemo() {
-  const [log, setLog] = useState([]);
-  const [listeners, setListeners] = useState([]);
+  const [log, setLog] = useState<string[]>([]);
+  const [listeners, setListeners] = useState<{ id: number; event: string }[]>([]);
 
-  const emit = (eventName, data) => {
+  const emit = (eventName: string, data: unknown) => {
     const matchingListeners = listeners.filter((l) => l.event === eventName);
     setLog((l) => [
       ...l,
@@ -24,7 +24,7 @@ function EventsDemo() {
     }
   };
 
-  const addListener = (eventName) => {
+  const addListener = (eventName: string) => {
     const id = listeners.length + 1;
     setListeners((prev) => [...prev, { id, event: eventName }]);
     setLog((l) => [
@@ -34,7 +34,7 @@ function EventsDemo() {
     ]);
   };
 
-  const removeListener = (eventName) => {
+  const removeListener = (eventName: string) => {
     const removed = listeners.find((l) => l.event === eventName);
     if (removed) {
       setListeners((prev) => prev.filter((l) => l.id !== removed.id));
@@ -46,7 +46,7 @@ function EventsDemo() {
     }
   };
 
-  const once = (eventName) => {
+  const once = (eventName: string) => {
     setLog((l) => [
       ...l,
       `emitter.once("${eventName}", listener)`,

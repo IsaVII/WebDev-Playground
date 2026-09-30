@@ -3,7 +3,7 @@ import CodeBlock from "../../CodeBlock";
 
 const ORIGINAL_AMOUNT = 5000; // $50.00 in cents
 
-function formatCents(cents) {
+function formatCents(cents: number) {
   return `$${(cents / 100).toFixed(2)}`;
 }
 
@@ -11,7 +11,7 @@ function RefundsDemo() {
   const [refunded, setRefunded] = useState(0);
   const [partialInput, setPartialInput] = useState("15.00");
   const [disputeOpen, setDisputeOpen] = useState(false);
-  const [log, setLog] = useState([]);
+  const [log, setLog] = useState<string[]>([]);
 
   const remaining = ORIGINAL_AMOUNT - refunded;
 

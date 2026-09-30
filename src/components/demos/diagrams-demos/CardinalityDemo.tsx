@@ -3,9 +3,9 @@ import CodeBlock from "../../CodeBlock";
 
 const ENDS = ["1", "0..1", "1..*", "*"];
 
-const isMany = (end) => end === "1..*" || end === "*";
+const isMany = (end: string) => end === "1..*" || end === "*";
 
-function classify(left, right) {
+function classify(left: string, right: string) {
   const leftMany = isMany(left);
   const rightMany = isMany(right);
 
@@ -39,7 +39,7 @@ function classify(left, right) {
   };
 }
 
-function crowsFoot(end) {
+function crowsFoot(end: string) {
   // crude ASCII crow's-foot for the chosen end
   switch (end) {
     case "1":

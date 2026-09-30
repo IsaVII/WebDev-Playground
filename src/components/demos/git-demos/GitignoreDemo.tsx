@@ -10,18 +10,21 @@ const FILES = [
 
 const PATTERNS = ["node_modules/", "dist/", ".env"];
 
-function matches(file, ignored) {
+function matches(
+  file: { name: string; pattern: string | null },
+  ignored: string[],
+) {
   return file.pattern && ignored.includes(file.pattern);
 }
 
 function GitignoreDemo() {
-  const [ignored, setIgnored] = useState([]);
+  const [ignored, setIgnored] = useState<string[]>([]);
 
-  const addPattern = (pattern) => {
+  const addPattern = (pattern: string) => {
     setIgnored((i) => (i.includes(pattern) ? i : [...i, pattern]));
   };
 
-  const removePattern = (pattern) => {
+  const removePattern = (pattern: string) => {
     setIgnored((i) => i.filter((p) => p !== pattern));
   };
 

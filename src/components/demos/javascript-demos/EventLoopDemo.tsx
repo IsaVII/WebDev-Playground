@@ -2,7 +2,7 @@ import { useState } from "react";
 import CodeBlock from "../../CodeBlock";
 
 function EventLoopDemo() {
-  const [log, setLog] = useState([]);
+  const [log, setLog] = useState<string[]>([]);
   const [running, setRunning] = useState(false);
 
   const run = () => {

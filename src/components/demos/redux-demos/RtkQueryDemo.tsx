@@ -3,7 +3,12 @@ import CodeBlock from "../../CodeBlock";
 
 function RtkQueryDemo() {
   const [status, setStatus] = useState("idle");
-  const [data, setData] = useState(null);
+  const [data, setData] = useState<{
+    id: number;
+    title: string;
+    author: string;
+    cached: boolean;
+  } | null>(null);
   const [refetchCount, setRefetchCount] = useState(0);
 
   const fetchData = () => {

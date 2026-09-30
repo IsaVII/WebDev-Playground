@@ -17,7 +17,7 @@ import RtkQueryDemo from "../../components/demos/redux-demos/RtkQueryDemo";
 import SliceActionLogDemo from "../../components/demos/redux-demos/SliceActionLogDemo";
 import StoreCounterDemo from "../../components/demos/redux-demos/StoreCounterDemo";
 
-const CONTENT_MAP = {
+const CONTENT_MAP: Record<string, typeof reduxContentEn> = {
   en: reduxContentEn,
   sv: reduxContentSv,
 };

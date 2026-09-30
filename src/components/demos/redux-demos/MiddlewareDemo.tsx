@@ -4,7 +4,9 @@ import { incremented } from "../../../redux/counterSlice";
 import CodeBlock from "../../CodeBlock";
 
 function MiddlewareDemo() {
-  const [logs, setLogs] = useState([]);
+  const [logs, setLogs] = useState<
+    { time: string; action: string; payload: string }[]
+  >([]);
   const dispatch = useDispatch();
 
   const handleClick = () => {

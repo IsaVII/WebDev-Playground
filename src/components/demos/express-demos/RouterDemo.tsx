@@ -9,9 +9,9 @@ const MOUNTS = [
 ];
 
 function RouterDemo() {
-  const [log, setLog] = useState([]);
+  const [log, setLog] = useState<string[]>([]);
 
-  const resolve = (mount) => {
+  const resolve = (mount: (typeof MOUNTS)[number]) => {
     const routePath = mount.route.split(" ")[1];
     const full = mount.prefix + (routePath === "/" ? "" : routePath);
     const method = mount.route.split(" ")[0];

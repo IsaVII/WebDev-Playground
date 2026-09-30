@@ -1,9 +1,14 @@
 import { useState } from "react";
 import CodeBlock from "../../CodeBlock";
 
+type User = { id: number; name: string; status: string };
+
 function EntityAdapterDemo() {
   // Simulated normalized state (what createEntityAdapter manages)
-  const [state, setState] = useState({
+  const [state, setState] = useState<{
+    ids: number[];
+    entities: Record<number, User>;
+  }>({
     ids: [1, 2, 3],
     entities: {
       1: { id: 1, name: "Alice", status: "online" },
@@ -26,7 +31,7 @@ function EntityAdapterDemo() {
     });
   };
 
-  const removeUser = (id) => {
+  const removeUser = (id: number) => {
     const { [id]: removed, ...remaining } = state.entities;
     setState({
       ids: state.ids.filter((userId) => userId !== id),
@@ -34,7 +39,7 @@ function EntityAdapterDemo() {
     });
   };
 
-  const toggleStatus = (id) => {
+  const toggleStatus = (id: number) => {
     setState({
       ...state,
       entities: {

@@ -3,7 +3,7 @@ import CodeBlock from "../../CodeBlock";
 
 function PaymentFlowDemo() {
   const [strategy, setStrategy] = useState("checkout");
-  const [log, setLog] = useState([]);
+  const [log, setLog] = useState<string[]>([]);
   const [running, setRunning] = useState(false);
 
   const run = () => {

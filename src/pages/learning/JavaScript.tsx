@@ -10,7 +10,7 @@ import LearningTopicLayout from "../../components/LearningTopicLayout";
 import ScopeDemo from "../../components/demos/javascript-demos/ScopeDemo";
 import TemplateLiteralDemo from "../../components/demos/javascript-demos/TemplateLiteralDemo";
 
-const CONTENT_MAP = {
+const CONTENT_MAP: Record<string, typeof javascriptContentEn> = {
   en: javascriptContentEn,
   sv: javascriptContentSv,
 };

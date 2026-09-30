@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useProgress } from "../context/ProgressContext";
+import type { QuizQuestion } from "../types/content";
 
 /**
  * A short retrieval-practice quiz shown at the bottom of a lesson.
@@ -18,9 +19,16 @@ import { useProgress } from "../context/ProgressContext";
  */
 const SELF_CHECK_KEY = "Self-Check";
 
-function SelfCheckQuiz({ questions = [], topicKey }) {
+interface SelfCheckQuizProps {
+  questions?: QuizQuestion[];
+  topicKey: string;
+}
+
+function SelfCheckQuiz({ questions = [], topicKey }: SelfCheckQuizProps) {
   const { isSubtopicDone, toggleSubtopic } = useProgress();
-  const [selected, setSelected] = useState(() => questions.map(() => null));
+  const [selected, setSelected] = useState<(number | null)[]>(() =>
+    questions.map(() => null),
+  );
   const [checked, setChecked] = useState(false);
 
   const alreadyDone = isSubtopicDone(topicKey, SELF_CHECK_KEY);
@@ -47,7 +55,7 @@ function SelfCheckQuiz({ questions = [], topicKey }) {
     }
   }, [allCorrect, alreadyDone, toggleSubtopic, topicKey]);
 
-  const choose = (questionIndex, optionIndex) => {
+  const choose = (questionIndex: number, optionIndex: number) => {
     if (checked) return;
     setSelected((prev) => {
       const next = [...prev];

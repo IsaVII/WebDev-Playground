@@ -17,7 +17,9 @@ const REQUESTS = [
   { method: "GET", url: "/comments" },
 ];
 
-function matchRoute(req) {
+type Req = (typeof REQUESTS)[number];
+
+function matchRoute(req: Req) {
   for (const route of ROUTES) {
     if (route.method !== req.method) continue;
     const routeParts = route.path.split("/").filter(Boolean);
@@ -25,7 +27,7 @@ function matchRoute(req) {
     const reqParts = reqPath.split("/").filter(Boolean);
     if (routeParts.length !== reqParts.length) continue;
 
-    const params = {};
+    const params: Record<string, string> = {};
     const isMatch = routeParts.every((part, i) => {
       if (part.startsWith(":")) {
         params[part.slice(1)] = reqParts[i];
@@ -40,9 +42,9 @@ function matchRoute(req) {
 }
 
 function RoutingDemo() {
-  const [log, setLog] = useState([]);
+  const [log, setLog] = useState<{ req: Req; lines: string[] }[]>([]);
 
-  const send = (req) => {
+  const send = (req: Req) => {
     const result = matchRoute(req);
     const query = req.url.includes("?")
       ? Object.fromEntries(new URLSearchParams(req.url.split("?")[1]))

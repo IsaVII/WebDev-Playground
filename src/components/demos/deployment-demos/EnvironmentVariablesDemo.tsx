@@ -12,10 +12,10 @@ const ENV_VARS = [
 ];
 
 function EnvironmentVariablesDemo() {
-  const [revealed, setRevealed] = useState({});
-  const [log, setLog] = useState([]);
+  const [revealed, setRevealed] = useState<Record<string, boolean>>({});
+  const [log, setLog] = useState<string[]>([]);
 
-  const toggleReveal = (key) => setRevealed((r) => ({ ...r, [key]: !r[key] }));
+  const toggleReveal = (key: string) => setRevealed((r) => ({ ...r, [key]: !r[key] }));
 
   const buildApp = () => {
     const publicVars = ENV_VARS.filter((v) => v.public);

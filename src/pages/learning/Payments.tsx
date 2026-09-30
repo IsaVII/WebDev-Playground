@@ -10,7 +10,7 @@ import RefundsDemo from "../../components/demos/payments-demos/RefundsDemo";
 import TokenizationDemo from "../../components/demos/payments-demos/TokenizationDemo";
 import WebhookVerificationDemo from "../../components/demos/payments-demos/WebhookVerificationDemo";
 
-const CONTENT_MAP = {
+const CONTENT_MAP: Record<string, typeof paymentsContentEn> = {
   en: paymentsContentEn,
   sv: paymentsContentSv,
 };

@@ -15,7 +15,7 @@ function PaymentIntentStatusDemo() {
   const [status, setStatus] = useState("requires_payment_method");
   const [history, setHistory] = useState(["requires_payment_method"]);
 
-  const advance = (status) => {
+  const advance = (status: string) => {
     setStatus(status);
     setHistory((h) => [...h, status]);
   };
@@ -79,7 +79,7 @@ function PaymentIntentStatusDemo() {
       <div className="bg-surface rounded p-4 mb-4 border border-line">
         <p className="text-xs text-muted mb-1">Current status</p>
         <p className="font-mono text-sm text-accent mb-1">{status}</p>
-        <p className="text-xs text-muted">{STATUS_INFO[status]}</p>
+        <p className="text-xs text-muted">{STATUS_INFO[status as keyof typeof STATUS_INFO]}</p>
       </div>
 
       <div className="flex flex-wrap gap-2 mb-4">

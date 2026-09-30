@@ -2,7 +2,7 @@ import { useState } from "react";
 import CodeBlock from "../../CodeBlock";
 
 function AsyncPatternsDemo() {
-  const [log, setLog] = useState([]);
+  const [log, setLog] = useState<string[]>([]);
   const [pattern, setPattern] = useState("callback");
 
   const runCallback = () => {

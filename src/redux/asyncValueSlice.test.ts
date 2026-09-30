@@ -1,4 +1,5 @@
 import asyncValueReducer, { fetchRandomValue } from "./asyncValueSlice";
+import type { AppDispatch } from "./store";
 
 describe("asyncValueSlice", () => {
   it("starts idle with no value", () => {
@@ -41,10 +42,11 @@ describe("asyncValueSlice", () => {
     // random-value logic itself is covered too, not just the reducer.
     vi.useFakeTimers();
     try {
-      const dispatched = [];
+      const dispatched: { type: string; payload?: number }[] = [];
       const thunk = fetchRandomValue();
       const promise = thunk(
-        (action) => dispatched.push(action),
+        ((action: { type: string; payload?: number }) =>
+          dispatched.push(action)) as unknown as AppDispatch,
         () => ({}),
         undefined,
       );
@@ -56,8 +58,8 @@ describe("asyncValueSlice", () => {
         (a) => a.type === fetchRandomValue.fulfilled.type,
       );
       expect(fulfilled).toBeDefined();
-      expect(fulfilled.payload).toBeGreaterThanOrEqual(0);
-      expect(fulfilled.payload).toBeLessThan(100);
+      expect(fulfilled?.payload).toBeGreaterThanOrEqual(0);
+      expect(fulfilled?.payload).toBeLessThan(100);
     } finally {
       vi.useRealTimers();
     }

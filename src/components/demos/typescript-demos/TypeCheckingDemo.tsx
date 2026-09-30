@@ -5,11 +5,11 @@ import CodeBlock from "../../CodeBlock";
 // actually executes) against TypeScript (immediately, at compile time,
 // before anything runs) - both paths are simulated, not executed.
 function TypeCheckingDemo() {
-  const [mode, setMode] = useState("javascript"); // javascript | typescript
+  const [mode, setMode] = useState<"javascript" | "typescript">("javascript"); // javascript | typescript
   const [ran, setRan] = useState(false);
 
   const run = () => setRan(true);
-  const switchMode = (next) => {
+  const switchMode = (next: "javascript" | "typescript") => {
     setMode(next);
     setRan(false);
   };

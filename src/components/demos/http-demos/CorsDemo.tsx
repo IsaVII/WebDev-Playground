@@ -4,10 +4,10 @@ import CodeBlock from "../../CodeBlock";
 function CorsDemo() {
   const [serverAllows, setServerAllows] = useState(true);
   const [usePut, setUsePut] = useState(false);
-  const [log, setLog] = useState([]);
+  const [log, setLog] = useState<string[]>([]);
 
   const send = () => {
-    const entries = [];
+    const entries: string[] = [];
     const origin = "https://my-app.com";
     const allowHeader = serverAllows
       ? `Access-Control-Allow-Origin: ${origin}`

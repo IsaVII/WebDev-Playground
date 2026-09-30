@@ -31,7 +31,7 @@ function MockingDemo() {
       contextCode={contextCode}
       initialTest={initialTest}
       buildScope={() => ({
-        notifyUser: (logger, message) => {
+        notifyUser: (logger: (message: string) => void, message: string) => {
           logger(`Notifying: ${message}`);
           return true;
         },

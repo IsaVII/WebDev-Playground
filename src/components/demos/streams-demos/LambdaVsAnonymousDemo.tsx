@@ -23,7 +23,7 @@ const FORMS = {
 
 function LambdaVsAnonymousDemo() {
   const [form, setForm] = useState("Lambda");
-  const active = FORMS[form];
+  const active = FORMS[form as keyof typeof FORMS];
 
   return (
     <div className="bg-surface-alt border border-line rounded p-6">

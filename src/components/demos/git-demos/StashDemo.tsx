@@ -3,7 +3,7 @@ import CodeBlock from "../../CodeBlock";
 
 function StashDemo() {
   const [workingChanges, setWorkingChanges] = useState(false);
-  const [stashes, setStashes] = useState([]);
+  const [stashes, setStashes] = useState<string[]>([]);
 
   const makeChanges = () => setWorkingChanges(true);
 

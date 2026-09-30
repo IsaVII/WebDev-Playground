@@ -48,7 +48,7 @@ const ITEMS = [
 const OPTIONS = ["Stack", "Heap"];
 
 function StackOrHeapDemo() {
-  const [picks, setPicks] = useState({});
+  const [picks, setPicks] = useState<Record<string, string>>({});
   const [checked, setChecked] = useState(false);
 
   const allPicked = ITEMS.every((item) => picks[item.id]);

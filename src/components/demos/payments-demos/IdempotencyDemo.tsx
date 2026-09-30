@@ -5,8 +5,10 @@ let nextChargeId = 1;
 
 function IdempotencyDemo() {
   const [useKey, setUseKey] = useState(true);
-  const [charges, setCharges] = useState([]);
-  const [seenKeys, setSeenKeys] = useState(new Set());
+  const [charges, setCharges] = useState<
+    { id: number; note: string; duplicate: boolean }[]
+  >([]);
+  const [seenKeys, setSeenKeys] = useState(new Set<string>());
 
   const IDEMPOTENCY_KEY = "order_7421";
 

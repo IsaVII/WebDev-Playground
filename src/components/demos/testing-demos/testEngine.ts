@@ -10,7 +10,14 @@
  * replace Jest/Vitest in a real project.
  */
 
-function stringify(value) {
+// Learner-written tests can pass literally anything to expect() and the
+// mock helpers, so their values are `any` on purpose.
+
+function errorMessage(err: unknown) {
+  return err instanceof Error ? err.message : String(err);
+}
+
+function stringify(value: any): string | undefined {
   if (typeof value === "function") return value.name ? `[Function: ${value.name}]` : "[Function]";
   try {
     return JSON.stringify(value);
@@ -19,7 +26,7 @@ function stringify(value) {
   }
 }
 
-function deepEqual(a, b) {
+function deepEqual(a: any, b: any): boolean {
   if (Object.is(a, b)) return true;
   if (typeof a !== typeof b) return false;
   if (a === null || b === null) return a === b;
@@ -31,14 +38,14 @@ function deepEqual(a, b) {
 }
 
 function createExpect() {
-  return function expect(actual) {
+  return function expect(actual: any) {
     const matchers = {
-      toBe(expected) {
+      toBe(expected: any) {
         if (!Object.is(actual, expected)) {
           throw new Error(`expected ${stringify(actual)} to be ${stringify(expected)}`);
         }
       },
-      toEqual(expected) {
+      toEqual(expected: any) {
         if (!deepEqual(actual, expected)) {
           throw new Error(`expected ${stringify(actual)} to equal ${stringify(expected)}`);
         }
@@ -49,17 +56,17 @@ function createExpect() {
       toBeFalsy() {
         if (actual) throw new Error(`expected ${stringify(actual)} to be falsy`);
       },
-      toContain(item) {
+      toContain(item: any) {
         if (!actual || !actual.includes(item)) {
           throw new Error(`expected ${stringify(actual)} to contain ${stringify(item)}`);
         }
       },
-      toHaveLength(length) {
+      toHaveLength(length: number) {
         if (!actual || actual.length !== length) {
           throw new Error(`expected ${stringify(actual)} to have length ${length}`);
         }
       },
-      toBeGreaterThan(n) {
+      toBeGreaterThan(n: number) {
         if (!(actual > n)) {
           throw new Error(`expected ${stringify(actual)} to be greater than ${n}`);
         }
@@ -81,15 +88,15 @@ function createExpect() {
           throw new Error("expected mock function to have been called");
         }
       },
-      toHaveBeenCalledTimes(times) {
+      toHaveBeenCalledTimes(times: number) {
         const count = actual?.mock?.calls.length ?? 0;
         if (count !== times) {
           throw new Error(`expected mock to have been called ${times} time(s), but it was called ${count} time(s)`);
         }
       },
-      toHaveBeenCalledWith(...args) {
+      toHaveBeenCalledWith(...args: any[]) {
         const calls = actual?.mock?.calls ?? [];
-        if (!calls.some((call) => deepEqual(call, args))) {
+        if (!calls.some((call: any[]) => deepEqual(call, args))) {
           throw new Error(`expected mock to have been called with ${stringify(args)}`);
         }
       },
@@ -99,15 +106,21 @@ function createExpect() {
 }
 
 /** Wraps a function so every call is recorded on `.mock.calls`. */
-export function createMock(implementation) {
+export interface MockFn {
+  (...args: any[]): any;
+  mock: { calls: any[][] };
+  mockReturnValue: (value: any) => MockFn;
+}
+
+export function createMock(implementation?: (...args: any[]) => any): MockFn {
   let impl = implementation;
-  const mock = { calls: [] };
-  const fn = (...args) => {
+  const mock: { calls: any[][] } = { calls: [] };
+  const fn = ((...args: any[]) => {
     mock.calls.push(args);
     return impl ? impl(...args) : undefined;
-  };
+  }) as MockFn;
   fn.mock = mock;
-  fn.mockReturnValue = (value) => {
+  fn.mockReturnValue = (value: any) => {
     impl = () => value;
     return fn;
   };
@@ -115,7 +128,7 @@ export function createMock(implementation) {
 }
 
 /** Wraps a real object method so it's still called (unlike createMock), while recording calls. */
-export function createSpy(obj, methodName) {
+export function createSpy(obj: Record<string, any>, methodName: string) {
   const original = obj[methodName].bind(obj);
   const spy = createMock(original);
   obj[methodName] = spy;
@@ -126,15 +139,31 @@ export function createSpy(obj, methodName) {
  * Runs learner-supplied test source against a scope of globals (the code
  * under test, plus test helpers). Returns { syntaxError, results }.
  */
-export async function runTests(source, scope = {}) {
-  const registered = [];
-  const test = (name, fn) => registered.push({ name, fn });
-  test.skip = () => {};
+export interface TestResult {
+  name: string;
+  passed: boolean;
+  error?: string;
+}
+
+export interface TestRun {
+  syntaxError: string | null;
+  results: TestResult[];
+}
+
+export async function runTests(
+  source: string,
+  scope: Record<string, any> = {},
+): Promise<TestRun> {
+  const registered: { name: string; fn: () => unknown }[] = [];
+  const test = Object.assign(
+    (name: string, fn: () => unknown) => registered.push({ name, fn }),
+    { skip: () => {} },
+  );
 
   const scopeKeys = Object.keys(scope);
   const scopeValues = Object.values(scope);
 
-  let compiled;
+  let compiled: (...args: any[]) => unknown;
   try {
     // eslint-disable-next-line no-new-func
     compiled = new Function(
@@ -143,28 +172,28 @@ export async function runTests(source, scope = {}) {
       "expect",
       ...scopeKeys,
       `"use strict";\n${source}`,
-    );
+    ) as (...args: any[]) => unknown;
   } catch (err) {
-    return { syntaxError: err.message, results: [] };
+    return { syntaxError: errorMessage(err), results: [] };
   }
 
   try {
     compiled(test, test, createExpect(), ...scopeValues);
   } catch (err) {
-    return { syntaxError: err.message, results: [] };
+    return { syntaxError: errorMessage(err), results: [] };
   }
 
   if (registered.length === 0) {
     return { syntaxError: "No test(...) calls found - write at least one test.", results: [] };
   }
 
-  const results = [];
+  const results: TestResult[] = [];
   for (const { name, fn } of registered) {
     try {
       await fn();
       results.push({ name, passed: true });
     } catch (err) {
-      results.push({ name, passed: false, error: err.message });
+      results.push({ name, passed: false, error: errorMessage(err) });
     }
   }
   return { syntaxError: null, results };

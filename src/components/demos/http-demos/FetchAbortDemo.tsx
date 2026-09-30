@@ -5,8 +5,10 @@ import CodeBlock from "../../CodeBlock";
 // uses a *real* AbortController signal the same way fetch does: it
 // listens for the "abort" event and rejects with a DOMException named
 // "AbortError", exactly like the browser's own fetch implementation.
-function slowRequest(signal) {
-  return new Promise((resolve, reject) => {
+type User = { id: number; name: string };
+
+function slowRequest(signal: AbortSignal) {
+  return new Promise<User>((resolve, reject) => {
     const timer = setTimeout(
       () => resolve({ id: 7, name: "Ada Lovelace" }),
       3000,
@@ -21,8 +23,8 @@ function slowRequest(signal) {
 
 function FetchAbortDemo() {
   const [status, setStatus] = useState("idle"); // idle | loading | success | aborted | error
-  const [result, setResult] = useState(null);
-  const controllerRef = useRef(null);
+  const [result, setResult] = useState<User | null>(null);
+  const controllerRef = useRef<AbortController | null>(null);
 
   const start = async () => {
     const controller = new AbortController();
@@ -35,7 +37,7 @@ function FetchAbortDemo() {
       setResult(data);
       setStatus("success");
     } catch (error) {
-      if (error.name === "AbortError") {
+      if ((error as Error).name === "AbortError") {
         setStatus("aborted");
       } else {
         setStatus("error");

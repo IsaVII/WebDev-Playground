@@ -35,7 +35,7 @@ function FixturesDemo() {
       initialTest={initialTest}
       buildScope={() => ({
         userFixture: { id: 1, name: "Ada Lovelace", roles: ["admin"] },
-        isAdmin: (user) => user.roles.includes("admin"),
+        isAdmin: (user: { roles: string[] }) => user.roles.includes("admin"),
       })}
       hint="Replace the object literal with userFixture itself."
     />

@@ -8,7 +8,7 @@ import WebSocketDemo from "../../components/demos/http-demos/WebSocketDemo";
 import webSocketsContentEn from "../../data/en/learning/webSocketsContent.json";
 import webSocketsContentSv from "../../data/sv/learning/webSocketsContent.json";
 
-const CONTENT_MAP = {
+const CONTENT_MAP: Record<string, typeof webSocketsContentEn> = {
   en: webSocketsContentEn,
   sv: webSocketsContentSv,
 };

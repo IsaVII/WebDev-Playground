@@ -3,7 +3,7 @@ import CheatSheetLayout from "../../components/CheatSheetLayout";
 import sqlDataEn from "../../data/en/cheatsheets/sql.json";
 import sqlDataSv from "../../data/sv/cheatsheets/sql.json";
 
-const CONTENT_MAP = {
+const CONTENT_MAP: Record<string, typeof sqlDataEn> = {
   en: sqlDataEn,
   sv: sqlDataSv,
 };
@@ -11,7 +11,7 @@ const CONTENT_MAP = {
 function SQL() {
   const { i18n } = useTranslation();
   const sqlData = CONTENT_MAP[i18n.language] || CONTENT_MAP.en;
-  const sqlContent = sqlData.default || sqlData;
+  const sqlContent = sqlData;
 
   return (
     <CheatSheetLayout
@@ -20,8 +20,6 @@ function SQL() {
       introduction={sqlContent.introduction}
       prerequisites={sqlContent.prerequisites}
       steps={sqlContent.steps}
-      gettingStarted={sqlContent.gettingStarted}
-      source={sqlContent.source}
     />
   );
 }

@@ -3,10 +3,10 @@ import CodeBlock from "../../CodeBlock";
 
 function NpmDemo() {
   const [dependencies, setDependencies] = useState({});
-  const [scripts, setScripts] = useState([]);
-  const [log, setLog] = useState([]);
+  const [scripts, setScripts] = useState<string[]>([]);
+  const [log, setLog] = useState<string[]>([]);
 
-  const installPackage = (name, version) => {
+  const installPackage = (name: string, version: string) => {
     setDependencies((prev) => ({ ...prev, [name]: version }));
     setLog((l) => [
       ...l,
@@ -16,7 +16,7 @@ function NpmDemo() {
     ]);
   };
 
-  const runScript = (scriptName, command) => {
+  const runScript = (scriptName: string, command: string) => {
     setLog((l) => [...l, `npm run ${scriptName}`, `> ${command}`, "✓ Done"]);
   };
 

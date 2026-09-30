@@ -3,7 +3,7 @@ import CheatSheetLayout from "../../components/CheatSheetLayout";
 import textRevealContentEn from "../../data/en/cheatsheets/textReveal.json";
 import textRevealContentSv from "../../data/sv/cheatsheets/textReveal.json";
 
-const CONTENT_MAP = {
+const CONTENT_MAP: Record<string, typeof textRevealContentEn> = {
   en: textRevealContentEn,
   sv: textRevealContentSv,
 };
@@ -20,7 +20,6 @@ function TextReveal() {
       steps={textRevealContent.steps}
       whatYouMightBeMissing={textRevealContent.whatYouMightBeMissing}
       gettingStarted={textRevealContent.gettingStarted}
-      source={textRevealContent.source}
     />
   );
 }

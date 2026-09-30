@@ -1,8 +1,15 @@
+import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 
 const LAST_UPDATED = "August 28, 2026";
 
-function Section({ id, title, children }) {
+interface SectionProps {
+  id: string;
+  title: string;
+  children: ReactNode;
+}
+
+function Section({ id, title, children }: SectionProps) {
   return (
     <section id={id} className="scroll-mt-24">
       <h2 className="text-xl font-semibold mb-3 text-heading">{title}</h2>
@@ -137,7 +144,7 @@ export default function CookiePolicy() {
             Nothing you enter or check off is ever sent to a server — these
             cookies are read and written entirely by your browser, via the
             helpers in{" "}
-            <code className="font-mono text-xs">src/utils/cookies.js</code>.
+            <code className="font-mono text-xs">src/utils/cookies.ts</code>.
           </p>
         </Section>
 

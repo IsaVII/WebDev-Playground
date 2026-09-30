@@ -44,7 +44,7 @@ const { error } = await stripe.confirmCardPayment(clientSecret, {
 
 function CheckoutVsElementsDemo() {
   const [choice, setChoice] = useState("checkout");
-  const option = OPTIONS[choice];
+  const option = OPTIONS[choice as keyof typeof OPTIONS];
 
   return (
     <div className="bg-surface-alt border border-line rounded p-6">

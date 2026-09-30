@@ -1,7 +1,15 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import CodeBlock from "../../CodeBlock";
 
-function Column({ title, children, active }) {
+function Column({
+  title,
+  children,
+  active,
+}: {
+  title: string;
+  children: ReactNode;
+  active?: boolean;
+}) {
   return (
     <div
       className={`bg-surface rounded p-4 border ${

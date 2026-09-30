@@ -29,7 +29,7 @@ const SERVICES = {
 };
 
 function ContainerArchitectureDemo() {
-  const [active, setActive] = useState("api");
+  const [active, setActive] = useState<keyof typeof SERVICES>("api");
   const service = SERVICES[active];
 
   return (
@@ -40,7 +40,7 @@ function ContainerArchitectureDemo() {
       </p>
 
       <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
-        {["client", "api", "db"].map((key, i) => (
+        {(["client", "api", "db"] as const).map((key, i) => (
           <div key={key} className="flex items-center gap-3">
             <button
               onClick={() => setActive(key)}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import learningContentEn from "../data/en/learningContent.json";
@@ -7,8 +7,14 @@ import javaBackendEn from "../data/en/javaBackend.json";
 import learningContentSv from "../data/sv/learningContent.json";
 import cheatsheetsSv from "../data/sv/cheatsheets.json";
 import javaBackendSv from "../data/sv/javaBackend.json";
+import type { TopicIndex, TopicSummary } from "../types/content";
 
-const CONTENT_MAP = {
+type SearchResult = TopicSummary & { type: string };
+
+const CONTENT_MAP: Record<
+  string,
+  { learning: TopicIndex; cheatsheets: TopicIndex; javaBackend: TopicIndex }
+> = {
   en: {
     learning: learningContentEn,
     cheatsheets: cheatsheetsEn,
@@ -42,11 +48,11 @@ function SearchIcon() {
 
 function SearchBar() {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState([]);
+  const [results, setResults] = useState<SearchResult[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const searchRef = useRef(null);
-  const inputRef = useRef(null);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
 
@@ -60,7 +66,7 @@ function SearchBar() {
     CONTENT_MAP[currentLang]?.javaBackend || CONTENT_MAP.en.javaBackend;
 
   // Combine all searchable content
-  const ALL_CONTENT = [
+  const ALL_CONTENT: SearchResult[] = [
     ...learningContent.topics.map((topic) => ({
       ...topic,
       type: t("header.learning"),
@@ -100,13 +106,16 @@ function SearchBar() {
 
   // Close on outside click or Escape
   useEffect(() => {
-    function handlePointerDown(event) {
-      if (searchRef.current && !searchRef.current.contains(event.target)) {
+    function handlePointerDown(event: MouseEvent) {
+      if (
+        searchRef.current &&
+        !searchRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     }
 
-    function handleKeyDown(event) {
+    function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
         setIsOpen(false);
         inputRef.current?.blur();
@@ -122,7 +131,7 @@ function SearchBar() {
   }, []);
 
   // Keyboard navigation
-  const handleKeyDown = (e) => {
+  const handleKeyDown = (e: ReactKeyboardEvent<HTMLInputElement>) => {
     if (!isOpen || results.length === 0) return;
 
     switch (e.key) {
@@ -147,14 +156,14 @@ function SearchBar() {
     }
   };
 
-  const handleSelect = (item) => {
+  const handleSelect = (item: SearchResult) => {
     navigate(item.route);
     setQuery("");
     setIsOpen(false);
     inputRef.current?.blur();
   };
 
-  const getDifficultyColor = (difficulty) => {
+  const getDifficultyColor = (difficulty?: string) => {
     switch (difficulty?.toLowerCase()) {
       case "beginner":
         return "text-green-400";

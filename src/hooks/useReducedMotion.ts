@@ -15,7 +15,7 @@ function useReducedMotion() {
 
   useEffect(() => {
     const query = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const handleChange = (e) => setReduced(e.matches);
+    const handleChange = (e: MediaQueryListEvent) => setReduced(e.matches);
     query.addEventListener("change", handleChange);
     return () => query.removeEventListener("change", handleChange);
   }, []);

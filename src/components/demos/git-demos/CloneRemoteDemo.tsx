@@ -3,7 +3,13 @@ import CodeBlock from "../../CodeBlock";
 
 const REMOTE_HISTORY = ["Initial commit", "Add README"];
 
-function CommitList({ commits, emptyLabel }) {
+function CommitList({
+  commits,
+  emptyLabel,
+}: {
+  commits: string[];
+  emptyLabel: string;
+}) {
   if (commits.length === 0) {
     return <p className="text-subtle text-sm">{emptyLabel}</p>;
   }
@@ -21,7 +27,7 @@ function CommitList({ commits, emptyLabel }) {
 function CloneRemoteDemo() {
   const [cloned, setCloned] = useState(false);
   const [remote, setRemote] = useState(REMOTE_HISTORY);
-  const [local, setLocal] = useState([]);
+  const [local, setLocal] = useState<string[]>([]);
 
   const clone = () => {
     setLocal([...remote]);

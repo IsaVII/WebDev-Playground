@@ -1,12 +1,13 @@
 import { useMemo, useState } from "react";
 import { useSelector } from "react-redux";
+import type { RootState } from "../../../redux/store";
 import CodeBlock from "../../CodeBlock";
 
 function MemoizedSelectorsDemo() {
   const [renderCount, setRenderCount] = useState(0);
 
   // Non-memoized selector - creates a new array on every call
-  const expensiveSelector = (state) => {
+  const expensiveSelector = (state: RootState) => {
     return state.activityLog.entries
       .filter((entry) => entry.action.includes("incremented"))
       .map((entry) => entry.action);
@@ -17,7 +18,7 @@ function MemoizedSelectorsDemo() {
 
   // Memoized version using useMemo
   const memoizedFilteredActions = useSelector(
-    (state) => state.activityLog.entries,
+    (state: RootState) => state.activityLog.entries,
   );
 
   const memoizedResult = useMemo(

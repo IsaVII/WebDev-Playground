@@ -1,5 +1,5 @@
 /**
- * Suspense fallback for the lazy-loaded page routes in App.jsx. Two parts:
+ * Suspense fallback for the lazy-loaded page routes in App.tsx. Two parts:
  * an indeterminate bar (loading-bar-* keyframes in motion.css) that reads
  * as "something is happening" without promising a specific duration, and
  * a pulsing label for anyone who can't see color/motion well. Kept

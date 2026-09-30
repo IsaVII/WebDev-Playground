@@ -7,7 +7,7 @@ import LambdaVsAnonymousDemo from "../../components/demos/streams-demos/LambdaVs
 import CollectorsDemo from "../../components/demos/streams-demos/CollectorsDemo";
 import OptionalDemo from "../../components/demos/streams-demos/OptionalDemo";
 
-const CONTENT_MAP = {
+const CONTENT_MAP: Record<string, typeof streamsContentEn> = {
   en: streamsContentEn,
   sv: streamsContentSv,
 };

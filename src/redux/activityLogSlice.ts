@@ -3,15 +3,19 @@ import { incremented, decremented } from "./counterSlice";
 
 const MAX_ENTRIES = 6;
 
+type ActivityEntry = { action: string; timestamp: string };
+
+const initialState: { entries: ActivityEntry[] } = {
+  entries: [],
+};
+
 // This slice never handles its own actions in `reducers` - instead it uses
 // extraReducers to listen to actions from other slices (like counterSlice),
 // which is a direct demonstration of how slices can respond to external actions
 // without being coupled to them.
 const activityLogSlice = createSlice({
   name: "activityLog",
-  initialState: {
-    entries: [],
-  },
+  initialState,
   reducers: {},
   extraReducers: (builder) => {
     // Listen to specific counter actions

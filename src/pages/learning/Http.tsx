@@ -12,7 +12,7 @@ import RestJsonDemo from "../../components/demos/http-demos/RestJsonDemo";
 import SseDemo from "../../components/demos/http-demos/SseDemo";
 import WebSocketDemo from "../../components/demos/http-demos/WebSocketDemo";
 
-const CONTENT_MAP = {
+const CONTENT_MAP: Record<string, typeof httpContentEn> = {
   en: httpContentEn,
   sv: httpContentSv,
 };

@@ -3,7 +3,7 @@ import CodeBlock from "../../CodeBlock";
 
 function ComposeNetworkingDemo() {
   const [host, setHost] = useState("db");
-  const [log, setLog] = useState([]);
+  const [log, setLog] = useState<string[]>([]);
 
   const connect = () => {
     if (host === "db") {

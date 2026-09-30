@@ -53,7 +53,7 @@ const PLATFORMS = [
 ];
 
 function PlatformComparisonDemo() {
-  const [selectedNeed, setSelectedNeed] = useState(null);
+  const [selectedNeed, setSelectedNeed] = useState<string | null>(null);
   const need = NEEDS.find((n) => n.id === selectedNeed);
 
   return (
@@ -89,7 +89,7 @@ function PlatformComparisonDemo() {
         {need && (
           <p className="text-sm text-heading-alt">
             <strong className="text-accent">
-              {PLATFORMS.find((p) => p.id === need.recommend).name}
+              {PLATFORMS.find((p) => p.id === need.recommend)!.name}
             </strong>{" "}
             - {need.reasoning}
           </p>

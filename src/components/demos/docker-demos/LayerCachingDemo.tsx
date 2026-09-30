@@ -14,10 +14,17 @@ const BAD_ORDER = [
   { step: "RUN npm run build", cost: 6, dependsOnDeps: false },
 ];
 
+type Step = (typeof GOOD_ORDER)[number];
+
+type CacheResult = {
+  outcome: (Step & { cacheHit: boolean })[];
+  wastedSeconds: number;
+};
+
 function LayerCachingDemo() {
   const [goodOrder, setGoodOrder] = useState(true);
   const [changed, setChanged] = useState("source");
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState<CacheResult | null>(null);
 
   const steps = goodOrder ? GOOD_ORDER : BAD_ORDER;
 

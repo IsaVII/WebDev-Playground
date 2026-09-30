@@ -4,7 +4,7 @@ import CodeBlock from "../../CodeBlock";
 // A tiny illustrative token generator - NOT how Stripe actually does it,
 // just enough to show "raw card number goes in, an opaque reference comes
 // out, and only the reference ever leaves the browser" for the demo.
-function fakeTokenize(cardNumber) {
+function fakeTokenize(cardNumber: string) {
   let h = 0;
   for (let i = 0; i < cardNumber.length; i++) {
     h = (Math.imul(31, h) + cardNumber.charCodeAt(i)) | 0;
@@ -14,8 +14,8 @@ function fakeTokenize(cardNumber) {
 
 function TokenizationDemo() {
   const [cardNumber, setCardNumber] = useState("4242 4242 4242 4242");
-  const [token, setToken] = useState(null);
-  const [sentToServer, setSentToServer] = useState(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [sentToServer, setSentToServer] = useState<string | null>(null);
 
   const collectCard = () => {
     // In a real integration this call is made by Stripe.js/Elements,

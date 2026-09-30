@@ -1,9 +1,10 @@
 import { useDispatch, useSelector } from "react-redux";
+import type { RootState } from "../../../redux/store";
 import { decremented, incremented } from "../../../redux/counterSlice";
 import CodeBlock from "../../CodeBlock";
 
 function StoreCounterDemo() {
-  const value = useSelector((state) => state.counter.value);
+  const value = useSelector((state: RootState) => state.counter.value);
   const dispatch = useDispatch();
 
   const incrementIfOdd = () => {

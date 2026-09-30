@@ -6,24 +6,27 @@ import useReducedMotion from "./useReducedMotion";
  * "change" event on demand, the way the OS would when someone flips their
  * reduced-motion setting mid-session.
  */
-function installMatchMediaMock(initialMatches) {
-  let listener;
+function installMatchMediaMock(initialMatches: boolean) {
+  let listener: ((event: { matches: boolean }) => void) | undefined;
   const mql = {
     matches: initialMatches,
     media: "(prefers-reduced-motion: reduce)",
-    addEventListener: (_event, cb) => {
+    addEventListener: (
+      _event: string,
+      cb: (event: { matches: boolean }) => void,
+    ) => {
       listener = cb;
     },
     removeEventListener: () => {
       listener = undefined;
     },
   };
-  window.matchMedia = () => mql;
+  window.matchMedia = (() => mql) as unknown as typeof window.matchMedia;
 
   return {
-    fireChange(matches) {
+    fireChange(matches: boolean) {
       mql.matches = matches;
-      act(() => listener({ matches }));
+      act(() => listener?.({ matches }));
     },
   };
 }

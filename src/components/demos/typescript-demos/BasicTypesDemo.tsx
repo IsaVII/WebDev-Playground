@@ -37,7 +37,7 @@ function BasicTypesDemo() {
   const [attempted, setAttempted] = useState(false);
   const sample = SAMPLES[index];
 
-  const pick = (i) => {
+  const pick = (i: number) => {
     setIndex(i);
     setAttempted(false);
   };

@@ -3,7 +3,7 @@ import CodeBlock from "../../CodeBlock";
 
 // A tiny illustrative signature - NOT real HMAC-SHA256, just enough to show
 // "signature depends on the exact bytes + a shared secret" for the demo.
-function fakeSign(payload, secret) {
+function fakeSign(payload: string, secret: string) {
   let h = 0;
   const combined = payload + secret;
   for (let i = 0; i < combined.length; i++) {
@@ -21,7 +21,7 @@ function WebhookVerificationDemo() {
   const [receivedSignature, setReceivedSignature] = useState(
     fakeSign(ORIGINAL_PAYLOAD, SECRET),
   );
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState<boolean | null>(null);
 
   const tamper = () => {
     setPayload(

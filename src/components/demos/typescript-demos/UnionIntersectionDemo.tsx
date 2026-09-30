@@ -5,18 +5,22 @@ import CodeBlock from "../../CodeBlock";
 // operations common to every member of the union until a typeof check
 // narrows it down to one branch, at which point type-specific operations
 // become available.
-const VALUES = [
+type DemoValue =
+  | { label: string; value: string; type: "string" }
+  | { label: string; value: number; type: "number" };
+
+const VALUES: DemoValue[] = [
   { label: '"hello"', value: "hello", type: "string" },
   { label: "42", value: 42, type: "number" },
 ];
 
-function FunctionOf(id) {
+function FunctionOf(id: string) {
   return VALUES.find((v) => v.label === id);
 }
 
 function UnionIntersectionDemo() {
   const [selected, setSelected] = useState(VALUES[0].label);
-  const current = FunctionOf(selected);
+  const current = FunctionOf(selected)!;
 
   return (
     <div className="bg-surface-alt border border-line rounded p-6">

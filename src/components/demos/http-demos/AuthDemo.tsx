@@ -2,8 +2,8 @@ import { useState } from "react";
 import CodeBlock from "../../CodeBlock";
 
 function AuthDemo() {
-  const [token, setToken] = useState(null);
-  const [log, setLog] = useState([]);
+  const [token, setToken] = useState<string | null>(null);
+  const [log, setLog] = useState<string[]>([]);
 
   const login = () => {
     const fakeToken = "eyJhbGciOi...demo-jwt";

@@ -5,9 +5,9 @@ const STAGES = ["Push", "Install", "Lint", "Test", "Build", "Deploy", "Live"];
 
 function DeploymentPipelineDemo() {
   const [testsPass, setTestsPass] = useState(true);
-  const [log, setLog] = useState([]);
+  const [log, setLog] = useState<string[]>([]);
   const [activeStage, setActiveStage] = useState(-1);
-  const [failedAt, setFailedAt] = useState(null);
+  const [failedAt, setFailedAt] = useState<number | null>(null);
   const [running, setRunning] = useState(false);
 
   const run = () => {

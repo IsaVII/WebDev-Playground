@@ -42,9 +42,9 @@ const PACKAGES = [
 ];
 
 function ThirdPartyMiddlewareDemo() {
-  const [log, setLog] = useState([]);
+  const [log, setLog] = useState<(typeof PACKAGES)[number][]>([]);
 
-  const inspect = (pkg) => {
+  const inspect = (pkg: (typeof PACKAGES)[number]) => {
     setLog((l) => [...l, pkg]);
   };
 

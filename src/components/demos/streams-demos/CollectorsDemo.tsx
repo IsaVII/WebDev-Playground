@@ -15,7 +15,7 @@ const COLLECTORS = {
     groupingBy(Person::dept))`,
     resultType: "Map<String, List<Person>>",
     run: () => {
-      const m = {};
+      const m: Record<string, string[]> = {};
       for (const p of PEOPLE) (m[p.dept] ??= []).push(p.name);
       return Object.entries(m)
         .map(([k, v]) => `${k} = [${v.join(", ")}]`)
@@ -44,7 +44,7 @@ const COLLECTORS = {
     groupingBy(Person::dept, counting()))`,
     resultType: "Map<String, Long>",
     run: () => {
-      const m = {};
+      const m: Record<string, number> = {};
       for (const p of PEOPLE) m[p.dept] = (m[p.dept] ?? 0) + 1;
       return Object.entries(m)
         .map(([k, v]) => `${k} = ${v}`)
@@ -55,7 +55,7 @@ const COLLECTORS = {
 
 function CollectorsDemo() {
   const [key, setKey] = useState("groupingBy(dept)");
-  const active = COLLECTORS[key];
+  const active = COLLECTORS[key as keyof typeof COLLECTORS];
 
   return (
     <div className="bg-surface-alt border border-line rounded p-6">

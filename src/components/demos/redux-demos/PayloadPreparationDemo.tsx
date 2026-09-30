@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import CodeBlock from "../../CodeBlock";
 
 // Simulated slice action with prepare callback
-const createTaskAction = (title, priority) => ({
+const createTaskAction = (title: string, priority: string) => ({
   type: "tasks/taskAdded",
   payload: {
     id: Date.now(),
@@ -13,10 +13,12 @@ const createTaskAction = (title, priority) => ({
   },
 });
 
+type Task = ReturnType<typeof createTaskAction>["payload"];
+
 function PayloadPreparationDemo() {
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState("medium");
-  const [tasks, setTasks] = useState([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const dispatch = useDispatch();
 
   const handleAdd = () => {

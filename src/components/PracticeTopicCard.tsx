@@ -1,7 +1,19 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useProgress } from "../context/ProgressContext";
 
-function PracticeTopicCard({ topicKey, title, description, demo }) {
+interface PracticeTopicCardProps {
+  topicKey: string;
+  title: string;
+  description: string;
+  demo: ReactNode;
+}
+
+function PracticeTopicCard({
+  topicKey,
+  title,
+  description,
+  demo,
+}: PracticeTopicCardProps) {
   const [open, setOpen] = useState(false);
   const { isSubtopicDone, toggleSubtopic } = useProgress();
   const done = isSubtopicDone(topicKey, title);

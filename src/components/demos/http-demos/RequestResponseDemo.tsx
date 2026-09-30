@@ -25,7 +25,7 @@ const STAGES = [
 ];
 
 function RequestResponseDemo() {
-  const [log, setLog] = useState([]);
+  const [log, setLog] = useState<string[]>([]);
   const [running, setRunning] = useState(false);
 
   const run = () => {

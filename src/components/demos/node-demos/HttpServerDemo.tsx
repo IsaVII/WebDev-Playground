@@ -10,7 +10,7 @@ function HttpServerDemo() {
   const [quotes, setQuotes] = useState([
     "Node.js runs JavaScript outside the browser.",
   ]);
-  const [log, setLog] = useState([]);
+  const [log, setLog] = useState<string[]>([]);
 
   const get = () => {
     setLog((l) => [...l, `GET /quotes -> 200 ${JSON.stringify(quotes)}`]);

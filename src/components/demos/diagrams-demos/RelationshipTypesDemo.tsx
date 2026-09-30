@@ -48,7 +48,7 @@ const RELATIONSHIPS = {
 };
 
 function RelationshipTypesDemo() {
-  const [kind, setKind] = useState("Composition");
+  const [kind, setKind] = useState<keyof typeof RELATIONSHIPS>("Composition");
   const active = RELATIONSHIPS[kind];
 
   return (
@@ -59,7 +59,9 @@ function RelationshipTypesDemo() {
       </p>
 
       <div className="flex flex-wrap gap-2 mb-4">
-        {Object.keys(RELATIONSHIPS).map((name) => (
+        {(
+          Object.keys(RELATIONSHIPS) as (keyof typeof RELATIONSHIPS)[]
+        ).map((name) => (
           <button
             key={name}
             type="button"

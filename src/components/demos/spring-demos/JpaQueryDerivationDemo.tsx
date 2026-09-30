@@ -23,7 +23,7 @@ const KEYWORDS = [
 ];
 
 // Very small parser: turn a derived-query method name into rough JPQL.
-function derive(name) {
+function derive(name: string) {
   const m = name.match(/^(find|read|get|query|count|exists)(\w*?)By(.+)$/);
   if (!m) {
     return {
@@ -38,14 +38,14 @@ function derive(name) {
   if (ob) {
     body = ob[1];
     orderBy = ob[2]
-      .replace(/(Asc|Desc)/g, (d) => ` ${d.toLowerCase()}`)
+      .replace(/(Asc|Desc)/g, (d: string) => ` ${d.toLowerCase()}`)
       .replace(/([a-z])([A-Z])/g, "$1, $2")
       .toLowerCase();
   }
   const conditions = body
     .split(/And|Or/)
     .filter(Boolean)
-    .map((part) =>
+    .map((part: string) =>
       part
         .replace(/GreaterThan/, " > ?")
         .replace(/LessThan/, " < ?")
@@ -58,7 +58,7 @@ function derive(name) {
     );
   const connector = body.includes("Or") ? " or " : " and ";
   const where = conditions.length
-    ? `\nwhere ${conditions.map((c) => (/[<>?=]/.test(c) ? c : `${c} = ?`)).join(connector)}`
+    ? `\nwhere ${conditions.map((c: string) => (/[<>?=]/.test(c) ? c : `${c} = ?`)).join(connector)}`
     : "";
   const select = verb === "count" ? "select count(e)" : "select e";
   const limit = /^Top(\d+)|^First(\d+)/.exec(distinctOrTop);

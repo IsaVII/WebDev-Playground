@@ -25,7 +25,8 @@ function UnitTestDemo() {
       contextLabel="math.js"
       contextCode={contextCode}
       initialTest={initialTest}
-      buildScope={() => ({ average: (numbers) => numbers.reduce((s, n) => s + n, 0) / numbers.length })}
+      buildScope={() => ({ average: (numbers: number[]) =>
+          numbers.reduce((s, n) => s + n, 0) / numbers.length })}
       hint="(2 + 4 + 6) / 3 - what does that actually equal?"
     />
   );

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, type ComponentType, type ReactNode } from "react";
 import ProgressRing from "./ProgressRing";
 import ContentCard from "./ContentCard";
 import PracticeTopicCard from "./PracticeTopicCard";
@@ -8,6 +8,14 @@ import { useProgress } from "../context/ProgressContext";
 import Reveal from "./motion/Reveal";
 import TextReveal from "./motion/TextReveal";
 import { loadCombinedExample } from "../utils/codeExamples";
+import type {
+  CoreConcepts,
+  FullExample,
+  GettingStarted,
+  Introduction,
+  PracticeTopic,
+  QuizQuestion,
+} from "../types/content";
 
 /**
  * Shared page layout for every topic under src/pages/learning/. Each page
@@ -25,6 +33,27 @@ import { loadCombinedExample } from "../utils/codeExamples";
  * description paragraph, and optional content (a demo, a CodeBlock,
  * whatever the topic needs).
  */
+interface LayoutSection {
+  heading?: string;
+  description?: string;
+  content?: ReactNode;
+}
+
+interface LearningTopicLayoutProps {
+  title: string;
+  introduction: Introduction;
+  coreConcepts: CoreConcepts;
+  sections?: LayoutSection[];
+  fullExample?: FullExample;
+  gettingStarted: GettingStarted;
+  practiceTopics: PracticeTopic[];
+  /** Demo component per practice topic, keyed by the topic's title. */
+  practiceDemos: Record<string, ComponentType>;
+  practiceTopicsIntro?: string;
+  quiz?: QuizQuestion[];
+  topicKey: string;
+}
+
 function LearningTopicLayout({
   title,
   introduction,
@@ -37,7 +66,7 @@ function LearningTopicLayout({
   practiceTopicsIntro = "Click a topic to open a live, editable example.",
   quiz = [],
   topicKey,
-}) {
+}: LearningTopicLayoutProps) {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [title]);

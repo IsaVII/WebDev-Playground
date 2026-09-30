@@ -4,7 +4,7 @@ import CodeBlock from "../../CodeBlock";
 const user = { name: "Isa", role: "admin", theme: "dark" };
 const coords = [10, 20, 30];
 
-function sum(first, ...rest) {
+function sum(first: number, ...rest: number[]) {
   return `first = ${first}, rest = [${rest.join(", ")}]`;
 }
 
@@ -40,7 +40,7 @@ const EXAMPLES = {
 
 function DestructuringDemo() {
   const [key, setKey] = useState("object");
-  const current = EXAMPLES[key];
+  const current = EXAMPLES[key as keyof typeof EXAMPLES];
 
   return (
     <div className="bg-surface-alt border border-line rounded p-6">

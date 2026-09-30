@@ -2,7 +2,7 @@ import { useState } from "react";
 import CodeBlock from "../../CodeBlock";
 
 function ModuleDemo() {
-  const [log, setLog] = useState([]);
+  const [log, setLog] = useState<string[]>([]);
   const [loaded, setLoaded] = useState(false);
 
   const requireModule = () => {

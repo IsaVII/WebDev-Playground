@@ -7,30 +7,41 @@ import useScrollReveal from "./useScrollReveal";
  * callback whenever the observed element crosses the threshold - here a
  * test calls it directly, with a fake "entry", to simulate that.
  */
+type MockEntry = { isIntersecting: boolean };
+
+class MockIntersectionObserver {
+  disconnected = false;
+  constructor(
+    public callback: (entries: MockEntry[]) => void,
+    public options?: IntersectionObserverInit,
+  ) {}
+  observe() {}
+  unobserve() {}
+  disconnect() {
+    this.disconnected = true;
+  }
+}
+
 function installIntersectionObserverMock() {
-  const instances = [];
-  window.IntersectionObserver = class {
-    constructor(callback, options) {
-      this.callback = callback;
-      this.options = options;
-      this.disconnected = false;
+  const instances: MockIntersectionObserver[] = [];
+  window.IntersectionObserver = class extends MockIntersectionObserver {
+    constructor(
+      callback: (entries: MockEntry[]) => void,
+      options?: IntersectionObserverInit,
+    ) {
+      super(callback, options);
       instances.push(this);
     }
-    observe() {}
-    unobserve() {}
-    disconnect() {
-      this.disconnected = true;
-    }
-  };
+  } as unknown as typeof IntersectionObserver;
   return instances;
 }
 
-function installReducedMotionMock(matches) {
-  window.matchMedia = () => ({
+function installReducedMotionMock(matches: boolean) {
+  window.matchMedia = (() => ({
     matches,
     addEventListener: () => {},
     removeEventListener: () => {},
-  });
+  })) as unknown as typeof window.matchMedia;
 }
 
 // The hook returns a real DOM ref (useRef), not a callback ref, so it only
@@ -38,7 +49,7 @@ function installReducedMotionMock(matches) {
 // rendered element - a small probe component does that the same way every
 // real caller (Reveal, TextReveal) does.
 function Probe() {
-  const { ref, isVisible } = useScrollReveal();
+  const { ref, isVisible } = useScrollReveal<HTMLDivElement>();
   return <div ref={ref}>{isVisible ? "visible" : "hidden"}</div>;
 }
 

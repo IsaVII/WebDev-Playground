@@ -38,10 +38,10 @@ function SpiesDemo() {
       contextCode={contextCode}
       initialTest={initialTest}
       buildScope={() => {
-        const mathLib = { square: (n) => n * n };
+        const mathLib = { square: (n: number) => n * n };
         return {
           mathLib,
-          reportSquare: (n) => `Result: ${mathLib.square(n)}`,
+          reportSquare: (n: number) => `Result: ${mathLib.square(n)}`,
           createSpy,
         };
       }}

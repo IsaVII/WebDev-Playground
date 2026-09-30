@@ -1,7 +1,7 @@
 import { useState } from "react";
 import CodeBlock from "../../CodeBlock";
 
-function Greeting({ name, color }) {
+function Greeting({ name, color }: { name: string; color: string }) {
   return (
     <p className="text-xl" style={{ color }}>
       Hello, <strong>{name || "friend"}</strong>! 👋

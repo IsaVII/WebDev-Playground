@@ -3,7 +3,7 @@ import CheatSheetLayout from "../../components/CheatSheetLayout";
 import gitCommandsDataEn from "../../data/en/cheatsheets/gitCommands.json";
 import gitCommandsDataSv from "../../data/sv/cheatsheets/gitCommands.json";
 
-const CONTENT_MAP = {
+const CONTENT_MAP: Record<string, typeof gitCommandsDataEn> = {
   en: gitCommandsDataEn,
   sv: gitCommandsDataSv,
 };
@@ -11,7 +11,7 @@ const CONTENT_MAP = {
 function GitCommands() {
   const { i18n } = useTranslation();
   const gitCommandsData = CONTENT_MAP[i18n.language] || CONTENT_MAP.en;
-  const gitCommandsContent = gitCommandsData.default || gitCommandsData;
+  const gitCommandsContent = gitCommandsData;
 
   return (
     <CheatSheetLayout
@@ -21,7 +21,6 @@ function GitCommands() {
       prerequisites={gitCommandsContent.prerequisites}
       steps={gitCommandsContent.steps}
       gettingStarted={gitCommandsContent.gettingStarted}
-      source={gitCommandsContent.source}
     />
   );
 }

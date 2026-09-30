@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import type { RootState } from "../../../redux/store";
 import { incrementedByAmount } from "../../../redux/counterSlice";
 import CodeBlock from "../../CodeBlock";
 
 function SliceActionLogDemo() {
   const [amount, setAmount] = useState(5);
-  const value = useSelector((state) => state.counter.value);
-  const entries = useSelector((state) => state.activityLog.entries);
+  const value = useSelector((state: RootState) => state.counter.value);
+  const entries = useSelector((state: RootState) => state.activityLog.entries);
   const dispatch = useDispatch();
 
   return (
@@ -44,9 +45,9 @@ function SliceActionLogDemo() {
             {entries.map((entry, index) => (
               <li key={index}>
                 <span className="text-subtle">
-                  {entry.timestamp || entry.at}
+                  {entry.timestamp}
                 </span>{" "}
-                — {entry.action || entry.type}
+                — {entry.action}
               </li>
             ))}
           </ul>

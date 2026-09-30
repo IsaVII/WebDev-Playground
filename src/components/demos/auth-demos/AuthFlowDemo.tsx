@@ -3,7 +3,7 @@ import CodeBlock from "../../CodeBlock";
 
 function AuthFlowDemo() {
   const [strategy, setStrategy] = useState("session");
-  const [log, setLog] = useState([]);
+  const [log, setLog] = useState<string[]>([]);
   const [running, setRunning] = useState(false);
 
   const run = () => {

@@ -3,7 +3,7 @@ import CodeBlock from "../../CodeBlock";
 
 // A tiny bean graph. Each bean declares what it needs; the "container"
 // below resolves them in dependency order or reports what's missing.
-const BEANS = {
+const BEANS: Record<string, { needs: string[]; code: string }> = {
   DataSource: { needs: [], code: "@Bean DataSource dataSource() { ... }" },
   CustomerRepository: {
     needs: ["DataSource"],
@@ -19,9 +19,9 @@ const BEANS = {
   },
 };
 
-function resolve(registered) {
+function resolve(registered: string[]) {
   const set = new Set(registered);
-  const order = [];
+  const order: string[] = [];
   const pending = new Set(registered);
   let guard = 0;
   while (pending.size && guard++ < 20) {
@@ -36,7 +36,7 @@ function resolve(registered) {
     }
     if (!progressed) break;
   }
-  const errors = [];
+  const errors: string[] = [];
   for (const name of registered) {
     for (const need of BEANS[name].needs) {
       if (!set.has(need)) {
@@ -57,7 +57,7 @@ function DiContainerDemo() {
     "CustomerController",
   ]);
 
-  const toggle = (name) =>
+  const toggle = (name: string) =>
     setRegistered((prev) =>
       prev.includes(name) ? prev.filter((n) => n !== name) : [...prev, name],
     );

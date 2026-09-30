@@ -11,14 +11,16 @@ function HeartbeatDemo() {
   const [running, setRunning] = useState(false);
   const [dropped, setDropped] = useState(false);
   const [missed, setMissed] = useState(0);
-  const [log, setLog] = useState([]);
-  const intervalRef = useRef(null);
+  const [log, setLog] = useState<string[]>([]);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>(
+    undefined,
+  );
   const droppedRef = useRef(false);
   const missedRef = useRef(0);
 
-  const append = (line) => setLog((l) => [...l.slice(-7), line]);
+  const append = (line: string) => setLog((l) => [...l.slice(-7), line]);
 
-  const stop = (finalLine) => {
+  const stop = (finalLine?: string) => {
     clearInterval(intervalRef.current);
     setRunning(false);
     if (finalLine) append(finalLine);

@@ -6,7 +6,7 @@ import CallStackHeapDemo from "../../components/demos/heapstack-demos/CallStackH
 import StackOrHeapDemo from "../../components/demos/heapstack-demos/StackOrHeapDemo";
 import PassByValueDemo from "../../components/demos/heapstack-demos/PassByValueDemo";
 
-const CONTENT_MAP = {
+const CONTENT_MAP: Record<string, typeof heapStackContentEn> = {
   en: heapStackContentEn,
   sv: heapStackContentSv,
 };

@@ -38,7 +38,7 @@ const SCENARIOS = [
 ];
 
 function ProtectedRouteDemo() {
-  const [log, setLog] = useState([]);
+  const [log, setLog] = useState<{ label: string; lines: string[] }[]>([]);
 
   return (
     <div className="bg-surface-alt border border-line rounded p-6">

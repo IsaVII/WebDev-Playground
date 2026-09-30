@@ -2,7 +2,7 @@ import { useState } from "react";
 import CodeBlock from "../../CodeBlock";
 
 function RequestResponseDemo() {
-  const [log, setLog] = useState([]);
+  const [log, setLog] = useState<{ label: string; lines: string[] }[]>([]);
 
   const actions = [
     {
@@ -42,7 +42,7 @@ function RequestResponseDemo() {
     },
   ];
 
-  const run = (action) => {
+  const run = (action: { label: string; run: () => string[] }) => {
     setLog((l) => [...l, { label: action.label, lines: action.run() }]);
   };
 

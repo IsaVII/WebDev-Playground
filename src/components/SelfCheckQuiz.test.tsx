@@ -17,8 +17,10 @@ const QUESTIONS = [
   },
 ];
 
-function pick(questionText, optionText) {
-  const item = screen.getByText(questionText, { exact: false }).closest("li");
+function pick(questionText: string, optionText: string) {
+  const item = screen
+    .getByText(questionText, { exact: false })
+    .closest("li") as HTMLElement;
   fireEvent.click(within(item).getByLabelText(optionText, { exact: false }));
 }
 

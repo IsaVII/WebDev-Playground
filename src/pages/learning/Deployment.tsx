@@ -8,7 +8,7 @@ import LearningTopicLayout from "../../components/LearningTopicLayout";
 import PlatformComparisonDemo from "../../components/demos/deployment-demos/PlatformComparisonDemo";
 import PreviewRollbackDemo from "../../components/demos/deployment-demos/PreviewRollbackDemo";
 
-const CONTENT_MAP = {
+const CONTENT_MAP: Record<string, typeof deploymentContentEn> = {
   en: deploymentContentEn,
   sv: deploymentContentSv,
 };

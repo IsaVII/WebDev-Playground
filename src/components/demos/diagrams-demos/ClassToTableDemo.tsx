@@ -89,7 +89,7 @@ CREATE TABLE enrollment (                 -- association WITH attributes
 };
 
 function ClassToTableDemo() {
-  const [domain, setDomain] = useState("Blog");
+  const [domain, setDomain] = useState<keyof typeof DOMAINS>("Blog");
   const active = DOMAINS[domain];
 
   return (
@@ -102,7 +102,7 @@ function ClassToTableDemo() {
       </p>
 
       <div className="flex flex-wrap gap-2 mb-4">
-        {Object.keys(DOMAINS).map((name) => (
+        {(Object.keys(DOMAINS) as (keyof typeof DOMAINS)[]).map((name) => (
           <button
             key={name}
             type="button"

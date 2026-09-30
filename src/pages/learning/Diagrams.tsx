@@ -7,7 +7,7 @@ import RelationshipTypesDemo from "../../components/demos/diagrams-demos/Relatio
 import CardinalityDemo from "../../components/demos/diagrams-demos/CardinalityDemo";
 import NormalizationDemo from "../../components/demos/diagrams-demos/NormalizationDemo";
 
-const CONTENT_MAP = {
+const CONTENT_MAP: Record<string, typeof diagramsContentEn> = {
   en: diagramsContentEn,
   sv: diagramsContentSv,
 };

@@ -13,7 +13,7 @@ const CHUNKS = [
 ];
 
 function StreamDemo() {
-  const [received, setReceived] = useState([]);
+  const [received, setReceived] = useState<string[]>([]);
   const [status, setStatus] = useState("idle"); // idle | streaming | ended
 
   const startStream = () => {

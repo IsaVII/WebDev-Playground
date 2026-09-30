@@ -14,17 +14,17 @@ function InterfaceDemo() {
   const [fields, setFields] = useState(INITIAL_FIELDS);
   const [extraEnabled, setExtraEnabled] = useState(false);
 
-  const clearField = (key) => {
+  const clearField = (key: string) => {
     setFields((f) =>
       f.map((field) => (field.key === key ? { ...field, value: "" } : field)),
     );
   };
 
-  const restoreField = (key) => {
+  const restoreField = (key: string) => {
     const original = INITIAL_FIELDS.find((f) => f.key === key);
     setFields((f) =>
       f.map((field) =>
-        field.key === key ? { ...field, value: original.value } : field,
+        field.key === key ? { ...field, value: original!.value } : field,
       ),
     );
   };

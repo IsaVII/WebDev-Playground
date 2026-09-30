@@ -1,6 +1,12 @@
+import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 
-function FooterLink({ href, children }) {
+interface FooterLinkProps {
+  href: string;
+  children: ReactNode;
+}
+
+function FooterLink({ href, children }: FooterLinkProps) {
   return (
     <Link
       to={href}

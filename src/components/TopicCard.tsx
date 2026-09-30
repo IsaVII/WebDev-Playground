@@ -1,7 +1,13 @@
 import { Link } from "react-router-dom";
 import { useProgress } from "../context/ProgressContext";
+import type { TopicSummary } from "../types/content";
 
-function TopicCard({ topic, isCheatSheet = false }) {
+interface TopicCardProps {
+  topic: TopicSummary;
+  isCheatSheet?: boolean;
+}
+
+function TopicCard({ topic, isCheatSheet = false }: TopicCardProps) {
   const { isTopicDone, toggleTopicWithSubtopics, getTopicSubtopicCount } =
     useProgress();
   const done = isTopicDone(topic.key);

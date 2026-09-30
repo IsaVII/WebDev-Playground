@@ -14,11 +14,11 @@
  * rewrites the JSON to hold only a *reference* to the file (`codeFile` for
  * a single snippet, `files` for a multi-file "full example"). Actual
  * rendering resolves those references back into strings/line-arrays at
- * runtime via `src/utils/codeExamples.js`.
+ * runtime via `src/utils/codeExamples.ts`.
  *
  * Usage:
- *   node scripts/extract-code-examples.mjs           # run the migration
- *   node scripts/extract-code-examples.mjs --check    # verify, no writes
+ *   node scripts/extract-code-examples.ts           # run the migration
+ *   node scripts/extract-code-examples.ts --check    # verify, no writes
  *
  * The script is idempotent - once a `code` field has been replaced with
  * `codeFile`/`files`, re-running it is a no-op for that field. That makes
@@ -50,7 +50,27 @@ const CHECK_ONLY = process.argv.includes("--check");
 // Extension inference
 // ---------------------------------------------------------------------
 
-const EXT_BY_LANGUAGE = {
+// The parts of the content JSON this script reads and rewrites.
+interface StepNode {
+  id?: number | string;
+  title?: string;
+  step?: string;
+  language?: string;
+  code?: string;
+  codeFile?: string;
+  subSteps?: StepNode[];
+}
+
+interface CheatsheetData {
+  steps?: StepNode[];
+  backendSetup?: { steps?: StepNode[] };
+}
+
+interface LearningData {
+  fullExample?: { code?: string[]; files?: string[] };
+}
+
+const EXT_BY_LANGUAGE: Record<string, string> = {
   javascript: "js",
   js: "js",
   jsx: "jsx",
@@ -72,7 +92,7 @@ const EXT_BY_LANGUAGE = {
   md: "md",
 };
 
-function extFromLanguage(language) {
+function extFromLanguage(language?: string | null) {
   if (!language) return null;
   return EXT_BY_LANGUAGE[language.toLowerCase()] ?? null;
 }
@@ -80,7 +100,7 @@ function extFromLanguage(language) {
 /** Best-effort language guess for snippets that never had a `language`
  * field (e.g. projectSetup.json's backendSetup steps). Order matters -
  * checks go from most to least specific. */
-function guessExt(code) {
+function guessExt(code: string) {
   const trimmed = code.trim();
   if (/^\/\/\s*[\w.-]+\.\w+/.test(trimmed) && /require\(|=>|const |function /.test(trimmed)) {
     return "js";
@@ -98,7 +118,7 @@ function guessExt(code) {
 // Small helpers
 // ---------------------------------------------------------------------
 
-function slugify(text, maxLen = 48) {
+function slugify(text: string, maxLen = 48) {
   return text
     .toLowerCase()
     .normalize("NFKD")
@@ -109,11 +129,11 @@ function slugify(text, maxLen = 48) {
     .replace(/-+$/g, "");
 }
 
-function readJSON(path) {
+function readJSON<T>(path: string): T {
   return JSON.parse(readFileSync(path, "utf8"));
 }
 
-function writeJSON(path, data) {
+function writeJSON(path: string, data: unknown) {
   if (CHECK_ONLY) return;
   writeFileSync(path, JSON.stringify(data, null, 2) + "\n", "utf8");
 }
@@ -124,9 +144,9 @@ function writeJSON(path, data) {
  * code has genuinely diverged from English), returns a locale-suffixed
  * path instead of clobbering it, so nothing is silently lost.
  */
-const writtenFiles = new Map(); // absPath -> content, for divergence checks
+const writtenFiles = new Map<string, string>(); // absPath -> content, for divergence checks
 
-function writeCodeFile(absPath, content) {
+function writeCodeFile(absPath: string, content: string) {
   const existing = writtenFiles.get(absPath);
   if (existing !== undefined && existing !== content) {
     throw new Error(
@@ -148,7 +168,14 @@ let skippedCount = 0;
 // through `steps[]`, `steps[].subSteps[]`, and `backendSetup.steps[]`.
 // ---------------------------------------------------------------------
 
-function extractCheatsheetNode(node, { topicDir, prefix, index }) {
+function extractCheatsheetNode(
+  node: StepNode | null | undefined,
+  {
+    topicDir,
+    prefix,
+    index,
+  }: { topicDir: string; prefix: string; index: number },
+) {
   if (!node || typeof node !== "object") return;
   if (typeof node.code !== "string") return; // already migrated or no code
 
@@ -169,8 +196,8 @@ function extractCheatsheetNode(node, { topicDir, prefix, index }) {
   extractedCount += 1;
 }
 
-function extractCheatsheetFile(jsonPath, topicDir) {
-  const data = readJSON(jsonPath);
+function extractCheatsheetFile(jsonPath: string, topicDir: string) {
+  const data = readJSON<CheatsheetData>(jsonPath);
 
   (data.steps ?? []).forEach((step, i) => {
     const prefix = String(step.id ?? i + 1).padStart(2, "0");
@@ -179,7 +206,7 @@ function extractCheatsheetFile(jsonPath, topicDir) {
     (step.subSteps ?? []).forEach((subStep, j) => {
       const letter = String.fromCharCode(97 + j); // a, b, c...
       extractCheatsheetNode(subStep, {
-        topicDir: `${topicDir}/${prefix}-${slugify(step.title)}`,
+        topicDir: `${topicDir}/${prefix}-${slugify(step.title ?? "")}`,
         prefix: letter,
         index: j,
       });
@@ -210,8 +237,8 @@ function extractCheatsheetFile(jsonPath, topicDir) {
 
 const FILE_MARKER = /^\/\/\s*([\w.-]+\.[A-Za-z]+)\b/;
 
-function splitIntoFileSegments(codeLines) {
-  const markers = [];
+function splitIntoFileSegments(codeLines: string[]) {
+  const markers: { index: number; filename: string }[] = [];
   codeLines.forEach((line, i) => {
     const match = FILE_MARKER.exec(line);
     if (match && (i === 0 || codeLines[i - 1] === "")) {
@@ -221,7 +248,7 @@ function splitIntoFileSegments(codeLines) {
 
   if (markers.length === 0) return null; // single-file example
 
-  const segments = [];
+  const segments: { filename: string; lines: string[] }[] = [];
   markers.forEach((marker, i) => {
     const nextMarker = markers[i + 1];
     // Drop the single blank separator line right before the next marker.
@@ -239,14 +266,14 @@ function splitIntoFileSegments(codeLines) {
   // to treating the example as single-file rather than risk that.
   const rebuilt = segments
     .map((s) => s.lines)
-    .reduce((acc, lines, i) => (i === 0 ? lines : [...acc, "", ...lines]), []);
+    .reduce<string[]>((acc, lines, i) => (i === 0 ? lines : [...acc, "", ...lines]), []);
   if (rebuilt.join("\n") !== codeLines.join("\n")) return null;
 
   return segments;
 }
 
-function extractLearningFile(jsonPath, topicDir) {
-  const data = readJSON(jsonPath);
+function extractLearningFile(jsonPath: string, topicDir: string) {
+  const data = readJSON<LearningData>(jsonPath);
   const fullExample = data.fullExample;
   if (!fullExample || !Array.isArray(fullExample.code)) {
     skippedCount += 1;
@@ -256,7 +283,7 @@ function extractLearningFile(jsonPath, topicDir) {
   const segments = splitIntoFileSegments(fullExample.code);
   const dir = `code-examples/learning/${topicDir}`;
 
-  let files;
+  let files: string[];
   if (segments) {
     files = segments.map((segment) => {
       const relPath = `${dir}/${segment.filename}`;
@@ -282,7 +309,10 @@ function extractLearningFile(jsonPath, topicDir) {
 // instead of re-extracting (and duplicating) identical code.
 // ---------------------------------------------------------------------
 
-function repointLocaleCheatsheetNode(node, referenceNode) {
+function repointLocaleCheatsheetNode(
+  node: StepNode | null | undefined,
+  referenceNode: StepNode | undefined,
+) {
   if (!node || typeof node !== "object") return;
   if (typeof node.code === "string" && referenceNode?.codeFile) {
     if (node.code !== readFileSync(join(DATA_ROOT, referenceNode.codeFile), "utf8").replace(/\n$/, "")) {
@@ -302,9 +332,12 @@ function repointLocaleCheatsheetNode(node, referenceNode) {
   }
 }
 
-function repointLocaleCheatsheet(localeJsonPath, referenceJsonPath) {
-  const localeData = readJSON(localeJsonPath);
-  const referenceData = readJSON(referenceJsonPath);
+function repointLocaleCheatsheet(
+  localeJsonPath: string,
+  referenceJsonPath: string,
+) {
+  const localeData = readJSON<CheatsheetData>(localeJsonPath);
+  const referenceData = readJSON<CheatsheetData>(referenceJsonPath);
 
   (localeData.steps ?? []).forEach((step, i) => {
     repointLocaleCheatsheetNode(step, referenceData.steps?.[i]);
@@ -322,9 +355,12 @@ function repointLocaleCheatsheet(localeJsonPath, referenceJsonPath) {
   writeJSON(localeJsonPath, localeData);
 }
 
-function repointLocaleLearning(localeJsonPath, referenceJsonPath) {
-  const localeData = readJSON(localeJsonPath);
-  const referenceData = readJSON(referenceJsonPath);
+function repointLocaleLearning(
+  localeJsonPath: string,
+  referenceJsonPath: string,
+) {
+  const localeData = readJSON<LearningData>(localeJsonPath);
+  const referenceData = readJSON<LearningData>(referenceJsonPath);
 
   const localeExample = localeData.fullExample;
   const referenceExample = referenceData.fullExample;
@@ -334,7 +370,7 @@ function repointLocaleLearning(localeJsonPath, referenceJsonPath) {
   }
 
   const referenceCode = referenceExample.files
-    .map((f) => readFileSync(join(DATA_ROOT, f), "utf8").replace(/\n$/, ""))
+    .map((f: string) => readFileSync(join(DATA_ROOT, f), "utf8").replace(/\n$/, ""))
     .join("\n\n");
 
   if (localeExample.code.join("\n") !== referenceCode) {
@@ -374,7 +410,7 @@ function repointLocaleLearning(localeJsonPath, referenceJsonPath) {
 // Drive the migration over every cheatsheet/learning JSON file.
 // ---------------------------------------------------------------------
 
-function topicDirFromFilename(filename) {
+function topicDirFromFilename(filename: string) {
   return filename.replace(/Content\.json$/, "").replace(/\.json$/, "");
 }
 

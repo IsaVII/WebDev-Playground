@@ -2,8 +2,8 @@ import { useState } from "react";
 import CodeBlock from "../../CodeBlock";
 
 function ChildProcessDemo() {
-  const [log, setLog] = useState([]);
-  const [processes, setProcesses] = useState([]);
+  const [log, setLog] = useState<string[]>([]);
+  const [processes, setProcesses] = useState<{ pid: number; name: string }[]>([]);
 
   const exec = () => {
     const pid = Math.floor(Math.random() * 10000);

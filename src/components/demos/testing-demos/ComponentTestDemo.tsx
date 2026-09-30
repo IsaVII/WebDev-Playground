@@ -34,7 +34,13 @@ function ComponentTestDemo() {
       contextCode={contextCode}
       initialTest={initialTest}
       buildScope={() => ({
-        renderButton: ({ label, disabled = false }) => ({ tag: "button", text: label, disabled }),
+        renderButton: ({
+          label,
+          disabled = false,
+        }: {
+          label: string;
+          disabled?: boolean;
+        }) => ({ tag: "button", text: label, disabled }),
       })}
       hint="The button was rendered with disabled: true - what should button.disabled equal?"
     />

@@ -12,7 +12,7 @@ function ClosureDemo() {
   const [counters] = useState(() => [createCounter(), createCounter()]);
   const [values, setValues] = useState([0, 0]);
 
-  const bump = (index) => {
+  const bump = (index: number) => {
     setValues((v) =>
       v.map((val, i) => (i === index ? counters[index]() : val)),
     );
