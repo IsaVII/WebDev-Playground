@@ -45,7 +45,7 @@
       "id": 5,
       "title": "Add the CSS: Tokens, Reveal & Text-Reveal Rules",
       "description": "This is the trimmed reveal-and-text-reveal slice of a CSS file (import it once, e.g. from your app's root component or main entry file). It defines the timing/easing tokens both components rely on, the .reveal base state plus its directional variants, the .text-reveal-piece states, and a media query that strips the motion out for prefers-reduced-motion while keeping a plain opacity fade so state changes are still perceivable.",
-      "note": "If your project already has a broader design-token system (durations/easings defined elsewhere), just add the .reveal*, .text-reveal-piece, .stagger-children, and reduced-motion rules - skip redeclaring tokens you already have.",
+      "note": "If your project already has a broader design-token system (durations/easings defined elsewhere), just add the `.reveal*`, .text-reveal-piece, .stagger-children, and reduced-motion rules - skip redeclaring tokens you already have.",
       "language": "jsx",
       "codeFile": "code-examples/cheatsheets/textReveal/05-add-the-css-tokens-reveal-text-reveal-rules.jsx"
     },

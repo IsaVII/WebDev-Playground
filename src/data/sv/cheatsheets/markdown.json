@@ -22,7 +22,7 @@
       "title": "Betoning",
       "description": "Fet text, kursiv text, genomstrykning, samt kombinationer av dem.",
       "language": "markdown",
-      "note": "Välj en stil (* eller _) och håll dig till den i ett dokument - att blanda båda för samma syfte gör bara råtexten svårare att skumläsa.",
+      "note": "Välj en stil (`*` eller `_`) och håll dig till den i ett dokument - att blanda båda för samma syfte gör bara råtexten svårare att skumläsa.",
       "codeFile": "code-examples/cheatsheets/markdown-sv/02-emphasis.md"
     },
     {
@@ -76,7 +76,7 @@
     {
       "id": 9,
       "title": "Horisontella linjer & Radbrytningar",
-      "description": "En horisontell linje (---, *** eller ___ på egen rad) ritar en avdelare. Markdown slår normalt ihop enkla radbrytningar till mellanslag inuti ett stycke - att tvinga fram en radbrytning kräver två mellanslag i slutet av raden eller en explicit <br>.",
+      "description": "En horisontell linje (`---`, `***` eller `___` på egen rad) ritar en avdelare. Markdown slår normalt ihop enkla radbrytningar till mellanslag inuti ett stycke - att tvinga fram en radbrytning kräver två mellanslag i slutet av raden eller en explicit `<br>`.",
       "language": "markdown",
       "note": "Mellanslag i slutet av en rad är osynliga och lätta att tappa bort (t.ex. via en editors trim-on-save-inställning) - <br> är mer explicit och säkrare att lita på.",
       "codeFile": "code-examples/cheatsheets/markdown-sv/09-rules-and-breaks.md"
@@ -94,11 +94,11 @@
     "heading": "Snabb Syntaxreferens",
     "steps": [
       "# H1 till ###### H6 - rubriker",
-      "**fet**, *kursiv*, ~~genomstruken~~ - betoning",
+      "`**fet**`, `*kursiv*`, `~~genomstruken~~` - betoning",
       "- punkt eller 1. punkt - listor (indrag 2-4 mellanslag för att nästla)",
       "- [ ] att göra / - [x] klart - att-göra-listor",
-      "[text](url) och ![alt](url) - länkar och bilder",
-      "`kod` och ```språk ... ``` - kod i löptext och fenced kodblock",
+      "`[text](url)` och `![alt](url)` - länkar och bilder",
+      "`` `kod` `` och ```` ```språk ... ``` ```` - kod i löptext och fenced kodblock",
       "> citerad text - citat",
       "| a | b | med en |---|---| separatorrad - tabeller",
       "--- - horisontell linje; två mellanslag i slutet eller <br> - radbrytning"

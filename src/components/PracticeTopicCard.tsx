@@ -1,10 +1,12 @@
 import { useState, type ReactNode } from "react";
 import { useProgress } from "../context/ProgressContext";
+import InlineMarkdown from "./InlineMarkdown";
 
 interface PracticeTopicCardProps {
   topicKey: string;
   title: string;
-  description: string;
+  /** A string (inline Markdown) or rendered content (from a lesson's .mdx). */
+  description: ReactNode;
   demo: ReactNode;
 }
 
@@ -50,7 +52,9 @@ function PracticeTopicCard({
                 </span>
               )}
             </span>
-            <span className="block text-sm text-muted">{description}</span>
+            <span className="block text-sm text-muted">
+              <InlineMarkdown allowLinks={false}>{description}</InlineMarkdown>
+            </span>
           </span>
         </span>
 

@@ -1,0 +1,193 @@
+---
+title: "Threads & Multithreading"
+practiceTopics:
+  - "Thread States"
+  - "Predict the Output: Threads"
+  - "Thread Pool Scheduler"
+quiz: true
+---
+
+import RaceConditionDemo from "../../../components/demos/threads-demos/RaceConditionDemo";
+import ThreadStatesDemo from "../../../components/demos/threads-demos/ThreadStatesDemo";
+import ThreadPredictDemo from "../../../components/demos/threads-demos/ThreadPredictDemo";
+import ThreadPoolDemo from "../../../components/demos/threads-demos/ThreadPoolDemo";
+
+<Section lead>
+
+## Doing More Than One Thing at a Time
+
+A thread is an independent path of execution inside a running program. Every Java program starts with one - the `main` thread - but it can start more, and the JVM (with the operating system) interleaves them so several things appear to happen at once, or genuinely do on a multi-core CPU. Each thread gets its own call stack, but all threads in the program share the same heap. That single fact explains both why threads are useful (they can cooperate on shared data) and why they are dangerous (two threads touching the same object at the same instant can corrupt it). Spring Boot makes this unavoidable: every incoming HTTP request is handled on a thread from a pool, and your singleton beans are used by many of them at once.
+
+</Section>
+
+<Section>
+
+## Core Concepts
+
+- **Each Thread Has Its Own Stack, All Share One Heap:** A thread's local variables and method frames live on its private stack, so they can never be seen by another thread. Objects on the heap are reachable from every thread that holds a reference - which is exactly where the sharing, and the trouble, comes from
+- **start() vs run():** `thread.start()` asks the JVM to create a new thread that then calls `run()`. Calling `run()` yourself is just an ordinary method call on the current thread - nothing concurrent happens. Calling `start()` twice on the same Thread throws an exception
+- **Runnable and Callable:** A `Runnable` is a task with no return value and no checked exceptions; a `Callable<T>` returns a result and may throw. Both describe the work; a Thread or an executor decides where and when it runs. Because both are functional interfaces, a lambda is usually all you need
+- **The Thread Lifecycle:** A thread is NEW until `start()`, then RUNNABLE (running or ready to run). It can be BLOCKED waiting for a lock, WAITING or TIMED_WAITING (`wait`, `join`, `sleep`), and finally TERMINATED when `run()` returns or throws. Knowing the state is half of reading a thread dump
+- **Race Conditions:** When the outcome depends on how two threads happen to interleave, you have a race condition. `count++` looks like one step but is three - read, add, write - so two threads can both read the same old value and one update is silently lost. The bug is intermittent, which makes it hard to find and easy to ship
+- **synchronized, Locks, and Atomics:** `synchronized` lets only one thread at a time hold an object's monitor, turning a block into an indivisible unit. `ReentrantLock` offers the same with more control. `AtomicInteger` and friends do single-variable updates safely without locking. `volatile` guarantees visibility of a write across threads, but not atomicity of `count++`
+- **Executors and Thread Pools:** Creating a thread per task is expensive and unbounded. An `ExecutorService` keeps a fixed set of worker threads and queues tasks for them. You `submit` work, get a `Future` back, and call `shutdown()` when you are done. Prefer this over creating `Thread` objects by hand
+- **Futures and CompletableFuture:** `Future.get()` blocks until the result is ready. `CompletableFuture` lets you chain steps (`thenApply`, `thenCombine`) and run several asynchronous calls in parallel, then combine their results without blocking a thread in between
+- **Deadlock:** Thread A holds lock 1 and waits for lock 2 while thread B holds lock 2 and waits for lock 1 - neither can ever proceed. The standard defence is to always acquire multiple locks in the same global order, or to avoid holding more than one at all
+- **Thread-Safe Collections and Immutability:** `ArrayList` and `HashMap` are not safe to modify from several threads. Use `ConcurrentHashMap`, `CopyOnWriteArrayList` or the other `java.util.concurrent` collections. Immutable objects (final fields, no setters) need no locking at all, which is the cheapest way to be thread-safe
+
+</Section>
+
+<Section>
+
+## Watching Two Threads Collide
+
+Two threads each add 1 to a shared counter that starts at 0, so the answer should be 2. Step through an unlucky interleaving of the unsafe version, then switch to the synchronized version and see how the lock forces the threads to take turns.
+
+<RaceConditionDemo />
+
+</Section>
+
+<Section>
+
+## Full Example, Step by Step
+
+<Walkthrough title="A broken counter, a fixed counter, and a thread pool" files={["code-examples/java/threads/ThreadsDemo.java"]}>
+
+Two threads hammer the same pair of counters 1000 times each - one unsafe, one atomic - and then a fixed pool of three workers processes five orders. Run it a few times: the unsafe total changes from run to run, the safe one never does.
+
+<Step label="Shared objects and a task to run" lines={[11, 19]}>`unsafe` and `safe` are heap objects, and the `work` lambda captures references to both. Whichever thread runs `work` increments the very same two objects - that is the sharing. `work` itself is just a `Runnable`: a description of a task, not a thread.</Step>
+
+<Step label="start() and join()" lines={[21, 26]}>Each `new Thread(work)` only creates the thread object; nothing runs until `start()`. From that point `t1`, `t2` and `main` all run concurrently, in no guaranteed order. `join()` makes `main` wait until the thread has finished - without it, `main` could read the counters while the work is still going on.</Step>
+
+<Step label="The results" lines={[28, 29]}>Two threads times 1000 increments should give exactly 2000. The safe counter always does. The unsafe one usually prints something slightly lower, and a different number on each run - the signature of a race condition.</Step>
+
+<Step label="A fixed thread pool and Futures" lines={[31, 40]}>`newFixedThreadPool(3)` creates three reusable workers; `submit` queues each of the five tasks and immediately returns a `Future`. `f.get()` blocks until that task's result is ready. Five tasks never need five threads - the pool reuses its three. `shutdown()` lets the workers finish and then exit; forgetting it keeps the JVM alive.</Step>
+
+<Step label="UnsafeCounter: count++ is not atomic" lines={[49, 59]}>`count++` compiles to read, add one, write back. If two threads both read 41 before either writes, both write 42 and one increment vanishes. The method looks harmless precisely because the bug is not on any single line.</Step>
+
+<Step label="SafeCounter: an atomic update" lines={[61, 71]}>`AtomicInteger.incrementAndGet()` performs the read-modify-write as one indivisible operation using a CPU-level compare-and-set, so no update can be lost and no lock is needed. Declaring the field `final` is still good practice - the reference never changes, only the value inside.</Step>
+
+</Walkthrough>
+
+</Section>
+
+<Section>
+
+## Getting Started
+
+- Before reaching for threads, ask whether you need them: a plain loop or a stream is simpler, and `parallelStream()` only pays off for large, CPU-heavy, independent work
+- Prefer an `ExecutorService` (or, on Java 21+, virtual threads via `Executors.newVirtualThreadPerTaskExecutor()`) over `new Thread(...)` - and always `shutdown()` the pool, or the JVM will not exit
+- Ask of every field: can two threads touch this at once? If yes and it is mutable, it needs a lock, an atomic type, or a thread-safe collection - or should be made immutable
+- Keep `synchronized` blocks as small as you can, never call unknown code while holding a lock, and always take multiple locks in the same order
+- Never rely on a test passing once as proof of thread safety - races are timing-dependent. Reason about shared state instead, and use `join()` or `Future.get()` before reading results
+- In Spring, treat every singleton bean as shared between threads: no mutable instance fields for per-request data - keep that in method parameters and local variables
+
+</Section>
+
+<Section>
+
+## Practice Topics
+
+Click a topic to open a live, editable example.
+
+<PracticeTopics>
+
+<PracticeTopic title="Thread States" demo={<ThreadStatesDemo />}>Match each situation - after start(), waiting on a lock, inside sleep(), after run() returns - to the thread state the JVM reports</PracticeTopic>
+
+<PracticeTopic title="Predict the Output: Threads" demo={<ThreadPredictDemo />}>Short snippets about start() versus run(), unsynchronized counters, atomics, and join() - predict what actually happens</PracticeTopic>
+
+<PracticeTopic title="Thread Pool Scheduler" demo={<ThreadPoolDemo />}>Pick a pool size and watch six tasks of different lengths get assigned to worker threads on a timeline - see why more workers help, and where they stop helping</PracticeTopic>
+
+</PracticeTopics>
+
+</Section>
+
+<Section>
+
+## Self-Check
+
+Recall, don't re-read - answer before you check.
+
+<Quiz>
+
+<Question>
+
+What happens if you call `thread.run()` instead of `thread.start()`?
+
+<Option>A new thread is created and runs the task - the two are equivalent</Option>
+<Option correct>The task runs as an ordinary method call on the current thread, with no concurrency</Option>
+<Option>A compile error occurs</Option>
+<Option>The task is queued and runs later on the main thread</Option>
+
+<Explanation>Only `start()` asks the JVM to create a new thread. `run()` is just the method the new thread would have called - invoking it directly runs it right here, to completion, before the next line.</Explanation>
+
+</Question>
+
+<Question>
+
+Two threads each execute `count++` 1000 times on the same plain `int` field. What can the final value be?
+
+<Option>Always exactly 2000</Option>
+<Option correct>Often less than 2000 and different on each run, because increments can be lost</Option>
+<Option>Always exactly 1000</Option>
+<Option>It throws a ConcurrentModificationException</Option>
+
+<Explanation>`count++` is read-add-write. When two threads interleave between the read and the write, one update overwrites the other. The result is usually a bit under 2000 and different every run.</Explanation>
+
+</Question>
+
+<Question>
+
+Which data does one thread NOT share with another thread in the same program?
+
+<Option>Objects on the heap that both hold a reference to</Option>
+<Option>Static fields</Option>
+<Option correct>The local variables in its own method frames</Option>
+<Option>Fields of a singleton Spring bean</Option>
+
+<Explanation>Each thread has a private call stack, so its local variables and parameters are invisible to other threads. Heap objects and static fields are shared, which is why those need protection.</Explanation>
+
+</Question>
+
+<Question>
+
+Why is `volatile int count` not enough to make `count++` thread-safe?
+
+<Option>volatile does nothing at all</Option>
+<Option correct>volatile makes writes visible to other threads, but the read-add-write is still three separate steps that can interleave</Option>
+<Option>volatile only works on objects, not primitives</Option>
+<Option>volatile makes the field read-only</Option>
+
+<Explanation>`volatile` guarantees visibility and ordering, not atomicity. Use `AtomicInteger` or a `synchronized` block when an update depends on the current value.</Explanation>
+
+</Question>
+
+<Question>
+
+Why use an `ExecutorService` instead of creating a new Thread for every task?
+
+<Option>Threads created with `new Thread` cannot run Runnables</Option>
+<Option correct>A pool reuses a bounded number of worker threads, avoiding the cost and unbounded growth of one thread per task, and gives you Futures</Option>
+<Option>Executors make code run on the GPU</Option>
+<Option>It removes the need for any synchronization</Option>
+
+<Explanation>Thread creation is costly and unlimited threads exhaust memory. A pool reuses workers and queues extra work. It does not remove the need to protect shared mutable state.</Explanation>
+
+</Question>
+
+<Question>
+
+Thread A holds lock X and waits for lock Y; thread B holds lock Y and waits for lock X. What is this?
+
+<Option>A race condition</Option>
+<Option correct>A deadlock</Option>
+<Option>A memory leak</Option>
+<Option>Normal behaviour that resolves itself after a timeout</Option>
+
+<Explanation>Each thread is waiting for something only the other can release, so neither ever proceeds. Acquiring locks in a consistent global order prevents it.</Explanation>
+
+</Question>
+
+</Quiz>
+
+</Section>

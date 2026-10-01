@@ -4,6 +4,7 @@ import ContentCard from "./ContentCard";
 import PracticeTopicCard from "./PracticeTopicCard";
 import StepByStepExample from "./StepByStepExample";
 import SelfCheckQuiz from "./SelfCheckQuiz";
+import InlineMarkdown from "./InlineMarkdown";
 import { useProgress } from "../context/ProgressContext";
 import Reveal from "./motion/Reveal";
 import TextReveal from "./motion/TextReveal";
@@ -97,7 +98,7 @@ function LearningTopicLayout({
               {introduction.heading}
             </h2>
             <p className="text-muted leading-relaxed mb-4 text-left ">
-              {introduction.description}
+              <InlineMarkdown>{introduction.description}</InlineMarkdown>
             </p>
           </div>
         </Reveal>
@@ -110,7 +111,8 @@ function LearningTopicLayout({
             <ul className="text-muted leading-relaxed   text-left">
               {coreConcepts.concepts.map((concept) => (
                 <li key={concept.title} className="mb-3">
-                  <strong>{concept.title}:</strong> {concept.description}
+                  <strong>{concept.title}:</strong>{" "}
+                  <InlineMarkdown>{concept.description}</InlineMarkdown>
                 </li>
               ))}
             </ul>
@@ -127,7 +129,7 @@ function LearningTopicLayout({
               )}
               {section.description && (
                 <p className="text-muted leading-relaxed mb-4">
-                  {section.description}
+                  <InlineMarkdown>{section.description}</InlineMarkdown>
                 </p>
               )}
               {section.content}
@@ -159,7 +161,7 @@ function LearningTopicLayout({
             <ol className="text-muted leading-relaxed pl-6 text-left">
               {gettingStarted.steps.map((step, index) => (
                 <li key={index} className="mb-2">
-                  • {step}
+                  • <InlineMarkdown>{step}</InlineMarkdown>
                 </li>
               ))}
             </ol>

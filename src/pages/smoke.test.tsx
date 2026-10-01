@@ -5,17 +5,19 @@ import Deployment from "./learning/Deployment";
 import Git from "./learning/Git";
 import SQL from "./cheatsheets/SQL";
 import CiCd from "./cheatsheets/CiCd";
+import MarkdownSheet from "./cheatsheets/Markdown";
 import Diagrams from "./learning/Diagrams";
 import Streams from "./learning/Streams";
 import Spring from "./learning/Spring";
 import Threads from "./learning/Threads";
+import { stripMarkdown } from "../utils/markdown";
 import learningContent from "../data/en/learningContent.json";
 import cheatsheets from "../data/en/cheatsheets.json";
 import javaBackend from "../data/en/javaBackend.json";
 import diagramsContent from "../data/en/learning/diagramsContent.json";
 import streamsContent from "../data/en/learning/streamsContent.json";
 import springContent from "../data/en/learning/springContent.json";
-import threadsContent from "../data/en/learning/threadsContent.json";
+import { frontmatter as threadsFrontmatter } from "../data/en/learning/threads.mdx";
 
 /**
  * These don't try to cover every interaction on every page - the practice
@@ -62,7 +64,6 @@ describe("Java Backend category (new)", () => {
     { name: "Diagrams", Page: Diagrams, content: diagramsContent },
     { name: "Streams", Page: Streams, content: streamsContent },
     { name: "Spring", Page: Spring, content: springContent },
-    { name: "Threads", Page: Threads, content: threadsContent },
   ];
 
   for (const { name, Page, content } of cases) {
@@ -80,11 +81,75 @@ describe("Java Backend category (new)", () => {
       expect(
         screen.getByRole("heading", { name: "Self-Check", level: 3 }),
       ).toBeInTheDocument();
+      // Questions are inline Markdown, so `code` renders as its own element
+      // and the text is split - match the deepest element whose combined
+      // text contains the whole question.
+      const question = stripMarkdown(content.quiz[0].question);
+      const hasQuestion = (el: Element) =>
+        (el.textContent ?? "").includes(question);
       expect(
-        screen.getByText(content.quiz[0].question, { exact: false }),
+        screen.getByText(
+          (_, element) =>
+            !!element &&
+            hasQuestion(element) &&
+            !Array.from(element.children).some(hasQuestion),
+        ),
       ).toBeInTheDocument();
     });
   }
+});
+
+describe("Threads (lesson written as MDX)", () => {
+  it("renders its heading, every section, practice topic, and the Self-Check", () => {
+    renderWithProviders(<Threads />);
+
+    expect(
+      screen.getByRole("heading", { name: threadsFrontmatter.title, level: 1 }),
+    ).toBeInTheDocument();
+    for (const heading of [
+      "Doing More Than One Thing at a Time",
+      "Core Concepts",
+      "Watching Two Threads Collide",
+      "Full Example, Step by Step",
+      "Getting Started",
+      "Practice Topics",
+      "Self-Check",
+    ]) {
+      expect(
+        screen.getByRole("heading", { name: heading, level: 2 }),
+      ).toBeInTheDocument();
+    }
+    for (const title of threadsFrontmatter.practiceTopics) {
+      expect(screen.getByText(title)).toBeInTheDocument();
+    }
+    // Markdown in the lesson became real elements, not literal backticks.
+    expect(screen.getAllByText("thread.start()").length).toBeGreaterThan(0);
+    expect(document.body.textContent).not.toContain("`");
+  });
+
+  it("wires up its demo, walkthrough and quiz", () => {
+    renderWithProviders(<Threads />);
+
+    // <RaceConditionDemo /> placed inline in the lesson.
+    expect(
+      screen.getByRole("button", { name: /Next step/ }),
+    ).toBeInTheDocument();
+    // <Walkthrough> / <Step> -> StepByStepExample.
+    expect(
+      screen.getByRole("button", { name: /Shared objects and a task to run/ }),
+    ).toBeInTheDocument();
+    // <Quiz> -> SelfCheckQuiz, gated until every question is answered.
+    expect(
+      screen.getByRole("button", { name: /check answers/i }),
+    ).toBeDisabled();
+    expect(screen.getAllByRole("radio").length).toBeGreaterThan(10);
+  });
+
+  it("opens a practice topic's live demo when clicked", () => {
+    renderWithProviders(<Threads />);
+    fireEvent.click(screen.getByRole("button", { name: /Thread Pool Scheduler/ }));
+    expect(screen.getByText(/Choose the pool size/)).toBeInTheDocument();
+  });
 });
 
 describe("Deployment (new learning topic)", () => {
@@ -150,6 +215,23 @@ describe("CI/CD (new cheat sheet)", () => {
       screen.getByText("Deploy to GitHub Pages on Merge (CD)"),
     ).toBeInTheDocument();
     expect(screen.getByText("Quick Checklist")).toBeInTheDocument();
+  });
+});
+
+describe("Markdown cheat sheet (teaches the syntax the content itself is rendered with)", () => {
+  it("shows its syntax examples literally, inside code spans", () => {
+    const { container } = renderWithProviders(<MarkdownSheet />);
+    const codes = Array.from(container.querySelectorAll("code")).map(
+      (el) => el.textContent,
+    );
+
+    expect(codes).toContain("**bold**");
+    expect(codes).toContain("*italic*");
+    expect(codes).toContain("[text](url)");
+    expect(codes).toContain("`code`");
+    expect(codes).toContain("```lang ... ```");
+    // ...and none of them was actually applied as formatting.
+    expect(container.querySelector("a[href='url']")).toBeNull();
   });
 });
 

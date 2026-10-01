@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import CodeBlock from "./CodeBlock";
 import ContentCard from "./ContentCard";
+import InlineMarkdown from "./InlineMarkdown";
 import Reveal from "./motion/Reveal";
 import TextReveal from "./motion/TextReveal";
 import { loadCodeFile } from "../utils/codeExamples";
@@ -13,15 +14,6 @@ import type {
   SourceLink,
   WhatYouMightBeMissing,
 } from "../types/content";
-
-// Notes are plain strings in the content JSON, but occasionally need to
-// emphasize one word (e.g. a key to press). Rather than pull in a markdown
-// renderer for that, split on **bold** markers and wrap the matched parts.
-function renderNote(note: string) {
-  return note.split(/\*\*(.+?)\*\*/g).map((part, index) =>
-    index % 2 === 1 ? <strong key={index}>{part}</strong> : part,
-  );
-}
 
 /**
  * Shared page layout for every cheat sheet under src/pages/cheatsheets/.
@@ -76,7 +68,7 @@ function CheatSheetLayout({
                 {introduction.heading}
               </h2>
               <p className="text-muted leading-relaxed mb-4 text-left">
-                {introduction.description}
+                <InlineMarkdown>{introduction.description}</InlineMarkdown>
               </p>
             </div>
           </Reveal>
@@ -91,7 +83,7 @@ function CheatSheetLayout({
               <ul className="text-muted leading-relaxed text-left list-disc pl-5">
                 {prerequisites.map((item) => (
                   <li key={item} className="mb-1">
-                    {item}
+                    <InlineMarkdown>{item}</InlineMarkdown>
                   </li>
                 ))}
               </ul>
@@ -112,7 +104,7 @@ function CheatSheetLayout({
 
                 {step.description && (
                   <p className="text-muted leading-relaxed mb-4 text-left">
-                    {step.description}
+                    <InlineMarkdown>{step.description}</InlineMarkdown>
                   </p>
                 )}
 
@@ -128,7 +120,7 @@ function CheatSheetLayout({
                   <ol className="text-muted leading-relaxed pl-6 text-left mb-4 list-decimal ">
                     {step.substeps.map((substep, substepIndex) => (
                       <li key={substepIndex} className="mb-2 ">
-                        {substep}
+                        <InlineMarkdown>{substep}</InlineMarkdown>
                       </li>
                     ))}
                   </ol>
@@ -136,7 +128,7 @@ function CheatSheetLayout({
 
                 {step.note && (
                   <p className="bg-content2 border-l-4 border-content2-border text-muted text-sm p-3 pl-4 leading-relaxed text-left">
-                    {renderNote(step.note)}
+                    <InlineMarkdown>{step.note}</InlineMarkdown>
                   </p>
                 )}
 
@@ -158,7 +150,7 @@ function CheatSheetLayout({
 
                         {subStep.description && (
                           <p className="text-muted leading-relaxed mb-3 text-left">
-                            {subStep.description}
+                            <InlineMarkdown>{subStep.description}</InlineMarkdown>
                           </p>
                         )}
 
@@ -172,7 +164,7 @@ function CheatSheetLayout({
 
                         {subStep.note && (
                           <p className="bg-surface border-l-4 border-content1-border text-muted text-sm p-2 pl-3 leading-relaxed text-left">
-                            {renderNote(subStep.note)}
+                            <InlineMarkdown>{subStep.note}</InlineMarkdown>
                           </p>
                         )}
                       </div>
@@ -192,7 +184,7 @@ function CheatSheetLayout({
               </h3>
               {folderStructure.description && (
                 <p className="text-muted leading-relaxed mb-3 text-left">
-                  {folderStructure.description}
+                  <InlineMarkdown>{folderStructure.description}</InlineMarkdown>
                 </p>
               )}
               <pre className="bg-surface text-muted text-sm p-3 rounded overflow-x-auto text-left">
@@ -210,7 +202,7 @@ function CheatSheetLayout({
               </h3>
               {backendSetup.description && (
                 <p className="text-muted leading-relaxed mb-4 text-left">
-                  {backendSetup.description}
+                  <InlineMarkdown>{backendSetup.description}</InlineMarkdown>
                 </p>
               )}
               <div className="flex flex-col gap-3">
@@ -220,7 +212,7 @@ function CheatSheetLayout({
                     className="bg-content2 border-l-4 border-content2-border p-3 pl-4"
                   >
                     <p className="text-heading-alt font-semibold text-sm mb-2">
-                      {step.step}
+                      <InlineMarkdown>{step.step}</InlineMarkdown>
                     </p>
                     <CodeBlock>{loadCodeFile(step.codeFile)}</CodeBlock>
                   </div>
@@ -243,7 +235,9 @@ function CheatSheetLayout({
                   </h4>
                   <ul className="text-muted text-sm pl-5 list-disc space-y-1">
                     {category.items.map((item, itemIndex) => (
-                      <li key={itemIndex}>{item}</li>
+                      <li key={itemIndex}>
+                        <InlineMarkdown>{item}</InlineMarkdown>
+                      </li>
                     ))}
                   </ul>
                 </div>
@@ -261,7 +255,7 @@ function CheatSheetLayout({
               <ol className="text-muted leading-relaxed pl-6 text-left">
                 {gettingStarted.steps.map((step, index) => (
                   <li key={index} className="mb-2">
-                    • {step}
+                    • <InlineMarkdown>{step}</InlineMarkdown>
                   </li>
                 ))}
               </ol>

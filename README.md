@@ -22,7 +22,7 @@ Learn **JavaScript**, **TypeScript**, **Git**, **HTTP & Web APIs**, **Node.js**,
 - **Cheat Sheets** — Numbered, "how to actually do it" checklists for common setup tasks (project scaffolding, deployment, databases, UI motion), separate from the teaching-focused lessons
 - **Progress Tracking** — Check off topics on the home page and individual sub-topics/demos inside each lesson; progress is saved in your browser and picks up right where you left off
 - **Light & Dark Themes** — Easy on the eyes, any time of day
-- **Data-Driven Content** — Lesson and cheat sheet copy lives in JSON, so it can change without touching component code
+- **Data-Driven Content** — Lesson and cheat sheet copy lives in JSON, so it can change without touching component code. Prose strings support inline Markdown (`` `code` ``, `**bold**`, `*italic*`, `[links](https://...)`)
 - **Zero Backend** — No server, no account, no sign-up — everything runs and persists locally in your browser
 
 ---
@@ -111,6 +111,36 @@ Every topic on the home page and every sub-topic (practice topic/demo) inside a 
 Clearing your browser cookies (or the site's cookies specifically) resets your progress. There's no sync between devices/browsers, since nothing is sent to a server.
 
 Under the hood this lives in `src/context/ProgressContext.tsx`, which reads/writes the cookie via the small helpers in `src/utils/cookies.ts` and exposes a `useProgress()` hook (`isTopicDone`, `toggleTopic`, `isSubtopicDone`, `toggleSubtopic`, ...) to any component that needs it.
+
+---
+
+## Writing a Lesson in MDX
+
+Most lessons are JSON (`src/data/{en,sv}/learning/*Content.json`) rendered by `LearningTopicLayout`. The **Threads & Multithreading** lesson is the pilot for a different format: one `.mdx` file per language (`src/data/{en,sv}/learning/threads.mdx`) - Markdown with React components mixed in - so the text, the demos and the quiz all live together in reading order.
+
+```mdx
+---
+title: "Threads & Multithreading"
+practiceTopics: ["Thread States", "Thread Pool Scheduler"]
+quiz: true
+---
+
+import RaceConditionDemo from "../../../components/demos/threads-demos/RaceConditionDemo";
+
+<Section>
+
+## A heading
+
+Ordinary **Markdown** with `code`, lists and [links](https://example.com).
+
+<RaceConditionDemo />
+
+</Section>
+```
+
+Building blocks (all in `src/components/mdx/`): `<Section>` (the tinted, alternating box), `<Walkthrough>`/`<Step>` (code with clickable line-range explanations), `<PracticeTopics>`/`<PracticeTopic>` (demo cards), and `<Quiz>`/`<Question>`/`<Option correct>`/`<Explanation>`. Fenced code blocks render with the site's `CodeBlock`.
+
+Two MDX gotchas: `<`, `>` and `{` `}` outside backticks are JSX, so put things like `List<String>` in a code span; and keep one-line items (`<Option>`, `<Step>`, `<PracticeTopic>`) on a single line so they stay inline text. The frontmatter repeats the practice-topic titles and quiz flag so the header menu and progress ring can count them without loading the lesson (via the `lesson.mdx?frontmatter` import, see `scripts/vite-plugin-mdx-frontmatter.ts`); `src/data/mdx.test.tsx` fails if the frontmatter and body disagree, if a step highlights lines past the end of its code file, or if the English and Swedish files drift apart.
 
 ---
 

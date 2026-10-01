@@ -1,47 +1,25 @@
 import { useTranslation } from "react-i18next";
-import threadsContentEn from "../../data/en/learning/threadsContent.json";
-import threadsContentSv from "../../data/sv/learning/threadsContent.json";
-import LearningTopicLayout from "../../components/LearningTopicLayout";
-import RaceConditionDemo from "../../components/demos/threads-demos/RaceConditionDemo";
-import ThreadStatesDemo from "../../components/demos/threads-demos/ThreadStatesDemo";
-import ThreadPredictDemo from "../../components/demos/threads-demos/ThreadPredictDemo";
-import ThreadPoolDemo from "../../components/demos/threads-demos/ThreadPoolDemo";
+import MdxLesson from "../../components/mdx/MdxLesson";
+import ContentEn, {
+  frontmatter as frontmatterEn,
+} from "../../data/en/learning/threads.mdx";
+import ContentSv, {
+  frontmatter as frontmatterSv,
+} from "../../data/sv/learning/threads.mdx";
 
-const CONTENT_MAP: Record<string, typeof threadsContentEn> = {
-  en: threadsContentEn,
-  sv: threadsContentSv,
+// Unlike the other lessons (JSON + LearningTopicLayout), this one is written
+// as MDX: the lesson text, demos and quiz all live in the .mdx files.
+const LESSONS = {
+  en: { Content: ContentEn, frontmatter: frontmatterEn },
+  sv: { Content: ContentSv, frontmatter: frontmatterSv },
 };
 
 function Threads() {
   const { i18n } = useTranslation();
-  const content = CONTENT_MAP[i18n.language] || CONTENT_MAP.en;
+  const lesson =
+    LESSONS[i18n.language as keyof typeof LESSONS] || LESSONS.en;
 
-  const practiceDemos = {
-    [content.practiceTopics[0].title]: ThreadStatesDemo,
-    [content.practiceTopics[1].title]: ThreadPredictDemo,
-    [content.practiceTopics[2].title]: ThreadPoolDemo,
-  };
-
-  return (
-    <LearningTopicLayout
-      title={content.title}
-      introduction={content.introduction}
-      coreConcepts={content.coreConcepts}
-      sections={[
-        {
-          heading: content.interleaving.heading,
-          description: content.interleaving.description,
-          content: <RaceConditionDemo />,
-        },
-      ]}
-      fullExample={content.fullExample}
-      gettingStarted={content.gettingStarted}
-      practiceTopics={content.practiceTopics}
-      practiceDemos={practiceDemos}
-      quiz={content.quiz}
-      topicKey="threads"
-    />
-  );
+  return <MdxLesson {...lesson} topicKey="threads" />;
 }
 
 export default Threads;

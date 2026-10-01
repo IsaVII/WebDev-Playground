@@ -95,7 +95,7 @@
       "title": "Aggregate Functions & GROUP BY",
       "description": "Aggregate functions collapse many rows into a single summary value. GROUP BY runs that aggregation once per unique value in a column; HAVING filters on the aggregated result (WHERE can't, since it runs before grouping).",
       "language": "sql",
-      "note": "WHERE filters rows before grouping; HAVING filters groups after aggregation. Trying to use an aggregate like COUNT(*) in WHERE is a common error.",
+      "note": "WHERE filters rows before grouping; HAVING filters groups after aggregation. Trying to use an aggregate like `COUNT(*)` in WHERE is a common error.",
       "codeFile": "code-examples/cheatsheets/sql/10-aggregate-functions-group-by.sql"
     },
     {

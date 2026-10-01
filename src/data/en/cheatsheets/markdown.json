@@ -22,7 +22,7 @@
       "title": "Emphasis",
       "description": "Bold, italic, and strikethrough text, plus combinations of the two.",
       "language": "markdown",
-      "note": "Pick one style (* or _) and stick with it in a document - mixing both for the same purpose just makes the raw text harder to scan.",
+      "note": "Pick one style (`*` or `_`) and stick with it in a document - mixing both for the same purpose just makes the raw text harder to scan.",
       "codeFile": "code-examples/cheatsheets/markdown/02-emphasis.md"
     },
     {
@@ -76,7 +76,7 @@
     {
       "id": 9,
       "title": "Horizontal Rules & Line Breaks",
-      "description": "A horizontal rule (---, ***, or ___ on its own line) draws a divider. Markdown normally collapses single newlines into spaces within a paragraph - forcing a line break needs two trailing spaces or an explicit <br>.",
+      "description": "A horizontal rule (`---`, `***`, or `___` on its own line) draws a divider. Markdown normally collapses single newlines into spaces within a paragraph - forcing a line break needs two trailing spaces or an explicit `<br>`.",
       "language": "markdown",
       "note": "Trailing spaces are invisible and easy to lose (e.g. to an editor's trim-on-save setting) - <br> is more explicit and safer to rely on.",
       "codeFile": "code-examples/cheatsheets/markdown/09-rules-and-breaks.md"
@@ -94,11 +94,11 @@
     "heading": "Quick Syntax Reference",
     "steps": [
       "# H1 through ###### H6 - headings",
-      "**bold**, *italic*, ~~strikethrough~~ - emphasis",
+      "`**bold**`, `*italic*`, `~~strikethrough~~` - emphasis",
       "- item or 1. item - lists (indent 2-4 spaces to nest)",
       "- [ ] todo / - [x] done - task lists",
-      "[text](url) and ![alt](url) - links and images",
-      "`code` and ```lang ... ``` - inline and fenced code",
+      "`[text](url)` and `![alt](url)` - links and images",
+      "`` `code` `` and ```` ```lang ... ``` ```` - inline and fenced code",
       "> quoted text - blockquotes",
       "| a | b | with a |---|---| separator row - tables",
       "--- - horizontal rule; two trailing spaces or <br> - line break"

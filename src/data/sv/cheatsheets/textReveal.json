@@ -45,7 +45,7 @@
       "id": 5,
       "title": "Lägg till CSS: Tokens, Reveal & Text-Reveal-regler",
       "description": "Detta är den trimmade reveal-and-text-reveal-delen av en CSS-fil (importera den en gång, t.ex. från din apps rotkomponent eller huvudentry-fil). Den definierar timing/easing-tokens som båda komponenterna förlitar sig på, .reveal-basstaten plus dess riktningsvarianter, .text-reveal-piece-states, och en media query som tar bort rörelsen för prefers-reduced-motion medan den behåller en vanlig opacity-fade så state-ändringar fortfarande är märkbara.",
-      "note": "Om ditt projekt redan har ett bredare design-token-system (durationer/easings definierade någon annanstans), lägg bara till .reveal*, .text-reveal-piece, .stagger-children och reduced-motion-reglerna - hoppa över att omdeklarera tokens du redan har.",
+      "note": "Om ditt projekt redan har ett bredare design-token-system (durationer/easings definierade någon annanstans), lägg bara till `.reveal*`, .text-reveal-piece, .stagger-children och reduced-motion-reglerna - hoppa över att omdeklarera tokens du redan har.",
       "language": "jsx",
       "codeFile": "code-examples/cheatsheets/textReveal/05-add-the-css-tokens-reveal-text-reveal-rules.jsx"
     },

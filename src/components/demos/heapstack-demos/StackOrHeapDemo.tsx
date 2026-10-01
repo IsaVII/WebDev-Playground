@@ -1,4 +1,5 @@
 import { useState } from "react";
+import InlineMarkdown from "../../InlineMarkdown";
 
 const ITEMS = [
   {
@@ -77,7 +78,7 @@ function StackOrHeapDemo() {
               }`}
             >
               <p className="font-mono text-xs text-heading-alt mb-2">
-                {item.label}
+                <InlineMarkdown allowLinks={false}>{item.label}</InlineMarkdown>
               </p>
               <div className="flex gap-2">
                 {OPTIONS.map((option) => (
@@ -100,7 +101,7 @@ function StackOrHeapDemo() {
               </div>
               {checked && wrong && (
                 <p className="text-xs text-muted mt-2 mb-0">
-                  → {item.answer}: {item.explanation}
+                  → {item.answer}: <InlineMarkdown>{item.explanation}</InlineMarkdown>
                 </p>
               )}
             </div>

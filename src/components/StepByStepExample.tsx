@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import CodeBlock from "./CodeBlock";
-import type { ExampleStep } from "../types/content";
+import InlineMarkdown from "./InlineMarkdown";
 
 function linesInRange([start = 0, end = start]: number[]) {
   const lines: number[] = [];
@@ -19,12 +19,20 @@ function linesInRange([start = 0, end = start]: number[]) {
  * `lines` is an inclusive [firstLine, lastLine] range, 1-indexed to match
  * what a reader sees in the code block's gutter.
  */
+export interface WalkthroughStep {
+  label: string;
+  /** Inclusive 1-indexed [first, last] range of the code this step explains. */
+  lines: number[];
+  /** A string (inline Markdown) or rendered content (from a lesson's .mdx). */
+  explanation: ReactNode;
+}
+
 interface StepByStepExampleProps {
   title?: string;
-  description?: string;
+  description?: ReactNode;
   /** The example, one string per line. */
   code: string[];
-  steps: ExampleStep[];
+  steps: WalkthroughStep[];
 }
 
 function StepByStepExample({
@@ -42,7 +50,9 @@ function StepByStepExample({
         <h4 className="text-lg font-semibold text-heading-alt mb-2">{title}</h4>
       )}
       {description && (
-        <p className="text-muted leading-relaxed mb-4">{description}</p>
+        <div className="text-muted leading-relaxed mb-4 [&_p]:mb-2">
+          <InlineMarkdown>{description}</InlineMarkdown>
+        </div>
       )}
 
       <div className="grid md:grid-cols-[220px_1fr] gap-4">
@@ -70,7 +80,7 @@ function StepByStepExample({
                   >
                     {index + 1}
                   </span>
-                  {step.label}
+                  <InlineMarkdown allowLinks={false}>{step.label}</InlineMarkdown>
                 </button>
               </li>
             );
@@ -85,10 +95,12 @@ function StepByStepExample({
             {code}
           </CodeBlock>
 
-          <p className="text-muted leading-relaxed mt-4 pl-3 border-l-2 border-accent">
-            <strong className="text-heading-alt ">{current.label}:</strong>{" "}
-            {current.explanation}
-          </p>
+          <div className="text-muted leading-relaxed mt-4 pl-3 border-l-2 border-accent">
+            <strong className="text-heading-alt ">
+              <InlineMarkdown>{current.label}</InlineMarkdown>:
+            </strong>{" "}
+            <InlineMarkdown>{current.explanation}</InlineMarkdown>
+          </div>
         </div>
       </div>
     </div>

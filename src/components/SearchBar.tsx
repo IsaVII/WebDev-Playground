@@ -7,6 +7,8 @@ import javaBackendEn from "../data/en/javaBackend.json";
 import learningContentSv from "../data/sv/learningContent.json";
 import cheatsheetsSv from "../data/sv/cheatsheets.json";
 import javaBackendSv from "../data/sv/javaBackend.json";
+import InlineMarkdown from "./InlineMarkdown";
+import { stripMarkdown } from "../utils/markdown";
 import type { TopicIndex, TopicSummary } from "../types/content";
 
 type SearchResult = TopicSummary & { type: string };
@@ -93,7 +95,7 @@ function SearchBar() {
     const filtered = ALL_CONTENT.filter((item) => {
       return (
         item.title.toLowerCase().includes(searchTerm) ||
-        item.description.toLowerCase().includes(searchTerm) ||
+        stripMarkdown(item.description).toLowerCase().includes(searchTerm) ||
         item.difficulty?.toLowerCase().includes(searchTerm) ||
         item.type.toLowerCase().includes(searchTerm)
       );
@@ -222,7 +224,9 @@ function SearchBar() {
                     {item.title}
                   </div>
                   <div className="text-sm text-menu-text/60 line-clamp-2 mt-1">
-                    {item.description}
+                    <InlineMarkdown allowLinks={false}>
+                      {item.description}
+                    </InlineMarkdown>
                   </div>
                   <div className="flex items-center gap-2 mt-2 text-xs">
                     <span className="text-menu-text/40">{item.type}</span>

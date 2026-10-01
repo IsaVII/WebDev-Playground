@@ -30,7 +30,8 @@ import diagramsContentEn from "../data/en/learning/diagramsContent.json";
 import streamsContentEn from "../data/en/learning/streamsContent.json";
 import springContentEn from "../data/en/learning/springContent.json";
 import heapStackContentEn from "../data/en/learning/heapStackContent.json";
-import threadsContentEn from "../data/en/learning/threadsContent.json";
+import threadsFrontmatterEn from "../data/en/learning/threads.mdx?frontmatter";
+import { lessonMeta } from "../utils/lessonMeta";
 
 // Swedish content
 import cheatsheetsSv from "../data/sv/cheatsheets.json";
@@ -54,7 +55,11 @@ import diagramsContentSv from "../data/sv/learning/diagramsContent.json";
 import streamsContentSv from "../data/sv/learning/streamsContent.json";
 import springContentSv from "../data/sv/learning/springContent.json";
 import heapStackContentSv from "../data/sv/learning/heapStackContent.json";
-import threadsContentSv from "../data/sv/learning/threadsContent.json";
+import threadsFrontmatterSv from "../data/sv/learning/threads.mdx?frontmatter";
+
+// Lessons written as MDX contribute just their frontmatter (practice topics, quiz).
+const threadsContentEn = lessonMeta(threadsFrontmatterEn);
+const threadsContentSv = lessonMeta(threadsFrontmatterSv);
 
 // Content maps
 interface LanguageContent {

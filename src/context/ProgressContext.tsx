@@ -26,7 +26,11 @@ import diagramsContent from "../data/en/learning/diagramsContent.json";
 import streamsContent from "../data/en/learning/streamsContent.json";
 import springContent from "../data/en/learning/springContent.json";
 import heapStackContent from "../data/en/learning/heapStackContent.json";
-import threadsContent from "../data/en/learning/threadsContent.json";
+import threadsFrontmatter from "../data/en/learning/threads.mdx?frontmatter";
+import { lessonMeta } from "../utils/lessonMeta";
+
+// Lessons written as MDX contribute just their frontmatter (practice topics).
+const threadsContent = lessonMeta(threadsFrontmatter);
 
 // Map topic keys to their learning content (to access practice topics)
 const CONTENT_BY_KEY: Record<string, { practiceTopics?: { title: string }[] }> = {

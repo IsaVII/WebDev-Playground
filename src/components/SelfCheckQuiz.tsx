@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useProgress } from "../context/ProgressContext";
-import type { QuizQuestion } from "../types/content";
+import InlineMarkdown from "./InlineMarkdown";
 
 /**
  * A short retrieval-practice quiz shown at the bottom of a lesson.
@@ -19,8 +19,19 @@ import type { QuizQuestion } from "../types/content";
  */
 const SELF_CHECK_KEY = "Self-Check";
 
+/**
+ * One question. The text fields are strings (inline Markdown, from the lesson
+ * JSON) or already-rendered nodes (from a lesson's .mdx - see mdx/Quiz.tsx).
+ */
+export interface QuizItem {
+  question: ReactNode;
+  options: ReactNode[];
+  answerIndex: number;
+  explanation: ReactNode;
+}
+
 interface SelfCheckQuizProps {
-  questions?: QuizQuestion[];
+  questions?: QuizItem[];
   topicKey: string;
 }
 
@@ -88,9 +99,9 @@ function SelfCheckQuiz({ questions = [], topicKey }: SelfCheckQuizProps) {
 
           return (
             <li key={qi}>
-              <p className="text-heading font-semibold mb-2">
-                {qi + 1}. {question.question}
-              </p>
+              <div className="text-heading font-semibold mb-2 [&_p]:inline [&_p]:m-0 [&_p]:text-heading [&_p]:font-semibold">
+                {qi + 1}. <InlineMarkdown>{question.question}</InlineMarkdown>
+              </div>
               <div className="flex flex-col gap-1.5">
                 {question.options.map((option, oi) => {
                   const isChosen = answered === oi;
@@ -116,20 +127,22 @@ function SelfCheckQuiz({ questions = [], topicKey }: SelfCheckQuizProps) {
                         disabled={checked}
                         className="mt-0.5 accent-accent shrink-0"
                       />
-                      <span className="text-heading-alt">{option}</span>
+                      <span className="text-heading-alt">
+                        <InlineMarkdown allowLinks={false}>{option}</InlineMarkdown>
+                      </span>
                     </label>
                   );
                 })}
               </div>
               {checked && (
-                <p
-                  className={`text-sm mt-2 ${
+                <div
+                  className={`text-sm mt-2 [&_p]:inline [&_p]:m-0 ${
                     isCorrect ? "text-green-600" : "text-muted"
                   }`}
                 >
                   <strong>{isCorrect ? "Correct. " : "Not quite. "}</strong>
-                  {question.explanation}
-                </p>
+                  <InlineMarkdown>{question.explanation}</InlineMarkdown>
+                </div>
               )}
             </li>
           );

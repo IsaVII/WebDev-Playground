@@ -21,7 +21,7 @@
       },
       {
         "title": "Multiplicity / Cardinality",
-        "description": "The numbers at each end of a line - 1, 0..1, 1..*, * - say how many objects on this side relate to one object on the other. In ER terms this is one-to-one, one-to-many, or many-to-many"
+        "description": "The numbers at each end of a line - `1`, `0..1`, `1..*`, `*` - say how many objects on this side relate to one object on the other. In ER terms this is one-to-one, one-to-many, or many-to-many"
       },
       {
         "title": "Entity, Attribute, Primary & Foreign Key",
@@ -76,7 +76,7 @@
       {
         "label": "A one-to-many: Book to BookCopy",
         "lines": [16, 18],
-        "explanation": "One Book has 1..* BookCopy, and each BookCopy belongs to exactly one Book. This is composition - a copy has no meaning without its book - so in SQL the copy table carries a NOT NULL foreign key back to book."
+        "explanation": "One Book has `1..*` BookCopy, and each BookCopy belongs to exactly one Book. This is composition - a copy has no meaning without its book - so in SQL the copy table carries a NOT NULL foreign key back to book."
       },
       {
         "label": "A many-to-many: Book to Author",

@@ -21,7 +21,7 @@
       },
       {
         "title": "Multiplicitet / kardinalitet",
-        "description": "Siffrorna i varje ände av en linje - 1, 0..1, 1..*, * - säger hur många objekt på den här sidan som relaterar till ett objekt på andra sidan. I ER-termer är detta en-till-en, en-till-många eller många-till-många"
+        "description": "Siffrorna i varje ände av en linje - `1`, `0..1`, `1..*`, `*` - säger hur många objekt på den här sidan som relaterar till ett objekt på andra sidan. I ER-termer är detta en-till-en, en-till-många eller många-till-många"
       },
       {
         "title": "Entitet, attribut, primär- & främmande nyckel",
@@ -76,7 +76,7 @@
       {
         "label": "En en-till-många: Book till BookCopy",
         "lines": [16, 18],
-        "explanation": "En Book har 1..* BookCopy, och varje BookCopy hör till exakt en Book. Detta är komposition - ett exemplar har ingen mening utan sin bok - så i SQL bär exemplartabellen en NOT NULL främmande nyckel tillbaka till book."
+        "explanation": "En Book har `1..*` BookCopy, och varje BookCopy hör till exakt en Book. Detta är komposition - ett exemplar har ingen mening utan sin bok - så i SQL bär exemplartabellen en NOT NULL främmande nyckel tillbaka till book."
       },
       {
         "label": "En många-till-många: Book till Author",

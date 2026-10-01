@@ -1,5 +1,6 @@
 import { useState } from "react";
 import CodeBlock from "../../CodeBlock";
+import InlineMarkdown from "../../InlineMarkdown";
 
 const SCENARIOS = [
   {
@@ -88,7 +89,8 @@ function PassByValueDemo() {
               </div>
               {pick && (
                 <p className="text-xs text-muted mt-2 mb-0">
-                  Prints <strong>{s.answer}</strong> - {s.explanation}
+                  Prints <strong>{s.answer}</strong> -{" "}
+                  <InlineMarkdown>{s.explanation}</InlineMarkdown>
                 </p>
               )}
             </div>

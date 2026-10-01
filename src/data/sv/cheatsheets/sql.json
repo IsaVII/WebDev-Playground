@@ -95,7 +95,7 @@
       "title": "Aggregeringsfunktioner & GROUP BY",
       "description": "Aggregeringsfunktioner kollapsar många rader till ett enda sammanfattningsvärde. GROUP BY kör den aggregeringen en gång per unikt värde i en kolumn; HAVING filtrerar på det aggregerade resultatet (WHERE kan inte, eftersom det körs före gruppering).",
       "language": "sql",
-      "note": "WHERE filtrerar rader före gruppering; HAVING filtrerar grupper efter aggregering. Att försöka använda en aggregering som COUNT(*) i WHERE är ett vanligt fel.",
+      "note": "WHERE filtrerar rader före gruppering; HAVING filtrerar grupper efter aggregering. Att försöka använda en aggregering som `COUNT(*)` i WHERE är ett vanligt fel.",
       "codeFile": "code-examples/cheatsheets/sql-sv/override-aggregeringsfunktioner-group-by.sql"
     },
     {

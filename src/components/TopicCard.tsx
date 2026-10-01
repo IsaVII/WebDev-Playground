@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useProgress } from "../context/ProgressContext";
+import InlineMarkdown from "./InlineMarkdown";
 import type { TopicSummary } from "../types/content";
 
 interface TopicCardProps {
@@ -56,7 +57,9 @@ function TopicCard({ topic, isCheatSheet = false }: TopicCardProps) {
           )}
         </div>
       </div>
-      <p className="text-muted my-4">{topic.description}</p>
+      <p className="text-muted my-4">
+        <InlineMarkdown allowLinks={false}>{topic.description}</InlineMarkdown>
+      </p>
       <div className="flex gap-4 text-sm text-subtle items-center">
         <span>⏱️ {topic.estimatedTime}</span>
         {done ? (

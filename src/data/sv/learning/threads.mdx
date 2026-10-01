@@ -1,0 +1,193 @@
+---
+title: "Trådar & multitrådning"
+practiceTopics:
+  - "Trådtillstånd"
+  - "Förutsäg utskriften: trådar"
+  - "Trådpool-schemaläggare"
+quiz: true
+---
+
+import RaceConditionDemo from "../../../components/demos/threads-demos/RaceConditionDemo";
+import ThreadStatesDemo from "../../../components/demos/threads-demos/ThreadStatesDemo";
+import ThreadPredictDemo from "../../../components/demos/threads-demos/ThreadPredictDemo";
+import ThreadPoolDemo from "../../../components/demos/threads-demos/ThreadPoolDemo";
+
+<Section lead>
+
+## Att göra mer än en sak åt gången
+
+En tråd är en självständig exekveringsväg inuti ett körande program. Varje Java-program startar med en - `main`-tråden - men kan starta fler, och JVM:en (tillsammans med operativsystemet) varvar dem så att flera saker verkar hända samtidigt, eller faktiskt gör det på en flerkärnig CPU. Varje tråd får sin egen anropsstack, men alla trådar i programmet delar samma heap. Det enda faktumet förklarar både varför trådar är användbara (de kan samarbeta kring delad data) och varför de är farliga (två trådar som rör samma objekt i exakt samma ögonblick kan förstöra det). Spring Boot gör detta oundvikligt: varje inkommande HTTP-anrop hanteras på en tråd från en pool, och dina singleton-beans används av många av dem samtidigt.
+
+</Section>
+
+<Section>
+
+## Kärnbegrepp
+
+- **Varje tråd har en egen stack, alla delar en heap:** En tråds lokala variabler och metod-frames lever på dess privata stack, så de kan aldrig ses av en annan tråd. Objekt på heapen är nåbara från varje tråd som håller en referens - och där kommer delningen, och problemen, ifrån
+- **start() vs run():** `thread.start()` ber JVM:en skapa en ny tråd som sedan anropar `run()`. Att anropa `run()` själv är bara ett vanligt metodanrop på den nuvarande tråden - inget samtidigt händer. Att anropa `start()` två gånger på samma Thread kastar ett undantag
+- **Runnable och Callable:** En `Runnable` är en uppgift utan returvärde och utan checked exceptions; en `Callable<T>` returnerar ett resultat och får kasta undantag. Båda beskriver arbetet; en Thread eller en executor bestämmer var och när det körs. Eftersom båda är funktionella gränssnitt räcker oftast ett lambda
+- **Trådens livscykel:** En tråd är NEW tills `start()`, sedan RUNNABLE (kör eller redo att köra). Den kan vara BLOCKED och vänta på ett lås, WAITING eller TIMED_WAITING (`wait`, `join`, `sleep`), och slutligen TERMINATED när `run()` returnerar eller kastar. Att känna till tillståndet är halva jobbet när man läser en thread dump
+- **Race conditions:** När utfallet beror på hur två trådar råkar varvas har du en race condition. `count++` ser ut som ett steg men är tre - läs, addera, skriv - så två trådar kan båda läsa samma gamla värde och en uppdatering går tyst förlorad. Buggen är intermittent, vilket gör den svår att hitta och lätt att leverera
+- **synchronized, lås och atomics:** `synchronized` låter bara en tråd åt gången hålla ett objekts monitor, vilket gör ett block till en odelbar enhet. `ReentrantLock` erbjuder detsamma med mer kontroll. `AtomicInteger` och liknande gör uppdateringar av en enskild variabel säkert utan låsning. `volatile` garanterar att en skrivning syns över trådar, men inte att `count++` är atomärt
+- **Executors och trådpooler:** Att skapa en tråd per uppgift är dyrt och obegränsat. En `ExecutorService` håller en fast uppsättning arbetartrådar och köar uppgifter åt dem. Du `submit`:ar arbete, får en `Future` tillbaka och anropar `shutdown()` när du är klar. Föredra detta framför att skapa `Thread`-objekt för hand
+- **Futures och CompletableFuture:** `Future.get()` blockerar tills resultatet är klart. `CompletableFuture` låter dig kedja steg (`thenApply`, `thenCombine`) och köra flera asynkrona anrop parallellt, och sedan kombinera deras resultat utan att blockera en tråd emellan
+- **Deadlock:** Tråd A håller lås 1 och väntar på lås 2 medan tråd B håller lås 2 och väntar på lås 1 - ingen kan någonsin gå vidare. Standardförsvaret är att alltid ta flera lås i samma globala ordning, eller att undvika att hålla mer än ett åt gången
+- **Trådsäkra samlingar och oföränderlighet:** `ArrayList` och `HashMap` är inte säkra att ändra från flera trådar. Använd `ConcurrentHashMap`, `CopyOnWriteArrayList` eller de andra samlingarna i `java.util.concurrent`. Oföränderliga objekt (final-fält, inga settrar) behöver ingen låsning alls, vilket är det billigaste sättet att vara trådsäker
+
+</Section>
+
+<Section>
+
+## Att se två trådar krocka
+
+Två trådar adderar var 1 till en delad räknare som börjar på 0, så svaret borde vara 2. Stega igenom en olycklig varvning av den osäkra versionen, byt sedan till den synkroniserade versionen och se hur låset tvingar trådarna att turas om.
+
+<RaceConditionDemo />
+
+</Section>
+
+<Section>
+
+## Fullständigt exempel, steg för steg
+
+<Walkthrough title="En trasig räknare, en lagad räknare och en trådpool" files={["code-examples/java/threads/ThreadsDemo.java"]}>
+
+Två trådar hamrar på samma par räknare 1000 gånger vardera - en osäker, en atomär - och sedan bearbetar en fast pool med tre arbetare fem ordrar. Kör det några gånger: den osäkra summan ändras från körning till körning, den säkra aldrig.
+
+<Step label="Delade objekt och en uppgift att köra" lines={[11, 19]}>`unsafe` och `safe` är heap-objekt, och lambdan `work` fångar referenser till båda. Vilken tråd som än kör `work` ökar exakt samma två objekt - det är delningen. `work` är bara en `Runnable`: en beskrivning av en uppgift, inte en tråd.</Step>
+
+<Step label="start() och join()" lines={[21, 26]}>Varje `new Thread(work)` skapar bara trådobjektet; inget körs förrän `start()`. Från och med då körs `t1`, `t2` och `main` samtidigt, utan garanterad ordning. `join()` får `main` att vänta tills tråden är klar - utan det kunde `main` läsa räknarna medan arbetet fortfarande pågår.</Step>
+
+<Step label="Resultaten" lines={[28, 29]}>Två trådar gånger 1000 ökningar borde ge exakt 2000. Den säkra räknaren gör alltid det. Den osäkra skriver oftast ut något lite lägre, och ett annat tal vid varje körning - signaturen för en race condition.</Step>
+
+<Step label="En fast trådpool och Futures" lines={[31, 40]}>`newFixedThreadPool(3)` skapar tre återanvändbara arbetare; `submit` köar var och en av de fem uppgifterna och returnerar omedelbart en `Future`. `f.get()` blockerar tills den uppgiftens resultat är klart. Fem uppgifter behöver aldrig fem trådar - poolen återanvänder sina tre. `shutdown()` låter arbetarna bli klara och sedan avsluta; glömmer du det hålls JVM:en vid liv.</Step>
+
+<Step label="UnsafeCounter: count++ är inte atomärt" lines={[49, 59]}>`count++` kompileras till läs, addera ett, skriv tillbaka. Om två trådar båda läser 41 innan någon skriver, skriver båda 42 och en ökning försvinner. Metoden ser ofarlig ut just för att buggen inte ligger på någon enskild rad.</Step>
+
+<Step label="SafeCounter: en atomär uppdatering" lines={[61, 71]}>`AtomicInteger.incrementAndGet()` utför läs-ändra-skriv som en enda odelbar operation med en compare-and-set på CPU-nivå, så ingen uppdatering kan gå förlorad och inget lås behövs. Att deklarera fältet `final` är ändå god praxis - referensen ändras aldrig, bara värdet inuti.</Step>
+
+</Walkthrough>
+
+</Section>
+
+<Section>
+
+## Kom igång
+
+- Fråga dig först om du behöver trådar alls: en vanlig loop eller en stream är enklare, och `parallelStream()` lönar sig bara för stora, CPU-tunga, oberoende arbetsmängder
+- Föredra en `ExecutorService` (eller, på Java 21+, virtuella trådar via `Executors.newVirtualThreadPerTaskExecutor()`) framför `new Thread(...)` - och anropa alltid `shutdown()` på poolen, annars avslutas inte JVM:en
+- Fråga för varje fält: kan två trådar röra det samtidigt? Om ja och det är muterbart behöver det ett lås, en atomär typ eller en trådsäker samling - eller ska göras oföränderligt
+- Håll `synchronized`-block så små du kan, anropa aldrig okänd kod medan du håller ett lås, och ta alltid flera lås i samma ordning
+- Lita aldrig på att ett test som passerar en gång bevisar trådsäkerhet - races beror på timing. Resonera i stället om delat tillstånd, och använd `join()` eller `Future.get()` innan du läser resultat
+- I Spring: behandla varje singleton-bean som delad mellan trådar: inga muterbara instansfält för data per anrop - behåll det i metodparametrar och lokala variabler
+
+</Section>
+
+<Section>
+
+## Övningsämnen
+
+Klicka på ett ämne för att öppna ett levande, redigerbart exempel.
+
+<PracticeTopics>
+
+<PracticeTopic title="Trådtillstånd" demo={<ThreadStatesDemo />}>Matcha varje situation - efter start(), väntan på ett lås, inuti sleep(), efter att run() returnerat - med det trådtillstånd JVM:en rapporterar</PracticeTopic>
+
+<PracticeTopic title="Förutsäg utskriften: trådar" demo={<ThreadPredictDemo />}>Korta kodsnuttar om start() mot run(), osynkroniserade räknare, atomics och join() - förutsäg vad som faktiskt händer</PracticeTopic>
+
+<PracticeTopic title="Trådpool-schemaläggare" demo={<ThreadPoolDemo />}>Välj en poolstorlek och se sex uppgifter av olika längd tilldelas arbetartrådar på en tidslinje - se varför fler arbetare hjälper, och var de slutar hjälpa</PracticeTopic>
+
+</PracticeTopics>
+
+</Section>
+
+<Section>
+
+## Självtest
+
+Minns i stället för att läsa om - svara innan du kontrollerar.
+
+<Quiz>
+
+<Question>
+
+Vad händer om du anropar `thread.run()` i stället för `thread.start()`?
+
+<Option>En ny tråd skapas och kör uppgiften - de två är likvärdiga</Option>
+<Option correct>Uppgiften körs som ett vanligt metodanrop på den nuvarande tråden, utan samtidighet</Option>
+<Option>Ett kompileringsfel uppstår</Option>
+<Option>Uppgiften köas och körs senare på main-tråden</Option>
+
+<Explanation>Bara `start()` ber JVM:en skapa en ny tråd. `run()` är bara metoden den nya tråden skulle ha anropat - att anropa den direkt kör den här och nu, till slut, före nästa rad.</Explanation>
+
+</Question>
+
+<Question>
+
+Två trådar utför var `count++` 1000 gånger på samma vanliga `int`-fält. Vad kan slutvärdet bli?
+
+<Option>Alltid exakt 2000</Option>
+<Option correct>Ofta mindre än 2000 och olika vid varje körning, eftersom ökningar kan gå förlorade</Option>
+<Option>Alltid exakt 1000</Option>
+<Option>Det kastar ett ConcurrentModificationException</Option>
+
+<Explanation>`count++` är läs-addera-skriv. När två trådar varvas mellan läsningen och skrivningen skriver den ena över den andras uppdatering. Resultatet är oftast något under 2000 och olika varje körning.</Explanation>
+
+</Question>
+
+<Question>
+
+Vilken data delar en tråd INTE med en annan tråd i samma program?
+
+<Option>Objekt på heapen som båda håller en referens till</Option>
+<Option>Statiska fält</Option>
+<Option correct>De lokala variablerna i dess egna metod-frames</Option>
+<Option>Fält i en singleton Spring-bean</Option>
+
+<Explanation>Varje tråd har en privat anropsstack, så dess lokala variabler och parametrar är osynliga för andra trådar. Heap-objekt och statiska fält delas, vilket är varför de behöver skyddas.</Explanation>
+
+</Question>
+
+<Question>
+
+Varför räcker inte `volatile int count` för att göra `count++` trådsäkert?
+
+<Option>volatile gör ingenting alls</Option>
+<Option correct>volatile gör skrivningar synliga för andra trådar, men läs-addera-skriv är fortfarande tre separata steg som kan varvas</Option>
+<Option>volatile fungerar bara på objekt, inte på primitiver</Option>
+<Option>volatile gör fältet skrivskyddat</Option>
+
+<Explanation>`volatile` garanterar synlighet och ordning, inte atomicitet. Använd `AtomicInteger` eller ett `synchronized`-block när en uppdatering beror på det nuvarande värdet.</Explanation>
+
+</Question>
+
+<Question>
+
+Varför använda en `ExecutorService` i stället för att skapa en ny Thread för varje uppgift?
+
+<Option>Trådar skapade med `new Thread` kan inte köra Runnables</Option>
+<Option correct>En pool återanvänder ett begränsat antal arbetartrådar, undviker kostnaden och den obegränsade tillväxten med en tråd per uppgift, och ger dig Futures</Option>
+<Option>Executors får koden att köra på GPU:n</Option>
+<Option>Det tar bort behovet av all synkronisering</Option>
+
+<Explanation>Trådskapande är dyrt och obegränsat antal trådar tar slut på minne. En pool återanvänder arbetare och köar extra arbete. Den tar inte bort behovet av att skydda delat muterbart tillstånd.</Explanation>
+
+</Question>
+
+<Question>
+
+Tråd A håller lås X och väntar på lås Y; tråd B håller lås Y och väntar på lås X. Vad är detta?
+
+<Option>En race condition</Option>
+<Option correct>En deadlock</Option>
+<Option>En minnesläcka</Option>
+<Option>Normalt beteende som löser sig självt efter en timeout</Option>
+
+<Explanation>Varje tråd väntar på något bara den andra kan släppa, så ingen går någonsin vidare. Att ta lås i en konsekvent global ordning förhindrar det.</Explanation>
+
+</Question>
+
+</Quiz>
+
+</Section>

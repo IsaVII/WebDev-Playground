@@ -4,6 +4,7 @@ import learningContent from "./en/learningContent.json";
 import cheatsheets from "./en/cheatsheets.json";
 import javaBackend from "./en/javaBackend.json";
 import type { TopicSummary } from "../types/content";
+import { parseInline } from "../utils/markdown";
 
 const ALLOWED_DIFFICULTIES = ["beginner", "intermediate", "advanced"];
 
@@ -112,4 +113,58 @@ describe("cheatsheets.json", () => {
   // expected to show up in the CONTENT_BY_KEY maps - only the route check
   // applies to them.
   checkTopicIndex(cheatsheets.topics, { requireContentMapping: false });
+});
+
+/**
+ * Every prose string in the content JSON is rendered as inline Markdown (see
+ * src/utils/markdown.ts). A delimiter that doesn't form a complete construct
+ * is shown literally, which is almost always a mistake: an unclosed backtick,
+ * or a bare `*` (as in COUNT(*) or 1..*) that should sit inside a code span.
+ * This catches those in every language file without rendering every page.
+ */
+describe("content JSON is valid inline Markdown", () => {
+  // Fields rendered verbatim, not as prose.
+  const VERBATIM_KEYS = new Set([
+    "structure",
+    "codeFile",
+    "files",
+    "route",
+    "key",
+    "screenshot",
+    "url",
+  ]);
+
+  const modules = import.meta.glob<unknown>("./{en,sv}/**/*.json", {
+    eager: true,
+    import: "default",
+  });
+
+  function collectStrings(value: unknown, path: string, out: [string, string][]) {
+    if (typeof value === "string") {
+      out.push([path, value]);
+    } else if (Array.isArray(value)) {
+      value.forEach((v, i) => collectStrings(v, `${path}[${i}]`, out));
+    } else if (value && typeof value === "object") {
+      for (const [k, v] of Object.entries(value)) {
+        if (!VERBATIM_KEYS.has(k)) collectStrings(v, `${path}.${k}`, out);
+      }
+    }
+  }
+
+  it("finds the content files", () => {
+    expect(Object.keys(modules).length).toBeGreaterThan(20);
+  });
+
+  it.each(Object.entries(modules))("%s has no stray * or ` in its text", (file, json) => {
+    const strings: [string, string][] = [];
+    collectStrings(json, "", strings);
+
+    const offenders = strings.filter(([, text]) =>
+      parseInline(text).some(
+        (node) => node.type === "text" && /[*`]/.test(node.value),
+      ),
+    );
+
+    expect(offenders.map(([path, text]) => `${file}${path}: ${text}`)).toEqual([]);
+  });
 });
