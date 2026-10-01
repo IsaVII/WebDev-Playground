@@ -8,12 +8,14 @@ import CiCd from "./cheatsheets/CiCd";
 import Diagrams from "./learning/Diagrams";
 import Streams from "./learning/Streams";
 import Spring from "./learning/Spring";
+import Threads from "./learning/Threads";
 import learningContent from "../data/en/learningContent.json";
 import cheatsheets from "../data/en/cheatsheets.json";
 import javaBackend from "../data/en/javaBackend.json";
 import diagramsContent from "../data/en/learning/diagramsContent.json";
 import streamsContent from "../data/en/learning/streamsContent.json";
 import springContent from "../data/en/learning/springContent.json";
+import threadsContent from "../data/en/learning/threadsContent.json";
 
 /**
  * These don't try to cover every interaction on every page - the practice
@@ -60,6 +62,7 @@ describe("Java Backend category (new)", () => {
     { name: "Diagrams", Page: Diagrams, content: diagramsContent },
     { name: "Streams", Page: Streams, content: streamsContent },
     { name: "Spring", Page: Spring, content: springContent },
+    { name: "Threads", Page: Threads, content: threadsContent },
   ];
 
   for (const { name, Page, content } of cases) {

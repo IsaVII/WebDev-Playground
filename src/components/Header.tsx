@@ -30,6 +30,7 @@ import diagramsContentEn from "../data/en/learning/diagramsContent.json";
 import streamsContentEn from "../data/en/learning/streamsContent.json";
 import springContentEn from "../data/en/learning/springContent.json";
 import heapStackContentEn from "../data/en/learning/heapStackContent.json";
+import threadsContentEn from "../data/en/learning/threadsContent.json";
 
 // Swedish content
 import cheatsheetsSv from "../data/sv/cheatsheets.json";
@@ -53,6 +54,7 @@ import diagramsContentSv from "../data/sv/learning/diagramsContent.json";
 import streamsContentSv from "../data/sv/learning/streamsContent.json";
 import springContentSv from "../data/sv/learning/springContent.json";
 import heapStackContentSv from "../data/sv/learning/heapStackContent.json";
+import threadsContentSv from "../data/sv/learning/threadsContent.json";
 
 // Content maps
 interface LanguageContent {
@@ -90,6 +92,7 @@ const CONTENT_BY_LANG: Record<string, LanguageContent> = {
       streams: streamsContentEn,
       spring: springContentEn,
       heapstack: heapStackContentEn,
+      threads: threadsContentEn,
     },
   },
   sv: {
@@ -115,6 +118,7 @@ const CONTENT_BY_LANG: Record<string, LanguageContent> = {
       streams: streamsContentSv,
       spring: springContentSv,
       heapstack: heapStackContentSv,
+      threads: threadsContentSv,
     },
   },
 };

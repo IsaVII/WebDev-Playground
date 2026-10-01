@@ -39,6 +39,16 @@
       "screenshot": "/images/heapstack.png",
       "difficulty": "beginner",
       "estimatedTime": "1.5 hours"
+    },
+    {
+      "id": 5,
+      "key": "threads",
+      "title": "Threads & Multithreading",
+      "description": "Doing several things at once: threads, start() vs run(), the thread lifecycle, race conditions, synchronized and atomics, thread pools with ExecutorService, Futures, and deadlock",
+      "route": "/threads",
+      "screenshot": "/images/threads.png",
+      "difficulty": "intermediate",
+      "estimatedTime": "3 hours"
     }
   ]
 }

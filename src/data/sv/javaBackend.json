@@ -39,6 +39,16 @@
       "screenshot": "/images/heapstack.png",
       "difficulty": "beginner",
       "estimatedTime": "1.5 timmar"
+    },
+    {
+      "id": 5,
+      "key": "threads",
+      "title": "Trådar & multitrådning",
+      "description": "Att göra flera saker samtidigt: trådar, start() mot run(), trådens livscykel, race conditions, synchronized och atomics, trådpooler med ExecutorService, Futures och deadlock",
+      "route": "/threads",
+      "screenshot": "/images/threads.png",
+      "difficulty": "intermediate",
+      "estimatedTime": "3 timmar"
     }
   ]
 }
