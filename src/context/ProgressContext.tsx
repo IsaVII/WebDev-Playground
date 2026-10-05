@@ -27,10 +27,12 @@ import streamsContent from "../data/en/learning/streamsContent.json";
 import springContent from "../data/en/learning/springContent.json";
 import heapStackContent from "../data/en/learning/heapStackContent.json";
 import threadsFrontmatter from "../data/en/learning/threads.mdx?frontmatter";
+import runnablesFrontmatter from "../data/en/learning/runnables.mdx?frontmatter";
 import { lessonMeta } from "../utils/lessonMeta";
 
 // Lessons written as MDX contribute just their frontmatter (practice topics).
 const threadsContent = lessonMeta(threadsFrontmatter);
+const runnablesContent = lessonMeta(runnablesFrontmatter);
 
 // Map topic keys to their learning content (to access practice topics)
 const CONTENT_BY_KEY: Record<string, { practiceTopics?: { title: string }[] }> = {
@@ -53,6 +55,7 @@ const CONTENT_BY_KEY: Record<string, { practiceTopics?: { title: string }[] }> =
   spring: springContent,
   heapstack: heapStackContent,
   threads: threadsContent,
+  runnables: runnablesContent,
 };
 
 // Everything the user has checked off lives in a single cookie, so

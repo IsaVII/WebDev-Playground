@@ -51,21 +51,23 @@ Två trådar adderar var 1 till en delad räknare som börjar på 0, så svaret 
 
 ## Fullständigt exempel, steg för steg
 
-<Walkthrough title="En trasig räknare, en lagad räknare och en trådpool" files={["code-examples/java/threads/ThreadsDemo.java"]}>
+<Walkthrough title="En trasig räknare, två lagade räknare och en trådpool" files={["code-examples/java/threads/ThreadsDemo.java"]}>
 
-Två trådar hamrar på samma par räknare 1000 gånger vardera - en osäker, en atomär - och sedan bearbetar en fast pool med tre arbetare fem ordrar. Kör det några gånger: den osäkra summan ändras från körning till körning, den säkra aldrig.
+Två trådar hamrar på samma tre räknare 1000 gånger vardera - en osäker, en atomär, en med `synchronized`-metoder - och sedan bearbetar en fast pool med tre arbetare fem ordrar. Kör det några gånger: den osäkra summan ändras från körning till körning, de andra två aldrig.
 
-<Step label="Delade objekt och en uppgift att köra" lines={[11, 19]}>`unsafe` och `safe` är heap-objekt, och lambdan `work` fångar referenser till båda. Vilken tråd som än kör `work` ökar exakt samma två objekt - det är delningen. `work` är bara en `Runnable`: en beskrivning av en uppgift, inte en tråd.</Step>
+<Step label="Delade objekt och en uppgift att köra" lines={[11, 21]}>`unsafe`, `safe` och `locked` är heap-objekt, och lambdan `work` fångar referenser till alla tre. Vilken tråd som än kör `work` ökar exakt samma tre objekt - det är delningen. `work` är bara en `Runnable`: en beskrivning av en uppgift, inte en tråd.</Step>
 
-<Step label="start() och join()" lines={[21, 26]}>Varje `new Thread(work)` skapar bara trådobjektet; inget körs förrän `start()`. Från och med då körs `t1`, `t2` och `main` samtidigt, utan garanterad ordning. `join()` får `main` att vänta tills tråden är klar - utan det kunde `main` läsa räknarna medan arbetet fortfarande pågår.</Step>
+<Step label="start() och join()" lines={[23, 28]}>Varje `new Thread(work)` skapar bara trådobjektet; inget körs förrän `start()`. Från och med då körs `t1`, `t2` och `main` samtidigt, utan garanterad ordning. `join()` får `main` att vänta tills tråden är klar - utan det kunde `main` läsa räknarna medan arbetet fortfarande pågår.</Step>
 
-<Step label="Resultaten" lines={[28, 29]}>Två trådar gånger 1000 ökningar borde ge exakt 2000. Den säkra räknaren gör alltid det. Den osäkra skriver oftast ut något lite lägre, och ett annat tal vid varje körning - signaturen för en race condition.</Step>
+<Step label="Resultaten" lines={[30, 32]}>Två trådar gånger 1000 ökningar borde ge exakt 2000. Den säkra och den låsta räknaren gör alltid det. Den osäkra skriver oftast ut något lite lägre, och ett annat tal vid varje körning - signaturen för en race condition.</Step>
 
-<Step label="En fast trådpool och Futures" lines={[31, 40]}>`newFixedThreadPool(3)` skapar tre återanvändbara arbetare; `submit` köar var och en av de fem uppgifterna och returnerar omedelbart en `Future`. `f.get()` blockerar tills den uppgiftens resultat är klart. Fem uppgifter behöver aldrig fem trådar - poolen återanvänder sina tre. `shutdown()` låter arbetarna bli klara och sedan avsluta; glömmer du det hålls JVM:en vid liv.</Step>
+<Step label="En fast trådpool och Futures" lines={[34, 43]}>`newFixedThreadPool(3)` skapar tre återanvändbara arbetare; `submit` köar var och en av de fem uppgifterna och returnerar omedelbart en `Future`. `f.get()` blockerar tills den uppgiftens resultat är klart. Fem uppgifter behöver aldrig fem trådar - poolen återanvänder sina tre. `shutdown()` låter arbetarna bli klara och sedan avsluta; glömmer du det hålls JVM:en vid liv.</Step>
 
-<Step label="UnsafeCounter: count++ är inte atomärt" lines={[49, 59]}>`count++` kompileras till läs, addera ett, skriv tillbaka. Om två trådar båda läser 41 innan någon skriver, skriver båda 42 och en ökning försvinner. Metoden ser ofarlig ut just för att buggen inte ligger på någon enskild rad.</Step>
+<Step label="UnsafeCounter: count++ är inte atomärt" lines={[52, 62]}>`count++` kompileras till läs, addera ett, skriv tillbaka. Om två trådar båda läser 41 innan någon skriver, skriver båda 42 och en ökning försvinner. Metoden ser ofarlig ut just för att buggen inte ligger på någon enskild rad.</Step>
 
-<Step label="SafeCounter: en atomär uppdatering" lines={[61, 71]}>`AtomicInteger.incrementAndGet()` utför läs-ändra-skriv som en enda odelbar operation med en compare-and-set på CPU-nivå, så ingen uppdatering kan gå förlorad och inget lås behövs. Att deklarera fältet `final` är ändå god praxis - referensen ändras aldrig, bara värdet inuti.</Step>
+<Step label="SafeCounter: en atomär uppdatering" lines={[64, 74]}>`AtomicInteger.incrementAndGet()` utför läs-ändra-skriv som en enda odelbar operation med en compare-and-set på CPU-nivå, så ingen uppdatering kan gå förlorad och inget lås behövs. Att deklarera fältet `final` är ändå god praxis - referensen ändras aldrig, bara värdet inuti.</Step>
+
+<Step label="SynchronizedCounter: en synchronized-metod" lines={[76, 86]}>Samma vanliga `int` som i `UnsafeCounter`, men båda metoderna är markerade `synchronized`. Varje anrop tar först räknarens eget lås (dess monitor), så bara en tråd åt gången kan vara inne i `increment()` eller `get()` på det objektet, och läs-addera-skriv kan inte längre varvas. Att markera `get()` också spelar roll: då får läsaren vänta på en pågående uppdatering och se det senaste värdet. `synchronized` är det bättre valet när flera fält måste ändras tillsammans; för en enskild räknare är `AtomicInteger` lättare. Lektionen Runnables & synchronized går igenom exakt vilket lås varje form tar.</Step>
 
 </Walkthrough>
 

@@ -4,7 +4,7 @@ import tailwindcss from "@tailwindcss/vite";
 import mdx from "@mdx-js/rollup";
 import remarkFrontmatter from "remark-frontmatter";
 import remarkMdxFrontmatter from "remark-mdx-frontmatter";
-import mdxFrontmatter from "./scripts/vite-plugin-mdx-frontmatter";
+import mdxFrontmatter from "./scripts/vite-plugin-mdx-frontmatter.ts";
 
 // https://vite.dev/config/
 export default defineConfig({

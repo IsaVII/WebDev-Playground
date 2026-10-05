@@ -49,6 +49,16 @@
       "screenshot": "/images/threads.png",
       "difficulty": "intermediate",
       "estimatedTime": "3 timmar"
+    },
+    {
+      "id": 6,
+      "key": "runnables",
+      "title": "Runnables & synchronized",
+      "description": "Trådgrunder i praktiken: Runnable mot Thread, de tre sätten att skapa en tråd, hur synchronized-metoder och -block väljer sitt lås, och de klassiska låsmisstagen",
+      "route": "/runnables",
+      "screenshot": "/images/runnables.png",
+      "difficulty": "intermediate",
+      "estimatedTime": "2 timmar"
     }
   ]
 }

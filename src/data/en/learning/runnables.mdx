@@ -1,0 +1,203 @@
+---
+title: "Runnables & synchronized"
+practiceTopics:
+  - "Runnable or Thread?"
+  - "Who Blocks Whom?"
+  - "Predict the Output: Locks"
+quiz: true
+---
+
+import MonitorLockDemo from "../../../components/demos/runnables-demos/MonitorLockDemo";
+import RunnableChoiceDemo from "../../../components/demos/runnables-demos/RunnableChoiceDemo";
+import WhoBlocksDemo from "../../../components/demos/runnables-demos/WhoBlocksDemo";
+import SynchronizedPredictDemo from "../../../components/demos/runnables-demos/SynchronizedPredictDemo";
+
+<Section lead>
+
+## Tasks, Threads, and Taking Turns
+
+Two ideas carry most of everyday Java concurrency. The first is separating **what to do** from **who does it**: a `Runnable` is the task, a `Thread` is the worker that runs it. The second is **taking turns**: when several threads touch the same object, `synchronized` makes them queue up for it one at a time. This lesson is the hands-on companion to Threads & Multithreading - it zooms in on the three ways to create a thread, exactly which lock each kind of `synchronized` takes, and the classic mistakes (the wrong lock, an unprotected read, a shared Runnable) that make code look thread-safe without being so.
+
+</Section>
+
+<Section>
+
+## Core Concepts
+
+- **A Runnable Is a Task, a Thread Is a Worker:** `Runnable` has one method, `void run()`. It describes work and says nothing about when or where it happens. A `Thread` is what actually executes it. Keeping the two apart lets the same task run on a plain thread, in an executor's pool, or later on a schedule
+- **Three Ways to Make a Thread:** (1) write a class that `implements Runnable` and pass an instance to `new Thread(task)`; (2) pass a lambda, `new Thread(() -> ...)`, which is the same thing without the class; (3) write a class that `extends Thread` and override `run()`. Prefer the first two - a Thread subclass can never extend anything else, cannot be handed to an executor sensibly, and mixes the task up with the worker
+- **start() Creates the Thread, run() Is the Work:** `start()` asks the JVM for a new thread, which then calls `run()`. Calling `run()` yourself is a plain method call on the current thread. A Thread can be started only once. `join()` waits for a thread to finish; `Thread.currentThread().getName()` tells you which thread you are on
+- **One Runnable Instance, Many Threads, Shared Fields:** Handing the same Runnable object to two threads means both run `run()` on the same object, so its fields are shared state. Create one Runnable per thread to keep state private, or protect the fields
+- **Every Object Has a Monitor:** Each Java object carries one lock, called its monitor. A thread that enters `synchronized` code on that object takes the monitor; any other thread that wants it becomes BLOCKED until it is released. Only one thread can hold a given monitor at a time - that is mutual exclusion
+- **Three Forms of synchronized:** A `synchronized` instance method locks `this`. A `static synchronized` method locks the `Class` object (`Account.class`). A `synchronized (obj) { ... }` block locks whichever object you name. A block and a method are just two ways of asking for a lock - they exclude each other if they name the same object
+- **Locks Are Per Object:** Two threads calling a synchronized method on two different objects do not block each other, and an instance lock and a class lock are different monitors. If a thread's data is shared, every thread must lock the same object - locking `new Object()` each time protects nothing
+- **Protect Reads Too:** `synchronized` does two jobs. It gives mutual exclusion, and it guarantees visibility: whatever a thread wrote before releasing a lock is seen by the next thread that takes the same lock. A getter that skips the lock can return a stale value, so every access to the shared field must use the same lock
+- **Check-Then-Act Belongs in One Block:** `if (balance >= amount) balance -= amount;` is two steps. If another thread withdraws in between, the check is stale. Put the whole check and the update inside one synchronized region, not each statement behind its own lock
+- **Reentrant, and wait()/notify():** A thread that already holds a monitor can take it again, so a synchronized method can call another one on the same object. `wait()` releases the monitor and sleeps until another thread calls `notify()` or `notifyAll()` on the same object; all three must be called while holding that monitor, and `wait()` belongs in a `while` loop that rechecks its condition
+- **Interruption:** `thread.interrupt()` is a polite request to stop. Blocking calls such as `sleep()`, `join()` and `wait()` react by throwing `InterruptedException`. Do not swallow it silently - either let it propagate or restore the flag with `Thread.currentThread().interrupt()`
+
+</Section>
+
+<Section>
+
+## Which Lock Does a Call Need?
+
+Thread A is already inside a synchronized method of `Account` and thread B arrives. Choose what each one calls, and on which account, to see which monitor each needs and whether B has to wait.
+
+<MonitorLockDemo />
+
+</Section>
+
+<Section>
+
+## Full Example, Step by Step
+
+<Walkthrough title="Three kinds of thread, three kinds of synchronized" files={["code-examples/java/runnables/RunnablesDemo.java"]}>
+
+Three threads share one `Account`: one runs a `Runnable` class, one a lambda, and one is a `Thread` subclass. The two depositors each add 1 a thousand times, so the balance must end at exactly 2000 - and thanks to `synchronized`, it always does. Compile it and run it a few times, then try deleting the `synchronized` keyword from `deposit` to watch the total go wrong.
+
+<Step label="Three ways to create a thread" lines={[6, 12]}>`t1` wraps an instance of a `Runnable` class and gives the thread a name. `t2` passes the same kind of task as a lambda, which is shorter when the work is small. `t3` is a `Greeter`, a subclass of `Thread`. None of them is running yet - these lines only create objects.</Step>
+
+<Step label="start() and join()" lines={[14, 19]}>`start()` launches each thread, after which `t1`, `t2`, `t3` and `main` all run concurrently in no guaranteed order. `join()` makes `main` wait until each one has finished, so the balance is not read while deposits are still happening.</Step>
+
+<Step label="The results" lines={[21, 22]}>Once every depositor has been joined, the balance is exactly 2000 on every run. Then `withdraw(500)` succeeds because 2000 is at least 500. Without the locks, the first line would be a different number each time.</Step>
+
+<Step label="A task as its own class: Runnable" lines={[26, 41]}>`DepositTask implements Runnable`. It keeps its inputs in `final` fields and does its work in `run()`. Note it does not extend anything and knows nothing about threads - the same object could equally be submitted to an `ExecutorService`. Each thread here gets its own `DepositTask`, so the only shared object is the `Account`.</Step>
+
+<Step label="A task as a Thread subclass" lines={[43, 48]}>`Greeter extends Thread` overrides `run()` and, because it is a Thread, can call `getName()` directly. It works, but the class is now stuck with `Thread` as its parent and the task cannot be reused in a pool. Its name defaults to `Thread-0` since nobody gave it one.</Step>
+
+<Step label="synchronized method: locks this" lines={[58, 60]}>`balance += amount` is read, add, write - exactly the three-step update that races. Marking the method `synchronized` makes each call take the account's monitor first, so the deposits from `t1` and `t2` queue up and none is lost. The lock is `this`, so it only guards calls on the same `Account`.</Step>
+
+<Step label="synchronized block: check and act together" lines={[62, 70]}>`withdraw` has a check-then-act: the balance test and the subtraction must happen without anyone else changing the balance in between. The block locks `this` - the same monitor `deposit` uses, so they exclude each other - and covers both the check and the update. Because it is a block, the lock is held only for the lines that need it.</Step>
+
+<Step label="Reading under the same lock" lines={[72, 74]}>The getter is `synchronized` too. A plain read would not wait for a deposit and, without a lock, is not guaranteed to see the latest write at all. Everything that touches `balance` goes through the same monitor.</Step>
+
+<Step label="static synchronized: locks the Class" lines={[76, 78]}>A `static` method has no `this`, so `static synchronized` locks `Account.class` instead. `created` is shared by every account, so it needs a lock that every account shares - an instance lock would not do. This lock never competes with the one `deposit` takes, because they are different monitors.</Step>
+
+</Walkthrough>
+
+</Section>
+
+<Section>
+
+## Getting Started
+
+- Prefer `Runnable` (or a lambda) over `extends Thread`; the task stays free to run on any thread, including an executor's
+- Give threads a name, `new Thread(task, "teller-1")`; thread dumps and log lines are far easier to read when they say who did what
+- Make the task's own fields `final` and per-thread where you can, and think twice before giving one Runnable instance to several threads
+- Pick one lock per piece of shared data and take it every time you read or write that data - an unsynchronized read is a bug even when the writes are safe
+- Keep `synchronized` regions short, never call code you do not control while holding a lock, and if you must take two locks always take them in the same order
+- Prefer a private lock object (`private final Object lock = new Object();`) over locking on `this` or a public object when outside code might also lock it; never lock on a `String` or a boxed number
+- Always `join()` (or use a `Future`) before reading results, and handle `InterruptedException` instead of swallowing it
+- For a simple counter, `AtomicInteger` is lighter than `synchronized`; reach for `synchronized` when several fields must change together
+- An uncaught exception ends only the thread it happened on - `main` carries on, so a silently dead worker is easy to miss. Log inside `run()`
+
+</Section>
+
+<Section>
+
+## Practice Topics
+
+Click a topic to open a live, editable example.
+
+<PracticeTopics>
+
+<PracticeTopic title="Runnable or Thread?" demo={<RunnableChoiceDemo />}>Match each situation - an existing parent class, a lambda, an executor, start() - to `implements Runnable`, `extends Thread`, or both</PracticeTopic>
+
+<PracticeTopic title="Who Blocks Whom?" demo={<WhoBlocksDemo />}>Six pairs of calls on the same or different objects - decide whether thread B has to wait, and learn which monitor each form of synchronized takes</PracticeTopic>
+
+<PracticeTopic title="Predict the Output: Locks" demo={<SynchronizedPredictDemo />}>A shared Runnable, a lock on the wrong object, reentrancy, and wait() outside a lock - predict what actually happens</PracticeTopic>
+
+</PracticeTopics>
+
+</Section>
+
+<Section>
+
+## Self-Check
+
+Recall, don't re-read - answer before you check.
+
+<Quiz>
+
+<Question>
+
+What is the difference between a `Runnable` and a `Thread`?
+
+<Option>They are two names for the same thing</Option>
+<Option correct>A Runnable is the task - the code in `run()` - and a Thread is the worker that executes it</Option>
+<Option>A Runnable runs on its own thread automatically; a Thread does not</Option>
+<Option>A Thread is a task with a return value, a Runnable has none</Option>
+
+<Explanation>A Runnable only describes work. Nothing runs concurrently until a Thread (or an executor's worker) calls its `run()`. Returning a value is what `Callable` is for.</Explanation>
+
+</Question>
+
+<Question>
+
+Why is `implements Runnable` usually preferred over `extends Thread`?
+
+<Option>Threads that extend Thread run slower</Option>
+<Option>A class can only implement an interface if it extends Thread</Option>
+<Option correct>The class stays free to extend something else, the task can run on any thread or executor, and it can be written as a lambda</Option>
+<Option>Runnable is the only way to call `start()`</Option>
+
+<Explanation>Java has single inheritance, so extending Thread uses up the one parent. Runnable keeps the task separate from the thread that runs it, which is what executors and lambdas rely on.</Explanation>
+
+</Question>
+
+<Question>
+
+What does a `static synchronized` method lock?
+
+<Option>`this`</Option>
+<Option>Nothing - static methods cannot be synchronized</Option>
+<Option correct>The `Class` object, such as `Account.class`</Option>
+<Option>Every instance of the class at once</Option>
+
+<Explanation>A static method has no `this`, so it takes the monitor of the class's one `Class` object. That is a different monitor from the one an instance method takes, so the two do not exclude each other.</Explanation>
+
+</Question>
+
+<Question>
+
+Thread A is inside `account1.deposit()`, a synchronized method. Thread B calls `account2.deposit()` on a different Account. What happens?
+
+<Option>B blocks until A finishes</Option>
+<Option correct>B runs immediately, because each object has its own monitor</Option>
+<Option>B throws an exception</Option>
+<Option>Both threads deadlock</Option>
+
+<Explanation>An instance `synchronized` locks `this`, and `account1` and `account2` are different objects with different monitors. Locks are per object, not per method or per class.</Explanation>
+
+</Question>
+
+<Question>
+
+Two threads each run `synchronized (new Object()) { count++; }` on a shared field. What does the lock achieve?
+
+<Option>It makes `count++` safe</Option>
+<Option correct>Nothing - each call locks its own brand-new object, so the threads never compete for the same monitor</Option>
+<Option>It causes a deadlock</Option>
+<Option>It makes the field volatile</Option>
+
+<Explanation>A lock only works if every thread asks for the same monitor. Locking a fresh object each time means no thread ever has to wait for another, so the updates still race.</Explanation>
+
+</Question>
+
+<Question>
+
+A `BankAccount` has a `synchronized deposit()` but a plain, unsynchronized `getBalance()`. What is the risk?
+
+<Option>None - reads cannot be wrong</Option>
+<Option correct>The getter does not take the lock, so it can run in the middle of an update or return a stale value</Option>
+<Option>The deposit method will deadlock</Option>
+<Option>The compiler rejects the class</Option>
+
+<Explanation>A lock only protects code that takes it. Without the lock the reader gets neither mutual exclusion nor the visibility guarantee, so every access to the shared field must use the same lock.</Explanation>
+
+</Question>
+
+</Quiz>
+
+</Section>

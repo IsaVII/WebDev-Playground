@@ -1,0 +1,203 @@
+---
+title: "Runnables & synchronized"
+practiceTopics:
+  - "Runnable eller Thread?"
+  - "Vem blockerar vem?"
+  - "Förutsäg utskriften: lås"
+quiz: true
+---
+
+import MonitorLockDemo from "../../../components/demos/runnables-demos/MonitorLockDemo";
+import RunnableChoiceDemo from "../../../components/demos/runnables-demos/RunnableChoiceDemo";
+import WhoBlocksDemo from "../../../components/demos/runnables-demos/WhoBlocksDemo";
+import SynchronizedPredictDemo from "../../../components/demos/runnables-demos/SynchronizedPredictDemo";
+
+<Section lead>
+
+## Uppgifter, trådar och att turas om
+
+Två idéer bär det mesta av vardagens samtidighet i Java. Den första är att skilja **vad som ska göras** från **vem som gör det**: en `Runnable` är uppgiften, en `Thread` är arbetaren som kör den. Den andra är **att turas om**: när flera trådar rör samma objekt får `synchronized` dem att köa för det en i taget. Den här lektionen är den praktiska följeslagaren till Trådar & multitrådning - den går in på de tre sätten att skapa en tråd, exakt vilket lås varje sorts `synchronized` tar, och de klassiska misstagen (fel lås, en oskyddad läsning, en delad Runnable) som får kod att se trådsäker ut utan att vara det.
+
+</Section>
+
+<Section>
+
+## Kärnbegrepp
+
+- **En Runnable är en uppgift, en Thread är en arbetare:** `Runnable` har en enda metod, `void run()`. Den beskriver arbete och säger ingenting om när eller var det sker. En `Thread` är det som faktiskt kör det. Genom att hålla isär dem kan samma uppgift köras på en vanlig tråd, i en executors pool eller senare enligt ett schema
+- **Tre sätt att skapa en tråd:** (1) skriv en klass som `implements Runnable` och skicka en instans till `new Thread(task)`; (2) skicka ett lambda, `new Thread(() -> ...)`, vilket är samma sak utan klassen; (3) skriv en klass som `extends Thread` och överskugga `run()`. Föredra de två första - en Thread-subklass kan aldrig ärva något annat, kan inte rimligen ges till en executor och blandar ihop uppgiften med arbetaren
+- **start() skapar tråden, run() är arbetet:** `start()` ber JVM:en om en ny tråd, som sedan anropar `run()`. Att anropa `run()` själv är ett vanligt metodanrop på den nuvarande tråden. En Thread kan startas bara en gång. `join()` väntar på att en tråd blir klar; `Thread.currentThread().getName()` talar om vilken tråd du är på
+- **En Runnable-instans, många trådar, delade fält:** Om du ger samma Runnable-objekt till två trådar kör båda `run()` på samma objekt, så dess fält är delat tillstånd. Skapa en Runnable per tråd för att hålla tillståndet privat, eller skydda fälten
+- **Varje objekt har en monitor:** Varje Java-objekt bär på ett lås, kallat dess monitor. En tråd som går in i `synchronized`-kod på det objektet tar monitorn; varje annan tråd som vill ha den blir BLOCKED tills den släpps. Bara en tråd åt gången kan hålla en viss monitor - det är ömsesidig uteslutning
+- **Tre former av synchronized:** En `synchronized` instansmetod låser `this`. En `static synchronized`-metod låser `Class`-objektet (`Account.class`). Ett `synchronized (obj) { ... }`-block låser det objekt du anger. Ett block och en metod är bara två sätt att be om ett lås - de utesluter varandra om de anger samma objekt
+- **Lås gäller per objekt:** Två trådar som anropar en synkroniserad metod på två olika objekt blockerar inte varandra, och ett instanslås och ett klasslås är olika monitorer. Om en tråds data är delad måste varje tråd låsa samma objekt - att låsa `new Object()` varje gång skyddar ingenting
+- **Skydda läsningar också:** `synchronized` gör två saker. Det ger ömsesidig uteslutning, och det garanterar synlighet: det en tråd skrev innan den släppte ett lås syns för nästa tråd som tar samma lås. En getter som hoppar över låset kan ge ett föråldrat värde, så varje åtkomst till det delade fältet måste använda samma lås
+- **Kontrollera-och-agera hör ihop i ett block:** `if (balance >= amount) balance -= amount;` är två steg. Om en annan tråd tar ut pengar emellan är kontrollen föråldrad. Lägg hela kontrollen och uppdateringen i en och samma synkroniserade region, inte varje sats bakom sitt eget lås
+- **Reentrant, och wait()/notify():** En tråd som redan håller en monitor kan ta den igen, så en synkroniserad metod kan anropa en annan på samma objekt. `wait()` släpper monitorn och sover tills en annan tråd anropar `notify()` eller `notifyAll()` på samma objekt; alla tre måste anropas medan man håller den monitorn, och `wait()` hör hemma i en `while`-loop som kontrollerar sitt villkor igen
+- **Avbrott:** `thread.interrupt()` är en artig begäran att sluta. Blockerande anrop som `sleep()`, `join()` och `wait()` reagerar genom att kasta `InterruptedException`. Svälj den inte tyst - låt den antingen gå vidare uppåt eller återställ flaggan med `Thread.currentThread().interrupt()`
+
+</Section>
+
+<Section>
+
+## Vilket lås behöver ett anrop?
+
+Tråd A är redan inne i en synkroniserad metod i `Account` och tråd B kommer. Välj vad var och en anropar, och på vilket konto, för att se vilken monitor var och en behöver och om B måste vänta.
+
+<MonitorLockDemo />
+
+</Section>
+
+<Section>
+
+## Fullständigt exempel, steg för steg
+
+<Walkthrough title="Tre sorters trådar, tre sorters synchronized" files={["code-examples/java/runnables/RunnablesDemo.java"]}>
+
+Tre trådar delar ett `Account`: en kör en `Runnable`-klass, en ett lambda och en är en `Thread`-subklass. De två insättarna lägger var till 1 tusen gånger, så saldot måste sluta på exakt 2000 - och tack vare `synchronized` gör det alltid det. Kompilera och kör det några gånger, och prova sedan att ta bort nyckelordet `synchronized` från `deposit` för att se summan bli fel.
+
+<Step label="Tre sätt att skapa en tråd" lines={[6, 12]}>`t1` omsluter en instans av en `Runnable`-klass och ger tråden ett namn. `t2` skickar samma sorts uppgift som ett lambda, vilket är kortare när arbetet är litet. `t3` är en `Greeter`, en subklass till `Thread`. Ingen av dem kör än - de här raderna skapar bara objekt.</Step>
+
+<Step label="start() och join()" lines={[14, 19]}>`start()` startar varje tråd, varefter `t1`, `t2`, `t3` och `main` alla körs samtidigt utan garanterad ordning. `join()` får `main` att vänta tills var och en är klar, så att saldot inte läses medan insättningar fortfarande pågår.</Step>
+
+<Step label="Resultaten" lines={[21, 22]}>När alla insättare har joinats är saldot exakt 2000 vid varje körning. Sedan lyckas `withdraw(500)` eftersom 2000 är minst 500. Utan låsen skulle första raden vara ett annat tal varje gång.</Step>
+
+<Step label="En uppgift som egen klass: Runnable" lines={[26, 41]}>`DepositTask implements Runnable`. Den håller sina indata i `final`-fält och gör sitt arbete i `run()`. Notera att den inte ärver något och inte vet något om trådar - samma objekt skulle lika gärna kunna skickas till en `ExecutorService`. Varje tråd här får sin egen `DepositTask`, så det enda delade objektet är `Account`.</Step>
+
+<Step label="En uppgift som Thread-subklass" lines={[43, 48]}>`Greeter extends Thread` överskuggar `run()` och kan, eftersom den är en Thread, anropa `getName()` direkt. Det fungerar, men klassen sitter nu fast med `Thread` som förälder och uppgiften kan inte återanvändas i en pool. Dess namn blir som standard `Thread-0` eftersom ingen gav den något.</Step>
+
+<Step label="synchronized-metod: låser this" lines={[58, 60]}>`balance += amount` är läs, addera, skriv - precis den tresteg-uppdatering som får race conditions. Genom att markera metoden `synchronized` tar varje anrop först kontots monitor, så insättningarna från `t1` och `t2` köar och ingen går förlorad. Låset är `this`, så det skyddar bara anrop på samma `Account`.</Step>
+
+<Step label="synchronized-block: kontrollera och agera tillsammans" lines={[62, 70]}>`withdraw` har ett kontrollera-och-agera: saldotestet och subtraktionen måste ske utan att någon annan ändrar saldot emellan. Blocket låser `this` - samma monitor som `deposit` använder, så de utesluter varandra - och täcker både kontrollen och uppdateringen. Eftersom det är ett block hålls låset bara för de rader som behöver det.</Step>
+
+<Step label="Läsning under samma lås" lines={[72, 74]}>Gettern är `synchronized` också. En vanlig läsning väntar inte på en insättning och är, utan lås, inte ens garanterad att se den senaste skrivningen. Allt som rör `balance` går genom samma monitor.</Step>
+
+<Step label="static synchronized: låser Class" lines={[76, 78]}>En `static`-metod har ingen `this`, så `static synchronized` låser `Account.class` i stället. `created` delas av alla konton, så det behöver ett lås som alla konton delar - ett instanslås duger inte. Det här låset konkurrerar aldrig med det `deposit` tar, eftersom de är olika monitorer.</Step>
+
+</Walkthrough>
+
+</Section>
+
+<Section>
+
+## Kom igång
+
+- Föredra `Runnable` (eller ett lambda) framför `extends Thread`; uppgiften förblir fri att köras på vilken tråd som helst, även en executors
+- Ge trådar ett namn, `new Thread(task, "teller-1")`; thread dumps och loggrader är mycket lättare att läsa när de säger vem som gjorde vad
+- Gör uppgiftens egna fält `final` och per tråd där du kan, och tänk efter två gånger innan du ger en Runnable-instans till flera trådar
+- Välj ett lås per bit delad data och ta det varje gång du läser eller skriver den datan - en osynkroniserad läsning är en bugg även när skrivningarna är säkra
+- Håll `synchronized`-regioner korta, anropa aldrig kod du inte kontrollerar medan du håller ett lås, och om du måste ta två lås, ta dem alltid i samma ordning
+- Föredra ett privat låsobjekt (`private final Object lock = new Object();`) framför att låsa på `this` eller ett publikt objekt när utomstående kod också kan låsa det; lås aldrig på en `String` eller ett inplastat tal
+- Gör alltid `join()` (eller använd en `Future`) innan du läser resultat, och hantera `InterruptedException` i stället för att svälja den
+- För en enkel räknare är `AtomicInteger` lättare än `synchronized`; ta till `synchronized` när flera fält måste ändras tillsammans
+- Ett ofångat undantag avslutar bara den tråd det hände på - `main` fortsätter, så en tyst död arbetare är lätt att missa. Logga inuti `run()`
+
+</Section>
+
+<Section>
+
+## Övningsämnen
+
+Klicka på ett ämne för att öppna ett levande, redigerbart exempel.
+
+<PracticeTopics>
+
+<PracticeTopic title="Runnable eller Thread?" demo={<RunnableChoiceDemo />}>Para ihop varje situation - en befintlig föräldraklass, ett lambda, en executor, start() - med `implements Runnable`, `extends Thread` eller båda</PracticeTopic>
+
+<PracticeTopic title="Vem blockerar vem?" demo={<WhoBlocksDemo />}>Sex par av anrop på samma eller olika objekt - avgör om tråd B måste vänta, och lär dig vilken monitor varje form av synchronized tar</PracticeTopic>
+
+<PracticeTopic title="Förutsäg utskriften: lås" demo={<SynchronizedPredictDemo />}>En delad Runnable, ett lås på fel objekt, reentrans och wait() utanför ett lås - förutsäg vad som faktiskt händer</PracticeTopic>
+
+</PracticeTopics>
+
+</Section>
+
+<Section>
+
+## Självtest
+
+Minns i stället för att läsa om - svara innan du kontrollerar.
+
+<Quiz>
+
+<Question>
+
+Vad är skillnaden mellan en `Runnable` och en `Thread`?
+
+<Option>De är två namn på samma sak</Option>
+<Option correct>En Runnable är uppgiften - koden i `run()` - och en Thread är arbetaren som kör den</Option>
+<Option>En Runnable körs automatiskt på en egen tråd; en Thread gör det inte</Option>
+<Option>En Thread är en uppgift med returvärde, en Runnable har inget</Option>
+
+<Explanation>En Runnable beskriver bara arbete. Inget körs samtidigt förrän en Thread (eller en executors arbetare) anropar dess `run()`. Att returnera ett värde är vad `Callable` är till för.</Explanation>
+
+</Question>
+
+<Question>
+
+Varför föredras oftast `implements Runnable` framför `extends Thread`?
+
+<Option>Trådar som ärver Thread kör långsammare</Option>
+<Option>En klass kan bara implementera ett gränssnitt om den ärver Thread</Option>
+<Option correct>Klassen förblir fri att ärva något annat, uppgiften kan köras på vilken tråd eller executor som helst, och den kan skrivas som ett lambda</Option>
+<Option>Runnable är det enda sättet att anropa `start()`</Option>
+
+<Explanation>Java har enkelarv, så att ärva Thread förbrukar den enda föräldern. Runnable håller uppgiften skild från tråden som kör den, vilket executors och lambdas bygger på.</Explanation>
+
+</Question>
+
+<Question>
+
+Vad låser en `static synchronized`-metod?
+
+<Option>`this`</Option>
+<Option>Ingenting - statiska metoder kan inte vara synkroniserade</Option>
+<Option correct>`Class`-objektet, till exempel `Account.class`</Option>
+<Option>Alla instanser av klassen på en gång</Option>
+
+<Explanation>En statisk metod har ingen `this`, så den tar monitorn för klassens enda `Class`-objekt. Det är en annan monitor än den en instansmetod tar, så de två utesluter inte varandra.</Explanation>
+
+</Question>
+
+<Question>
+
+Tråd A är inne i `account1.deposit()`, en synkroniserad metod. Tråd B anropar `account2.deposit()` på ett annat Account. Vad händer?
+
+<Option>B blockeras tills A är klar</Option>
+<Option correct>B körs direkt, eftersom varje objekt har sin egen monitor</Option>
+<Option>B kastar ett undantag</Option>
+<Option>Båda trådarna får deadlock</Option>
+
+<Explanation>En instans-`synchronized` låser `this`, och `account1` och `account2` är olika objekt med olika monitorer. Lås gäller per objekt, inte per metod eller klass.</Explanation>
+
+</Question>
+
+<Question>
+
+Två trådar kör var `synchronized (new Object()) { count++; }` på ett delat fält. Vad åstadkommer låset?
+
+<Option>Det gör `count++` säkert</Option>
+<Option correct>Ingenting - varje anrop låser sitt eget splitternya objekt, så trådarna konkurrerar aldrig om samma monitor</Option>
+<Option>Det orsakar en deadlock</Option>
+<Option>Det gör fältet volatile</Option>
+
+<Explanation>Ett lås fungerar bara om varje tråd ber om samma monitor. Att låsa ett nytt objekt varje gång betyder att ingen tråd någonsin behöver vänta på en annan, så uppdateringarna får fortfarande race conditions.</Explanation>
+
+</Question>
+
+<Question>
+
+Ett `BankAccount` har en `synchronized deposit()` men en vanlig, osynkroniserad `getBalance()`. Vad är risken?
+
+<Option>Ingen - läsningar kan inte bli fel</Option>
+<Option correct>Gettern tar inte låset, så den kan köras mitt i en uppdatering eller ge ett föråldrat värde</Option>
+<Option>Insättningsmetoden får deadlock</Option>
+<Option>Kompilatorn avvisar klassen</Option>
+
+<Explanation>Ett lås skyddar bara kod som tar det. Utan låset får läsaren varken ömsesidig uteslutning eller synlighetsgarantin, så varje åtkomst till det delade fältet måste använda samma lås.</Explanation>
+
+</Question>
+
+</Quiz>
+
+</Section>

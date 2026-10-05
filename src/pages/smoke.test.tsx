@@ -10,6 +10,7 @@ import Diagrams from "./learning/Diagrams";
 import Streams from "./learning/Streams";
 import Spring from "./learning/Spring";
 import Threads from "./learning/Threads";
+import Runnables from "./learning/Runnables";
 import { stripMarkdown } from "../utils/markdown";
 import learningContent from "../data/en/learningContent.json";
 import cheatsheets from "../data/en/cheatsheets.json";
@@ -18,6 +19,7 @@ import diagramsContent from "../data/en/learning/diagramsContent.json";
 import streamsContent from "../data/en/learning/streamsContent.json";
 import springContent from "../data/en/learning/springContent.json";
 import { frontmatter as threadsFrontmatter } from "../data/en/learning/threads.mdx";
+import { frontmatter as runnablesFrontmatter } from "../data/en/learning/runnables.mdx";
 
 /**
  * These don't try to cover every interaction on every page - the practice
@@ -149,6 +151,53 @@ describe("Threads (lesson written as MDX)", () => {
     renderWithProviders(<Threads />);
     fireEvent.click(screen.getByRole("button", { name: /Thread Pool Scheduler/ }));
     expect(screen.getByText(/Choose the pool size/)).toBeInTheDocument();
+  });
+});
+
+describe("Runnables & synchronized (second lesson written as MDX)", () => {
+  it("renders its heading, every section, practice topic, and the Self-Check", () => {
+    renderWithProviders(<Runnables />);
+
+    expect(
+      screen.getByRole("heading", { name: runnablesFrontmatter.title, level: 1 }),
+    ).toBeInTheDocument();
+    for (const heading of [
+      "Tasks, Threads, and Taking Turns",
+      "Core Concepts",
+      "Which Lock Does a Call Need?",
+      "Full Example, Step by Step",
+      "Getting Started",
+      "Practice Topics",
+      "Self-Check",
+    ]) {
+      expect(
+        screen.getByRole("heading", { name: heading, level: 2 }),
+      ).toBeInTheDocument();
+    }
+    for (const title of runnablesFrontmatter.practiceTopics) {
+      expect(screen.getByText(title)).toBeInTheDocument();
+    }
+    expect(document.body.textContent).not.toContain("`");
+  });
+
+  it("wires up its lock demo, walkthrough and quiz", () => {
+    renderWithProviders(<Runnables />);
+
+    // <MonitorLockDemo /> starts on two synchronized calls on one account.
+    expect(screen.getByRole("status")).toHaveTextContent(/B is BLOCKED/);
+    expect(
+      screen.getByRole("button", { name: /Three ways to create a thread/ }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /check answers/i }),
+    ).toBeDisabled();
+    expect(screen.getAllByRole("radio").length).toBe(24);
+  });
+
+  it("opens a practice topic's live demo when clicked", () => {
+    renderWithProviders(<Runnables />);
+    fireEvent.click(screen.getByRole("button", { name: /Who Blocks Whom\?/ }));
+    expect(screen.getByText(/Does B have\s+to wait/)).toBeInTheDocument();
   });
 });
 

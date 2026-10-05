@@ -116,7 +116,7 @@ Under the hood this lives in `src/context/ProgressContext.tsx`, which reads/writ
 
 ## Writing a Lesson in MDX
 
-Most lessons are JSON (`src/data/{en,sv}/learning/*Content.json`) rendered by `LearningTopicLayout`. The **Threads & Multithreading** lesson is the pilot for a different format: one `.mdx` file per language (`src/data/{en,sv}/learning/threads.mdx`) - Markdown with React components mixed in - so the text, the demos and the quiz all live together in reading order.
+Most lessons are JSON (`src/data/{en,sv}/learning/*Content.json`) rendered by `LearningTopicLayout`. The **Threads & Multithreading** and **Runnables & synchronized** lessons use a different format: one `.mdx` file per language (`src/data/{en,sv}/learning/threads.mdx`, `runnables.mdx`) - Markdown with React components mixed in - so the text, the demos and the quiz all live together in reading order.
 
 ```mdx
 ---
@@ -165,7 +165,9 @@ src/
 │       ├── websockets-demos/      # WebSockets demos
 │       ├── diagrams-demos/        # Class & ER diagram demos
 │       ├── streams-demos/         # Lambda & Stream API demos
-│       └── spring-demos/          # Spring Framework demos
+│       ├── spring-demos/          # Spring Framework demos
+│       ├── threads-demos/         # Threads & Multithreading demos
+│       └── runnables-demos/       # Runnables & synchronized demos
 │   └── SelfCheckQuiz.tsx          # Retrieval-practice quiz shown at the end of a lesson
 ├── context/
 │   └── ProgressContext.tsx     # Topic/sub-topic completion state, backed by a cookie

@@ -10,11 +10,13 @@ public class ThreadsDemo {
     public static void main(String[] args) throws Exception {
         UnsafeCounter unsafe = new UnsafeCounter();
         SafeCounter safe = new SafeCounter();
+        SynchronizedCounter locked = new SynchronizedCounter();
 
         Runnable work = () -> {
             for (int i = 0; i < 1000; i++) {
                 unsafe.increment();
                 safe.increment();
+                locked.increment();
             }
         };
 
@@ -27,6 +29,7 @@ public class ThreadsDemo {
 
         System.out.println("unsafe = " + unsafe.get()); // usually less than 2000
         System.out.println("safe   = " + safe.get());   // always 2000
+        System.out.println("locked = " + locked.get()); // always 2000
 
         ExecutorService pool = Executors.newFixedThreadPool(3);
         List<Future<Integer>> results = new ArrayList<>();
@@ -67,5 +70,17 @@ class SafeCounter {
 
     int get() {
         return count.get();
+    }
+}
+
+class SynchronizedCounter {
+    private int count = 0;
+
+    synchronized void increment() {
+        count++;
+    }
+
+    synchronized int get() {
+        return count;
     }
 }

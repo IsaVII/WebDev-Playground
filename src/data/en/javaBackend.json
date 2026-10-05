@@ -49,6 +49,16 @@
       "screenshot": "/images/threads.png",
       "difficulty": "intermediate",
       "estimatedTime": "3 hours"
+    },
+    {
+      "id": 6,
+      "key": "runnables",
+      "title": "Runnables & synchronized",
+      "description": "Hands-on thread basics: Runnable versus Thread, the three ways to create a thread, how synchronized methods and blocks pick their lock, and the classic locking mistakes",
+      "route": "/runnables",
+      "screenshot": "/images/runnables.png",
+      "difficulty": "intermediate",
+      "estimatedTime": "2 hours"
     }
   ]
 }

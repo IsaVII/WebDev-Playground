@@ -51,21 +51,23 @@ Two threads each add 1 to a shared counter that starts at 0, so the answer shoul
 
 ## Full Example, Step by Step
 
-<Walkthrough title="A broken counter, a fixed counter, and a thread pool" files={["code-examples/java/threads/ThreadsDemo.java"]}>
+<Walkthrough title="A broken counter, two fixed counters, and a thread pool" files={["code-examples/java/threads/ThreadsDemo.java"]}>
 
-Two threads hammer the same pair of counters 1000 times each - one unsafe, one atomic - and then a fixed pool of three workers processes five orders. Run it a few times: the unsafe total changes from run to run, the safe one never does.
+Two threads hammer the same three counters 1000 times each - one unsafe, one atomic, one using `synchronized` methods - and then a fixed pool of three workers processes five orders. Run it a few times: the unsafe total changes from run to run, the other two never do.
 
-<Step label="Shared objects and a task to run" lines={[11, 19]}>`unsafe` and `safe` are heap objects, and the `work` lambda captures references to both. Whichever thread runs `work` increments the very same two objects - that is the sharing. `work` itself is just a `Runnable`: a description of a task, not a thread.</Step>
+<Step label="Shared objects and a task to run" lines={[11, 21]}>`unsafe`, `safe` and `locked` are heap objects, and the `work` lambda captures references to all three. Whichever thread runs `work` increments the very same three objects - that is the sharing. `work` itself is just a `Runnable`: a description of a task, not a thread.</Step>
 
-<Step label="start() and join()" lines={[21, 26]}>Each `new Thread(work)` only creates the thread object; nothing runs until `start()`. From that point `t1`, `t2` and `main` all run concurrently, in no guaranteed order. `join()` makes `main` wait until the thread has finished - without it, `main` could read the counters while the work is still going on.</Step>
+<Step label="start() and join()" lines={[23, 28]}>Each `new Thread(work)` only creates the thread object; nothing runs until `start()`. From that point `t1`, `t2` and `main` all run concurrently, in no guaranteed order. `join()` makes `main` wait until the thread has finished - without it, `main` could read the counters while the work is still going on.</Step>
 
-<Step label="The results" lines={[28, 29]}>Two threads times 1000 increments should give exactly 2000. The safe counter always does. The unsafe one usually prints something slightly lower, and a different number on each run - the signature of a race condition.</Step>
+<Step label="The results" lines={[30, 32]}>Two threads times 1000 increments should give exactly 2000. The safe and the locked counter always do. The unsafe one usually prints something slightly lower, and a different number on each run - the signature of a race condition.</Step>
 
-<Step label="A fixed thread pool and Futures" lines={[31, 40]}>`newFixedThreadPool(3)` creates three reusable workers; `submit` queues each of the five tasks and immediately returns a `Future`. `f.get()` blocks until that task's result is ready. Five tasks never need five threads - the pool reuses its three. `shutdown()` lets the workers finish and then exit; forgetting it keeps the JVM alive.</Step>
+<Step label="A fixed thread pool and Futures" lines={[34, 43]}>`newFixedThreadPool(3)` creates three reusable workers; `submit` queues each of the five tasks and immediately returns a `Future`. `f.get()` blocks until that task's result is ready. Five tasks never need five threads - the pool reuses its three. `shutdown()` lets the workers finish and then exit; forgetting it keeps the JVM alive.</Step>
 
-<Step label="UnsafeCounter: count++ is not atomic" lines={[49, 59]}>`count++` compiles to read, add one, write back. If two threads both read 41 before either writes, both write 42 and one increment vanishes. The method looks harmless precisely because the bug is not on any single line.</Step>
+<Step label="UnsafeCounter: count++ is not atomic" lines={[52, 62]}>`count++` compiles to read, add one, write back. If two threads both read 41 before either writes, both write 42 and one increment vanishes. The method looks harmless precisely because the bug is not on any single line.</Step>
 
-<Step label="SafeCounter: an atomic update" lines={[61, 71]}>`AtomicInteger.incrementAndGet()` performs the read-modify-write as one indivisible operation using a CPU-level compare-and-set, so no update can be lost and no lock is needed. Declaring the field `final` is still good practice - the reference never changes, only the value inside.</Step>
+<Step label="SafeCounter: an atomic update" lines={[64, 74]}>`AtomicInteger.incrementAndGet()` performs the read-modify-write as one indivisible operation using a CPU-level compare-and-set, so no update can be lost and no lock is needed. Declaring the field `final` is still good practice - the reference never changes, only the value inside.</Step>
+
+<Step label="SynchronizedCounter: a synchronized method" lines={[76, 86]}>The same plain `int` as `UnsafeCounter`, but both methods are marked `synchronized`. Every call first takes the counter's own lock (its monitor), so only one thread at a time can be inside `increment()` or `get()` on that object, and the read-add-write can no longer be interleaved. Marking `get()` too matters: it makes the reader wait for an update in progress and see the latest value. `synchronized` is the better choice when several fields must change together; for a single counter, `AtomicInteger` is lighter. The Runnables & synchronized lesson looks at exactly which lock each form takes.</Step>
 
 </Walkthrough>
 
