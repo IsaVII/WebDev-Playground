@@ -1,0 +1,243 @@
+---
+title: "Java & JDBC med PostgreSQL"
+practiceTopics:
+  - "Välj satsen"
+  - "Hitta felet"
+  - "Förutsäg resultatet"
+quiz: true
+---
+
+import SqlExplorerDemo from "../../../components/demos/jdbc-demos/SqlExplorerDemo";
+import PickStatementDemo from "../../../components/demos/jdbc-demos/PickStatementDemo";
+import SpotBugDemo from "../../../components/demos/jdbc-demos/SpotBugDemo";
+import PredictResultDemo from "../../../components/demos/jdbc-demos/PredictResultDemo";
+
+<Section lead>
+
+## Att prata med en databas från Java
+
+Nästan varje backend lagrar sin data i en databas, och en relationsdatabas som PostgreSQL är det vanligaste valet: datan ligger i tabeller med rader och kolumner, och du arbetar med den med SQL. JDBC (Java Database Connectivity) är Javas standard-API för att skicka SQL till en sådan databas och läsa tillbaka svaren. Den här lektionen är en översikt över de fyra saker du gör hela dagarna - lägga till data (`INSERT`), läsa den (`SELECT`), ändra den (`UPDATE`) och ta bort den (`DELETE`) - först som SQL, sedan som JDBC-koden som kör den, plus reglerna som håller koden säker: platshållare i stället för strängsammanfogning, att stänga resurser och transaktioner. Springs `JdbcTemplate`, JPA och Hibernate bygger alla på JDBC, så att förstå det gör dem mycket mindre magiska. Lektionen Klass- & ER-diagram går igenom hur tabeller hänger ihop; här fokuserar vi på att prata med en.
+
+</Section>
+
+<Section>
+
+## Kärnbegrepp
+
+- **Relationsdatabas och SQL:** PostgreSQL är ett serverprogram som lagrar tabeller. En tabell har kolumner (med typer som `BIGINT`, `TEXT`, `NUMERIC(10, 2)`) och rader, och en primärnyckelkolumn som identifierar varje rad. SQL är språket du skickar till den; det är deklarativt - du beskriver vilka rader du vill ha, inte hur de hittas
+- **CRUD:** De fyra grundläggande operationerna på data: Create (`INSERT`), Read (`SELECT`), Update (`UPDATE`) och Delete (`DELETE`). Nästan varje endpoint i en backend är en av dessa fyra inpackad i en metod
+- **JDBC och drivrutinen:** JDBC är en uppsättning gränssnitt i `java.sql` (`Connection`, `PreparedStatement`, `ResultSet`). Databasleverantören levererar en drivrutin som implementerar dem - för PostgreSQL är det beroendet `org.postgresql:postgresql`. Du skriver kod mot gränssnitten, så att byta databas betyder oftast en ny drivrutin och en ny URL
+- **Anslutnings-URL:n:** `jdbc:postgresql://localhost:5432/shop` betyder: JDBC, PostgreSQL-drivrutinen, värd, port (5432 är standard), databasnamn. `DriverManager.getConnection(url, user, password)` öppnar en session. Läs användarnamn och lösenord från miljövariabler eller konfiguration, aldrig från källkoden
+- **De fyra objekten:** En `Connection` är den öppna sessionen. Från den skapar du en `PreparedStatement` för en SQL-sats. När den körs får du antingen en `ResultSet` (raderna från en `SELECT`) eller ett antal ändrade rader (för allt annat)
+- **INSERT - lägga till data:** `INSERT INTO product (name, price, stock) VALUES (?, ?, ?)` lägger till en rad. Skicka den med `executeUpdate()`. Låt databasen skapa id:t med en identitetskolumn (`GENERATED ALWAYS AS IDENTITY`, äldre stil `SERIAL`) och läs tillbaka det med `getGeneratedKeys()`, eller lägg till `RETURNING id` i satsen, vilket är PostgreSQL-specifikt
+- **SELECT - läsa data:** `SELECT id, name FROM product WHERE price < ? ORDER BY price` väljer kolumner, filtrerar rader med `WHERE`, sorterar med `ORDER BY` och begränsar med `LIMIT`. Skicka den med `executeQuery()`. Aggregat som `COUNT(*)`, `SUM`, `AVG` och `GROUP BY` sammanfattar många rader till få, och `JOIN` kombinerar rader från två tabeller
+- **UPDATE och DELETE - ändra och ta bort:** `UPDATE product SET price = ? WHERE id = ?` och `DELETE FROM product WHERE id = ?`. Båda returnerar hur många rader de ändrade. Om `WHERE` inte matchar något blir antalet 0 och inget undantag kastas. Glömmer du `WHERE` ändras eller raderas varje rad
+- **executeQuery eller executeUpdate:** `executeQuery()` är för satser som returnerar rader och ger en `ResultSet`. `executeUpdate()` är för `INSERT`, `UPDATE`, `DELETE` och DDL som `CREATE TABLE`, och ger en `int`. Att använda fel en kastar en `SQLException`
+- **PreparedStatement och platshållaren ?:** Skriv SQL:en en gång med `?` där värdena ska vara, och fyll sedan i dem med `setString(1, ...)`, `setLong(2, ...)` och så vidare. Drivrutinen skickar värdena separat från SQL:en, så de kan aldrig tolkas som SQL. Det är skyddet mot SQL-injektion - att bygga SQL med `"... WHERE name = '" + name + "'"` är den klassiska sårbarheten. Platshållare står bara för värden, inte för tabell- eller kolumnnamn
+- **ResultSet:** En markör som börjar före första raden. `rs.next()` flyttar framåt och returnerar `false` när raderna är slut, så använd `if (rs.next())` för högst en rad och `while (rs.next())` för flera. Läs kolumner med namn, `rs.getString("name")`, eller med position - som börjar på 1, inte 0
+- **SQL-typer och Java-typer:** `BIGINT` är `getLong`, `INTEGER` är `getInt`, `TEXT` och `VARCHAR` är `getString`, `BOOLEAN` är `getBoolean`, `NUMERIC` är `getBigDecimal` (använd den för pengar, aldrig `double`), `DATE` och `TIMESTAMP` mappas till `LocalDate` och `LocalDateTime` med `getObject(column, LocalDate.class)`
+- **NULL:** En kolumn kan innehålla SQL-värdet `NULL`. `getInt` returnerar 0 för det, vilket ser ut som riktig data - kontrollera `rs.wasNull()` efteråt eller använd `getObject(column, Integer.class)`, som returnerar `null`. I SQL testar du med `IS NULL`: `= NULL` är aldrig sant
+- **Stänga resurser:** Anslutningar, satser och resultatmängder håller resurser både på Java-sidan och på databasservern. Öppna dem i ett try-with-resources-block så att de stängs även om ett undantag kastas. En bortglömd anslutning är en läcka, och servern tillåter bara ett begränsat antal
+- **Transaktioner:** Som standard committas varje sats för sig (auto-commit). För att flera satser ska lyckas eller misslyckas tillsammans anropar du `conn.setAutoCommit(false)`, kör dem och anropar sedan `conn.commit()`; i catch-blocket anropar du `conn.rollback()`. En överföring mellan två konton får aldrig bara slå igenom till hälften. Stänger du anslutningen utan commit kastas arbetet bort
+- **Batchning:** För många rader anropar du `ps.addBatch()` efter varje uppsättning värden och `ps.executeBatch()` en gång i slutet. Det blir en tur och retur till servern i stället för en per rad
+- **Anslutningspooler:** Att öppna en anslutning är långsamt, så riktiga applikationer håller en pool av färdiga anslutningar (HikariCP är standard) och lånar från den via en `DataSource`. Spring Boot sätter upp en åt dig från `application.properties`; `close()` på en poolad anslutning lämnar tillbaka den till poolen
+- **DAO- / Repository-mönstret:** Lägg all SQL för en tabell i en klass - en `ProductDao` med `insert`, `findById`, `updatePrice`, `delete` - som tar emot och returnerar vanliga Java-objekt som records. Resten av applikationen ser aldrig en `ResultSet`, och tester kan ersätta DAO:n
+- **SQLException:** JDBC:s checked exception för alla databasproblem. `getSQLState()` berättar vilken sorts fel: till exempel är `23505` ett brott mot en unik-begränsning och `23503` ett brott mot en främmande nyckel. Låt det propagera eller linda in det i ditt eget undantag; svälj det inte
+- **Vad som kommer efter JDBC:** Springs `JdbcTemplate` tar bort try/catch- och markör-koden men behåller din SQL. JPA/Hibernate mappar entitetsklasser till tabeller så att du sällan skriver SQL för CRUD. Båda öppnar anslutningar via JDBC under ytan, vilket är varför problemen du ser i deras loggar är de som finns i den här lektionen
+
+</Section>
+
+<Section>
+
+## Förberedelser
+
+För att följa med behöver du PostgreSQL igång (en lokal installation eller `docker run -e POSTGRES_PASSWORD=secret -p 5432:5432 postgres`), en databas som heter `shop` och drivrutinen i classpath. I Maven:
+
+```xml
+<dependency>
+    <groupId>org.postgresql</groupId>
+    <artifactId>postgresql</artifactId>
+    <version>42.7.4</version>
+</dependency>
+```
+
+Tabellen som används i lektionen, skapad från Java i exemplet nedan eller för hand i `psql`:
+
+```sql
+CREATE TABLE product (
+    id    BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name  TEXT NOT NULL,
+    price NUMERIC(10, 2) NOT NULL,
+    stock INTEGER NOT NULL DEFAULT 0
+);
+```
+
+</Section>
+
+<Section>
+
+## Prova satserna
+
+Välj en sats och kör den mot en liten låtsastabell `product`. Du ser SQL:en, JDBC-koden som skickar den, vad `executeUpdate()` eller `executeQuery()` ger tillbaka och tabellen efteråt. Ändringarna ligger kvar mellan körningarna - kör `INSERT` två gånger, radera samma rad två gånger eller prova `DELETE` utan `WHERE`, och använd sedan Reset table.
+
+<SqlExplorerDemo />
+
+</Section>
+
+<Section>
+
+## Fullständigt exempel, steg för steg
+
+<Walkthrough title="En ProductDao med hela CRUD-cykeln" files={["code-examples/java/jdbc/JdbcDemo.java"]}>
+
+En `ProductDao` samlar alla databasoperationer för en tabell. `main` skapar tabellen, lägger till två produkter, läser tillbaka en, ändrar ett pris, listar de billiga, flyttar lager i en transaktion och raderar en rad. Det kräver att PostgreSQL är igång och att drivrutinen finns i classpath, och läser inloggningsuppgifterna från miljövariablerna `DB_USER` och `DB_PASSWORD`.
+
+<Step label="main: hela cykeln i sex anrop" lines={[14, 38]}>Programmet läses som en berättelse - skapa, lägg till, hitta, ändra, lista, flytta lager, radera - eftersom SQL:en är gömd bakom DAO:n. Kommentarerna visar vad varje anrop skriver ut. Notera att anslutnings-URL:n är den enda platsen som nämner PostgreSQL, och att inloggningsuppgifterna kommer från miljön i stället för koden.</Step>
+
+<Step label="En record för en rad" lines={[41, 41]}>`Product` är en record med en komponent per kolumn. DAO:n gör varje `ResultSet`-rad till en sådan, så ingen annan kod behöver känna till JDBC.</Step>
+
+<Step label="DAO:n och att öppna en anslutning" lines={[43, 57]}>DAO:n lagrar URL och inloggningsuppgifter och öppnar en ny anslutning med `DriverManager.getConnection` för varje operation. Det är enkelt och fungerar för att lära sig, men är långsamt i en riktig tjänst - där skulle du injicera en poolad `DataSource` i stället. Metoden är `throws SQLException`: varje databasanrop kan misslyckas.</Step>
+
+<Step label="createTable: DDL med en vanlig Statement" lines={[59, 70]}>`CREATE TABLE` har inga värden att fylla i, så en vanlig `Statement` och `execute` räcker. Textblocket håller SQL:en läsbar. `id` är en identitetskolumn, så databasen numrerar raderna. Try-with-resources stänger både anslutningen och satsen vid slutklammern, även om ett undantag kastas.</Step>
+
+<Step label="insert: platshållare och det genererade id:t" lines={[72, 85]}>De tre `?` fylls i med `setString`, `setBigDecimal` och `setInt` - positionerna börjar på 1. `RETURN_GENERATED_KEYS` ber drivrutinen behålla den nya radens id; `executeUpdate()` skickar INSERT och `getGeneratedKeys()` returnerar en liten `ResultSet` med det. Den inre try-with-resources stänger även den resultatmängden.</Step>
+
+<Step label="findById: SELECT en rad" lines={[87, 95]}>`executeQuery()` returnerar en `ResultSet`. Vid uppslag på primärnyckel finns det högst en rad, så `rs.next()` används som en fråga: är den `true` omvandlas raden, annars blir resultatet `Optional.empty()` - "hittades inte" är ett normalt utfall, inte ett undantag.</Step>
+
+<Step label="findCheaperThan: SELECT flera rader" lines={[97, 109]}>Samma mönster med en `while (rs.next())`-loop som samlar alla rader i en lista. Filtret `WHERE price < ?` och `ORDER BY` görs av databasen - mycket snabbare än att läsa in hela tabellen och filtrera i Java. Att läsa priset som `BigDecimal` håller pengar exakta.</Step>
+
+<Step label="updatePrice och delete: påverkade rader" lines={[111, 126]}>Båda använder `executeUpdate()` och returnerar dess `int`: antalet ändrade rader. 1 betyder att id:t fanns, 0 betyder att inget matchade - anroparen kan göra det till ett "hittades inte"-svar. Båda satserna har `WHERE id = ?`; utan det skulle varje rad ändras eller raderas.</Step>
+
+<Step label="moveStock: en transaktion" lines={[128, 145]}>Två UPDATE måste lyckas tillsammans eller inte alls, annars skulle lagersaldo försvinna eller dyka upp. `setAutoCommit(false)` startar en transaktion, `commit()` gör båda ändringarna permanenta på en gång, och om något kastar anropar catch-blocket `rollback()` så att ingen av dem slår igenom. Samma förberedda sats återanvänds med nya värden.</Step>
+
+<Step label="toProduct: en rad blir ett objekt" lines={[147, 153]}>En privat hjälpmetod som läser den aktuella raden i `ResultSet` med kolumnnamn och bygger en `Product`. Båda SELECT-metoderna delar den, så kolumnnamnen finns på ett ställe. `getBigDecimal` för `NUMERIC` och `getLong` för `BIGINT` motsvarar kolumntyperna.</Step>
+
+</Walkthrough>
+
+</Section>
+
+<Section>
+
+## Kom igång
+
+- Använd alltid `PreparedStatement` med `?` för allt som innehåller ett värde - även värden du tror är säkra
+- Öppna `Connection`, `PreparedStatement` och `ResultSet` i try-with-resources, varje gång
+- Använd `executeQuery` för `SELECT` och `executeUpdate` för `INSERT`, `UPDATE`, `DELETE` och `CREATE TABLE`, och titta på talet `executeUpdate` returnerar
+- Skriv `WHERE` först när du skriver en `UPDATE` eller `DELETE`; testa villkoret med en `SELECT` innan du ändrar data
+- Välj bara de kolumner du behöver i stället för `SELECT *`, och läs dem med namn så att en omordnad kolumn inte kan förstöra koden
+- Håll SQL i en DAO- eller repository-klass och returnera records eller entiteter; skicka inte runt en `ResultSet`
+- Använd `BigDecimal` för pengar och `getObject(column, LocalDate.class)` för datum; kontrollera `NULL` på kolumner som tillåter det
+- Gruppera satser som måste lyckas tillsammans i en transaktion: `setAutoCommit(false)`, `commit()` och `rollback()` i catch-blocket
+- Ha URL, användare och lösenord i miljövariabler eller konfiguration, och håll dem utanför Git
+- Prova dina satser i `psql` eller ett databasverktyg först - det går mycket snabbare att rätta SQL där än genom en kompilera-och-kör-cykel
+- Använd en anslutningspool (HikariCP) så fort mer än en förfrågan kan köra samtidigt; Spring Boot gör det åt dig
+
+</Section>
+
+<Section>
+
+## Övningsämnen
+
+Klicka på ett ämne för att öppna ett levande, redigerbart exempel.
+
+<PracticeTopics>
+
+<PracticeTopic title="Välj satsen" demo={<PickStatementDemo />}>Åtta uppgifter, åtta svar - para ihop INSERT, SELECT, UPDATE och DELETE samt JDBC-anropen executeQuery, executeUpdate, getGeneratedKeys och commit med vad var och en är till för</PracticeTopic>
+
+<PracticeTopic title="Hitta felet" demo={<SpotBugDemo />}>Sex kodavsnitt med ett klassiskt misstag var - SQL-injektion genom strängsammanfogning, kolumnindex 0, ett saknat next(), fel execute-metod, en läckt anslutning och en transaktion som aldrig committas</PracticeTopic>
+
+<PracticeTopic title="Förutsäg resultatet" demo={<PredictResultDemo />}>Vad som kommer tillbaka från en DELETE utan WHERE, en UPDATE som inte matchar något, COUNT utan träffar, en saknad rad, en jämförelse med NULL och ett id efter en radering</PracticeTopic>
+
+</PracticeTopics>
+
+</Section>
+
+<Section>
+
+## Självtest
+
+Återkalla, läs inte om - svara innan du kontrollerar.
+
+<Quiz>
+
+<Question>
+
+Du vill köra `DELETE FROM product WHERE id = ?` och ta reda på om en rad faktiskt raderades. Vilket anrop använder du?
+
+<Option>`executeQuery()`, och kontrollera sedan ResultSet</Option>
+<Option correct>`executeUpdate()`, som returnerar antalet raderade rader</Option>
+<Option>`getGeneratedKeys()`</Option>
+<Option>`commit()`</Option>
+
+<Explanation>`executeUpdate` är för satser som ändrar data, och returnerar en `int`: 1 om raden fanns och raderades, 0 om `WHERE` inte matchade något. `executeQuery` är bara för satser som returnerar rader.</Explanation>
+
+</Question>
+
+<Question>
+
+Varför ska du skriva `WHERE name = ?` med `ps.setString(1, name)` i stället för att bygga SQL:en med `"... WHERE name = '" + name + "'"`?
+
+<Option>Sammanfogning är långsammare att skriva</Option>
+<Option>setString gör om namnet till versaler</Option>
+<Option correct>Värdet skickas separat från SQL:en, så användarinmatning kan aldrig tolkas som SQL (ingen SQL-injektion)</Option>
+<Option>PreparedStatement är den enda klassen som kan köra en SELECT</Option>
+
+<Explanation>Med sammanfogning ändrar ett namn som `' OR '1'='1` frågans betydelse. Med en platshållare skickar drivrutinen texten enbart som ett värde, oavsett vad den innehåller.</Explanation>
+
+</Question>
+
+<Question>
+
+En fråga returnerar kolumnerna `id, name, price`. Hur läser du `name` med position?
+
+<Option>`rs.getString(0)`</Option>
+<Option correct>`rs.getString(2)` - JDBC-kolumner numreras från 1</Option>
+<Option>`rs.getString(1)`</Option>
+<Option>`rs.getString(3)`</Option>
+
+<Explanation>Både resultatmängdens kolumner och `?`-parametrar räknas från 1, till skillnad från Java-arrayer och listor. Att läsa med namn, `rs.getString("name")`, undviker räkningen helt.</Explanation>
+
+</Question>
+
+<Question>
+
+Vad händer när du kör `UPDATE product SET price = 0` och glömmer `WHERE`-klausulen?
+
+<Option>Den misslyckas med en SQLException eftersom WHERE krävs</Option>
+<Option>Bara första raden ändras</Option>
+<Option correct>Varje rad i tabellen får priset 0, och executeUpdate returnerar antalet rader</Option>
+<Option>Ingenting händer förrän du anropar commit</Option>
+
+<Explanation>Utan `WHERE` matchar varje rad. I auto-commit-läge är ändringen permanent direkt. Kontrollera villkoret med en `SELECT` först, eller kör riskfyllda ändringar i en transaktion du kan rulla tillbaka.</Explanation>
+
+</Question>
+
+<Question>
+
+I en transaktion med `setAutoCommit(false)` kastar den andra av två UPDATE en `SQLException`. Vad ska catch-blocket göra?
+
+<Option>Anropa `commit()` så att första UPDATE sparas</Option>
+<Option correct>Anropa `rollback()` så att ingen av UPDATE slår igenom, och kasta undantaget vidare</Option>
+<Option>Anropa `setAutoCommit(true)` och fortsätta</Option>
+<Option>Ingenting - första UPDATE sparas automatiskt</Option>
+
+<Explanation>Poängen med en transaktion är allt eller inget. `rollback()` ångrar allt sedan transaktionen började, så databasen blir som om ingen av satserna hade körts.</Explanation>
+
+</Question>
+
+<Question>
+
+Vilken Java-typ ska du använda för att läsa en `NUMERIC(10, 2)`-priskolumn?
+
+<Option>`double`, med `getDouble`</Option>
+<Option>`float`, med `getFloat`</Option>
+<Option correct>`BigDecimal`, med `getBigDecimal`</Option>
+<Option>`String`, och tolka den själv</Option>
+
+<Explanation>`double` och `float` är binära bråktal och kan inte representera värden som 0,10 exakt, vilket ger avrundningsfel i penningberäkningar. `NUMERIC` är exakt, och `BigDecimal` är dess motsvarande Java-typ.</Explanation>
+
+</Question>
+
+</Quiz>
+
+</Section>

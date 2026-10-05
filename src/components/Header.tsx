@@ -34,6 +34,7 @@ import threadsFrontmatterEn from "../data/en/learning/threads.mdx?frontmatter";
 import runnablesFrontmatterEn from "../data/en/learning/runnables.mdx?frontmatter";
 import collectionsFrontmatterEn from "../data/en/learning/collections.mdx?frontmatter";
 import streamApiFrontmatterEn from "../data/en/learning/streamapi.mdx?frontmatter";
+import jdbcFrontmatterEn from "../data/en/learning/jdbc.mdx?frontmatter";
 import { lessonMeta } from "../utils/lessonMeta";
 
 // Swedish content
@@ -62,6 +63,7 @@ import threadsFrontmatterSv from "../data/sv/learning/threads.mdx?frontmatter";
 import runnablesFrontmatterSv from "../data/sv/learning/runnables.mdx?frontmatter";
 import collectionsFrontmatterSv from "../data/sv/learning/collections.mdx?frontmatter";
 import streamApiFrontmatterSv from "../data/sv/learning/streamapi.mdx?frontmatter";
+import jdbcFrontmatterSv from "../data/sv/learning/jdbc.mdx?frontmatter";
 
 // Lessons written as MDX contribute just their frontmatter (practice topics, quiz).
 const threadsContentEn = lessonMeta(threadsFrontmatterEn);
@@ -72,6 +74,8 @@ const collectionsContentEn = lessonMeta(collectionsFrontmatterEn);
 const collectionsContentSv = lessonMeta(collectionsFrontmatterSv);
 const streamapiContentEn = lessonMeta(streamApiFrontmatterEn);
 const streamapiContentSv = lessonMeta(streamApiFrontmatterSv);
+const jdbcContentEn = lessonMeta(jdbcFrontmatterEn);
+const jdbcContentSv = lessonMeta(jdbcFrontmatterSv);
 
 // Content maps
 interface LanguageContent {
@@ -113,6 +117,7 @@ const CONTENT_BY_LANG: Record<string, LanguageContent> = {
       runnables: runnablesContentEn,
       collections: collectionsContentEn,
       streamapi: streamapiContentEn,
+      jdbc: jdbcContentEn,
     },
   },
   sv: {
@@ -142,6 +147,7 @@ const CONTENT_BY_LANG: Record<string, LanguageContent> = {
       runnables: runnablesContentSv,
       collections: collectionsContentSv,
       streamapi: streamapiContentSv,
+      jdbc: jdbcContentSv,
     },
   },
 };

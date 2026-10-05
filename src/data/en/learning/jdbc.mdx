@@ -1,0 +1,243 @@
+---
+title: "Java & JDBC with PostgreSQL"
+practiceTopics:
+  - "Pick the Statement"
+  - "Spot the Bug"
+  - "Predict the Result"
+quiz: true
+---
+
+import SqlExplorerDemo from "../../../components/demos/jdbc-demos/SqlExplorerDemo";
+import PickStatementDemo from "../../../components/demos/jdbc-demos/PickStatementDemo";
+import SpotBugDemo from "../../../components/demos/jdbc-demos/SpotBugDemo";
+import PredictResultDemo from "../../../components/demos/jdbc-demos/PredictResultDemo";
+
+<Section lead>
+
+## Talking to a Database from Java
+
+Almost every backend keeps its data in a database, and a relational one like PostgreSQL is the most common choice: data lives in tables of rows and columns, and you work with it using SQL. JDBC (Java Database Connectivity) is the standard Java API for sending SQL to such a database and reading the answers back. This lesson is the overview of the four things you do all day - add data (`INSERT`), read it (`SELECT`), change it (`UPDATE`) and delete it (`DELETE`) - first as SQL, then as the JDBC code that runs it, plus the rules that keep that code safe: placeholders instead of string concatenation, closing resources, and transactions. Spring's `JdbcTemplate`, JPA and Hibernate all sit on top of JDBC, so understanding it makes them far less magical. The Class & ER Diagrams lesson covers how tables relate to each other; here we focus on talking to one.
+
+</Section>
+
+<Section>
+
+## Core Concepts
+
+- **Relational Database and SQL:** PostgreSQL is a server program that stores tables. A table has columns (typed, such as `BIGINT`, `TEXT`, `NUMERIC(10, 2)`) and rows, and a primary key column that identifies each row. SQL is the language you send to it; it is declarative - you describe which rows you want, not how to find them
+- **CRUD:** The four basic operations on data: Create (`INSERT`), Read (`SELECT`), Update (`UPDATE`) and Delete (`DELETE`). Almost every endpoint of a backend is one of these four wrapped in a method
+- **JDBC and the Driver:** JDBC is a set of interfaces in `java.sql` (`Connection`, `PreparedStatement`, `ResultSet`). The database vendor ships a driver that implements them - for PostgreSQL it is the `org.postgresql:postgresql` dependency. You write code against the interfaces, so switching database mostly means a new driver and a new URL
+- **The Connection URL:** `jdbc:postgresql://localhost:5432/shop` means: JDBC, PostgreSQL driver, host, port (5432 is the default), database name. `DriverManager.getConnection(url, user, password)` opens a session. Read the user and password from environment variables or configuration, never from the source code
+- **The Four Objects:** A `Connection` is the open session. From it you create a `PreparedStatement` for one SQL statement. Running it either returns a `ResultSet` (the rows of a `SELECT`) or a count of changed rows (everything else)
+- **INSERT - Adding Data:** `INSERT INTO product (name, price, stock) VALUES (?, ?, ?)` adds a row. Send it with `executeUpdate()`. Let the database create the id with an identity column (`GENERATED ALWAYS AS IDENTITY`, older style `SERIAL`) and read it back with `getGeneratedKeys()`, or add `RETURNING id` to the statement, which is PostgreSQL-specific
+- **SELECT - Reading Data:** `SELECT id, name FROM product WHERE price < ? ORDER BY price` picks columns, filters rows with `WHERE`, sorts with `ORDER BY` and limits with `LIMIT`. Send it with `executeQuery()`. Aggregates such as `COUNT(*)`, `SUM`, `AVG` and `GROUP BY` summarise many rows into few, and `JOIN` combines rows from two tables
+- **UPDATE and DELETE - Changing and Removing:** `UPDATE product SET price = ? WHERE id = ?` and `DELETE FROM product WHERE id = ?`. Both return how many rows they changed. If the `WHERE` matches nothing the count is 0 and no exception is thrown. If you forget the `WHERE`, every row is changed or deleted
+- **executeQuery vs executeUpdate:** `executeQuery()` is for statements that return rows and gives a `ResultSet`. `executeUpdate()` is for `INSERT`, `UPDATE`, `DELETE` and DDL such as `CREATE TABLE`, and gives an `int`. Using the wrong one throws an `SQLException`
+- **PreparedStatement and the ? Placeholder:** Write the SQL once with `?` where the values go, then fill them with `setString(1, ...)`, `setLong(2, ...)` and so on. The driver sends the values separately from the SQL, so they can never be read as SQL. That is the defence against SQL injection - building SQL with `"... WHERE name = '" + name + "'"` is the classic vulnerability. Placeholders stand for values only, not for table or column names
+- **ResultSet:** A cursor that starts before the first row. `rs.next()` moves forward and returns `false` when there are no more rows, so use `if (rs.next())` for at most one row and `while (rs.next())` for many. Read columns by name, `rs.getString("name")`, or by position - which starts at 1, not 0
+- **SQL Types and Java Types:** `BIGINT` is `getLong`, `INTEGER` is `getInt`, `TEXT` and `VARCHAR` are `getString`, `BOOLEAN` is `getBoolean`, `NUMERIC` is `getBigDecimal` (use it for money, never `double`), `DATE` and `TIMESTAMP` map to `LocalDate` and `LocalDateTime` through `getObject(column, LocalDate.class)`
+- **NULL:** A column can hold SQL `NULL`. `getInt` returns 0 for it, which looks like real data - check `rs.wasNull()` afterwards or use `getObject(column, Integer.class)`, which returns `null`. In SQL, test with `IS NULL`: `= NULL` is never true
+- **Closing Resources:** Connections, statements and result sets hold resources on both the Java side and the database server. Open them in a try-with-resources block so they are closed even when an exception is thrown. A forgotten connection is a leak, and the server only allows a limited number of them
+- **Transactions:** By default every statement is committed on its own (auto-commit). To make several statements succeed or fail together, call `conn.setAutoCommit(false)`, run them, then `conn.commit()`; in the catch block call `conn.rollback()`. A transfer between two accounts must never apply only half. Closing the connection without committing throws the work away
+- **Batching:** For many rows, call `ps.addBatch()` after setting each set of values and `ps.executeBatch()` once at the end. That is one round trip to the server instead of one per row
+- **Connection Pools:** Opening a connection is slow, so real applications keep a pool of ready connections (HikariCP is the standard one) and borrow from it through a `DataSource`. Spring Boot sets one up for you from `application.properties`; `close()` on a pooled connection returns it to the pool
+- **The DAO / Repository Pattern:** Put all SQL for one table in one class - a `ProductDao` with `insert`, `findById`, `updatePrice`, `delete` - that takes and returns plain Java objects such as records. The rest of the application never sees a `ResultSet`, and tests can replace the DAO
+- **SQLException:** JDBC's checked exception for every database problem. `getSQLState()` tells what kind: for example `23505` is a unique-constraint violation and `23503` a foreign-key violation. Let it propagate or wrap it in your own exception; do not swallow it
+- **What Comes After JDBC:** Spring's `JdbcTemplate` removes the try/catch and cursor boilerplate but keeps your SQL. JPA/Hibernate maps entity classes to tables so you rarely write SQL for CRUD. Both open connections through JDBC underneath, which is why the problems you see in their logs are the ones in this lesson
+
+</Section>
+
+<Section>
+
+## Setting Up
+
+To follow along you need PostgreSQL running (a local install or `docker run -e POSTGRES_PASSWORD=secret -p 5432:5432 postgres`), a database called `shop`, and the driver on the classpath. In Maven:
+
+```xml
+<dependency>
+    <groupId>org.postgresql</groupId>
+    <artifactId>postgresql</artifactId>
+    <version>42.7.4</version>
+</dependency>
+```
+
+The table used in this lesson, created from Java in the example below or by hand in `psql`:
+
+```sql
+CREATE TABLE product (
+    id    BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name  TEXT NOT NULL,
+    price NUMERIC(10, 2) NOT NULL,
+    stock INTEGER NOT NULL DEFAULT 0
+);
+```
+
+</Section>
+
+<Section>
+
+## Trying the Statements
+
+Pick a statement and run it against a small pretend `product` table. You see the SQL, the JDBC code that sends it, what `executeUpdate()` or `executeQuery()` hands back, and the table afterwards. The changes stick between runs - run `INSERT` twice, delete the same row twice, or try the `DELETE` with no `WHERE`, then use Reset table.
+
+<SqlExplorerDemo />
+
+</Section>
+
+<Section>
+
+## Full Example, Step by Step
+
+<Walkthrough title="A ProductDao with the full CRUD cycle" files={["code-examples/java/jdbc/JdbcDemo.java"]}>
+
+A `ProductDao` wraps every database operation for one table. `main` creates the table, adds two products, reads one back, changes a price, lists the cheap ones, moves stock in a transaction and deletes a row. It needs PostgreSQL running and the driver on the classpath, and reads the credentials from the environment variables `DB_USER` and `DB_PASSWORD`.
+
+<Step label="main: the whole cycle in six calls" lines={[14, 38]}>The program reads like a story - create, insert, find, update, list, move stock, delete - because the SQL is hidden behind the DAO. The comments show what each call prints. Note that the connection URL is the only place that names PostgreSQL, and the credentials come from the environment rather than the code.</Step>
+
+<Step label="A record for one row" lines={[41, 41]}>`Product` is a record with one component per column. The DAO turns each `ResultSet` row into one of these, so no other code needs to know about JDBC.</Step>
+
+<Step label="The DAO and opening a connection" lines={[43, 57]}>The DAO stores the URL and credentials and opens a new connection with `DriverManager.getConnection` for each operation. That is simple and fine for learning, but slow in a real service - there you would inject a pooled `DataSource` instead. The method is `throws SQLException`: every database call can fail.</Step>
+
+<Step label="createTable: DDL with a plain Statement" lines={[59, 70]}>`CREATE TABLE` has no values to fill in, so a plain `Statement` and `execute` are enough. The text block keeps the SQL readable. `id` is an identity column, so the database numbers the rows. The try-with-resources closes both the connection and the statement at the closing brace, even if an exception is thrown.</Step>
+
+<Step label="insert: placeholders and the generated id" lines={[72, 85]}>The three `?` are filled with `setString`, `setBigDecimal` and `setInt` - positions start at 1. `RETURN_GENERATED_KEYS` asks the driver to keep the new row's id; `executeUpdate()` sends the INSERT and `getGeneratedKeys()` returns a small `ResultSet` with it. The inner try-with-resources closes that result set too.</Step>
+
+<Step label="findById: SELECT one row" lines={[87, 95]}>`executeQuery()` returns a `ResultSet`. For a lookup by primary key there is at most one row, so `rs.next()` is used as a question: if it is `true` the row is converted, otherwise the result is `Optional.empty()` - "not found" is a normal outcome, not an exception.</Step>
+
+<Step label="findCheaperThan: SELECT many rows" lines={[97, 109]}>The same pattern with a `while (rs.next())` loop that collects every row into a list. The `WHERE price < ?` filter and the `ORDER BY` are done by the database - much faster than loading the whole table and filtering in Java. Reading the price with a `BigDecimal` keeps money exact.</Step>
+
+<Step label="updatePrice and delete: rows affected" lines={[111, 126]}>Both use `executeUpdate()` and return its `int`: the number of rows changed. 1 means the id existed, 0 means nothing matched - the caller can turn that into a "not found" response. Both statements have a `WHERE id = ?`; without it every row would be changed or deleted.</Step>
+
+<Step label="moveStock: a transaction" lines={[128, 145]}>Two UPDATEs must succeed together or not at all, otherwise stock would vanish or appear. `setAutoCommit(false)` starts a transaction, `commit()` makes both changes permanent at once, and if anything throws, the catch block calls `rollback()` so neither is applied. The same prepared statement is reused with new values.</Step>
+
+<Step label="toProduct: one row to one object" lines={[147, 153]}>A private helper that reads the current row of the `ResultSet` by column name and builds a `Product`. Both SELECT methods share it, so the column names live in one place. `getBigDecimal` for `NUMERIC` and `getLong` for `BIGINT` match the column types.</Step>
+
+</Walkthrough>
+
+</Section>
+
+<Section>
+
+## Getting Started
+
+- Always use `PreparedStatement` with `?` for anything that includes a value - even values you think are safe
+- Open `Connection`, `PreparedStatement` and `ResultSet` in try-with-resources, every time
+- Use `executeQuery` for `SELECT` and `executeUpdate` for `INSERT`, `UPDATE`, `DELETE` and `CREATE TABLE`, and look at the number `executeUpdate` returns
+- Write the `WHERE` first when you write an `UPDATE` or `DELETE`; test the condition with a `SELECT` before you change data
+- Select only the columns you need instead of `SELECT *`, and read them by name so a reordered column cannot break the code
+- Keep SQL in a DAO or repository class and return records or entities; do not pass a `ResultSet` around
+- Use `BigDecimal` for money and `getObject(column, LocalDate.class)` for dates; check for `NULL` on columns that allow it
+- Group statements that must succeed together in a transaction: `setAutoCommit(false)`, `commit()`, and `rollback()` in the catch block
+- Keep the URL, user and password in environment variables or configuration, and keep them out of Git
+- Try your statements in `psql` or a database tool first - it is much faster to fix SQL there than through a compile-run cycle
+- Use a connection pool (HikariCP) as soon as more than one request can run at a time; Spring Boot does this for you
+
+</Section>
+
+<Section>
+
+## Practice Topics
+
+Click a topic to open a live, editable example.
+
+<PracticeTopics>
+
+<PracticeTopic title="Pick the Statement" demo={<PickStatementDemo />}>Eight jobs, eight answers - match INSERT, SELECT, UPDATE and DELETE and the JDBC calls executeQuery, executeUpdate, getGeneratedKeys and commit to what each one is for</PracticeTopic>
+
+<PracticeTopic title="Spot the Bug" demo={<SpotBugDemo />}>Six snippets with a classic mistake each - SQL injection by string concatenation, a column index of 0, a missing next(), the wrong execute method, a leaked connection and a transaction that is never committed</PracticeTopic>
+
+<PracticeTopic title="Predict the Result" demo={<PredictResultDemo />}>What comes back from a DELETE with no WHERE, an UPDATE that matches nothing, COUNT on an empty match, a missing row, a comparison with NULL, and an id after a delete</PracticeTopic>
+
+</PracticeTopics>
+
+</Section>
+
+<Section>
+
+## Self-Check
+
+Recall, don't re-read - answer before you check.
+
+<Quiz>
+
+<Question>
+
+You want to run `DELETE FROM product WHERE id = ?` and find out whether a row was actually deleted. Which call do you use?
+
+<Option>`executeQuery()`, then check the ResultSet</Option>
+<Option correct>`executeUpdate()`, which returns the number of rows deleted</Option>
+<Option>`getGeneratedKeys()`</Option>
+<Option>`commit()`</Option>
+
+<Explanation>`executeUpdate` is for statements that change data, and it returns an `int`: 1 if the row existed and was deleted, 0 if the `WHERE` matched nothing. `executeQuery` is only for statements that return rows.</Explanation>
+
+</Question>
+
+<Question>
+
+Why should you write `WHERE name = ?` with `ps.setString(1, name)` instead of building the SQL with `"... WHERE name = '" + name + "'"`?
+
+<Option>Concatenation is slower to type</Option>
+<Option>setString converts the name to upper case</Option>
+<Option correct>The value is sent separately from the SQL, so user input can never be interpreted as SQL (no SQL injection)</Option>
+<Option>PreparedStatement is the only class that can run a SELECT</Option>
+
+<Explanation>With concatenation, a name like `' OR '1'='1` changes the meaning of the query. With a placeholder the driver passes the text as a value only, whatever it contains.</Explanation>
+
+</Question>
+
+<Question>
+
+A query returns the columns `id, name, price`. How do you read `name` by position?
+
+<Option>`rs.getString(0)`</Option>
+<Option correct>`rs.getString(2)` - JDBC columns are numbered from 1</Option>
+<Option>`rs.getString(1)`</Option>
+<Option>`rs.getString(3)`</Option>
+
+<Explanation>Both result-set columns and `?` parameters count from 1, unlike Java arrays and lists. Reading by name, `rs.getString("name")`, avoids counting altogether.</Explanation>
+
+</Question>
+
+<Question>
+
+What happens when you run `UPDATE product SET price = 0` and forget the `WHERE` clause?
+
+<Option>It fails with an SQLException because WHERE is required</Option>
+<Option>Only the first row is changed</Option>
+<Option correct>Every row in the table gets price 0, and executeUpdate returns the row count</Option>
+<Option>Nothing happens until you call commit</Option>
+
+<Explanation>Without a `WHERE`, every row matches. In auto-commit mode the change is permanent at once. Check the condition with a `SELECT` first, or run risky changes inside a transaction you can roll back.</Explanation>
+
+</Question>
+
+<Question>
+
+In a transaction with `setAutoCommit(false)`, the second of two UPDATEs throws an `SQLException`. What should the catch block do?
+
+<Option>Call `commit()` so the first UPDATE is saved</Option>
+<Option correct>Call `rollback()` so that neither UPDATE is applied, and rethrow the exception</Option>
+<Option>Call `setAutoCommit(true)` and carry on</Option>
+<Option>Nothing - the first UPDATE is saved automatically</Option>
+
+<Explanation>The point of a transaction is all-or-nothing. `rollback()` undoes everything since the transaction began, leaving the database as if neither statement had run.</Explanation>
+
+</Question>
+
+<Question>
+
+Which Java type should you use to read a `NUMERIC(10, 2)` price column?
+
+<Option>`double`, with `getDouble`</Option>
+<Option>`float`, with `getFloat`</Option>
+<Option correct>`BigDecimal`, with `getBigDecimal`</Option>
+<Option>`String`, and parse it yourself</Option>
+
+<Explanation>`double` and `float` are binary fractions and cannot represent values like 0.10 exactly, which causes rounding errors in money calculations. `NUMERIC` is exact, and `BigDecimal` is its matching Java type.</Explanation>
+
+</Question>
+
+</Quiz>
+
+</Section>

@@ -79,6 +79,16 @@
       "screenshot": "/images/streamapi.png",
       "difficulty": "intermediate",
       "estimatedTime": "3 hours"
+    },
+    {
+      "id": 9,
+      "key": "jdbc",
+      "title": "Java & JDBC with PostgreSQL",
+      "description": "Talking to a PostgreSQL database from Java: the SQL for adding, reading, changing and deleting rows, the JDBC code that runs it (Connection, PreparedStatement, ResultSet), generated ids, transactions, resource handling, and the DAO pattern",
+      "route": "/jdbc",
+      "screenshot": "/images/jdbc.png",
+      "difficulty": "intermediate",
+      "estimatedTime": "3 hours"
     }
   ]
 }

@@ -13,6 +13,7 @@ import Threads from "./learning/Threads";
 import Runnables from "./learning/Runnables";
 import Collections from "./learning/Collections";
 import StreamApi from "./learning/StreamApi";
+import Jdbc from "./learning/Jdbc";
 import { stripMarkdown } from "../utils/markdown";
 import learningContent from "../data/en/learningContent.json";
 import cheatsheets from "../data/en/cheatsheets.json";
@@ -24,6 +25,7 @@ import { frontmatter as threadsFrontmatter } from "../data/en/learning/threads.m
 import { frontmatter as runnablesFrontmatter } from "../data/en/learning/runnables.mdx";
 import { frontmatter as collectionsFrontmatter } from "../data/en/learning/collections.mdx";
 import { frontmatter as streamApiFrontmatter } from "../data/en/learning/streamapi.mdx";
+import { frontmatter as jdbcFrontmatter } from "../data/en/learning/jdbc.mdx";
 
 /**
  * These don't try to cover every interaction on every page - the practice
@@ -298,6 +300,54 @@ describe("Stream API in Depth (fourth lesson written as MDX)", () => {
     renderWithProviders(<StreamApi />);
     fireEvent.click(screen.getByRole("button", { name: /Pick the Operation/ }));
     expect(screen.getByText(/pick the stream operation that does it/)).toBeInTheDocument();
+  });
+});
+
+describe("Java & JDBC with PostgreSQL (fifth lesson written as MDX)", () => {
+  it("renders its heading, every section, practice topic, and the Self-Check", () => {
+    renderWithProviders(<Jdbc />);
+
+    expect(
+      screen.getByRole("heading", { name: jdbcFrontmatter.title, level: 1 }),
+    ).toBeInTheDocument();
+    for (const heading of [
+      "Talking to a Database from Java",
+      "Core Concepts",
+      "Setting Up",
+      "Trying the Statements",
+      "Full Example, Step by Step",
+      "Getting Started",
+      "Practice Topics",
+      "Self-Check",
+    ]) {
+      expect(
+        screen.getByRole("heading", { name: heading, level: 2 }),
+      ).toBeInTheDocument();
+    }
+    for (const title of jdbcFrontmatter.practiceTopics) {
+      expect(screen.getByText(title)).toBeInTheDocument();
+    }
+    expect(document.body.textContent).not.toContain("`");
+  });
+
+  it("wires up its statement explorer, walkthrough and quiz", () => {
+    renderWithProviders(<Jdbc />);
+
+    // <SqlExplorerDemo /> starts on SELECT all, before anything has been run.
+    expect(screen.getByRole("status")).toHaveTextContent("Press Run");
+    expect(
+      screen.getByRole("button", { name: /A record for one row/ }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /check answers/i }),
+    ).toBeDisabled();
+    expect(screen.getAllByRole("radio")).toHaveLength(24);
+  });
+
+  it("opens a practice topic's live demo when clicked", () => {
+    renderWithProviders(<Jdbc />);
+    fireEvent.click(screen.getByRole("button", { name: /Spot the Bug/ }));
+    expect(screen.getByText(/Each snippet has one classic JDBC mistake/)).toBeInTheDocument();
   });
 });
 

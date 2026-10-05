@@ -79,6 +79,16 @@
       "screenshot": "/images/streamapi.png",
       "difficulty": "intermediate",
       "estimatedTime": "3 timmar"
+    },
+    {
+      "id": 9,
+      "key": "jdbc",
+      "title": "Java & JDBC med PostgreSQL",
+      "description": "Att prata med en PostgreSQL-databas från Java: SQL för att lägga till, läsa, ändra och radera rader, JDBC-koden som kör den (Connection, PreparedStatement, ResultSet), genererade id:n, transaktioner, resurshantering och DAO-mönstret",
+      "route": "/jdbc",
+      "screenshot": "/images/jdbc.png",
+      "difficulty": "intermediate",
+      "estimatedTime": "3 timmar"
     }
   ]
 }
