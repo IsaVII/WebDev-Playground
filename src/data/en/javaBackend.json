@@ -59,6 +59,16 @@
       "screenshot": "/images/runnables.png",
       "difficulty": "intermediate",
       "estimatedTime": "2 hours"
+    },
+    {
+      "id": 7,
+      "key": "collections",
+      "title": "Collections & Comparator",
+      "description": "Holding and ordering data: List, Set, Map and Queue implementations and when to pick each, equals and hashCode, Comparable versus Comparator, building comparator chains, and the classic collection pitfalls",
+      "route": "/collections",
+      "screenshot": "/images/collections.png",
+      "difficulty": "beginner",
+      "estimatedTime": "2.5 hours"
     }
   ]
 }

@@ -55,7 +55,10 @@ function StepByStepExample({
         </div>
       )}
 
-      <div className="grid md:grid-cols-[220px_1fr] gap-4">
+      {/* minmax(0, 1fr) lets the code column shrink below its longest line, so
+          the code block scrolls sideways instead of stretching the grid (and
+          the explanation under it) past the edge of the box. */}
+      <div className="grid grid-cols-[minmax(0,1fr)] md:grid-cols-[220px_minmax(0,1fr)] gap-4">
         <ol className="flex md:flex-col gap-2 overflow-x-auto md:overflow-visible pb-2 md:pb-0">
           {steps.map((step, index) => {
             const isActive = index === activeStep;
@@ -87,7 +90,7 @@ function StepByStepExample({
           })}
         </ol>
 
-        <div>
+        <div className="min-w-0">
           <CodeBlock
             showLineNumbers
             highlightLines={linesInRange(current.lines)}
@@ -95,7 +98,10 @@ function StepByStepExample({
             {code}
           </CodeBlock>
 
-          <div className="text-muted leading-relaxed mt-4 pl-3 border-l-2 border-accent">
+          {/* text-left: #root centers text. The global `code` rule is
+              inline-flex (unlayered, so only an important utility beats it);
+              switching it to inline lets a long code span wrap. */}
+          <div className="text-left text-muted leading-relaxed mt-4 pl-3 border-l-2 border-accent [&_code]:inline! [&_code]:wrap-break-word">
             <strong className="text-heading-alt ">
               <InlineMarkdown>{current.label}</InlineMarkdown>:
             </strong>{" "}

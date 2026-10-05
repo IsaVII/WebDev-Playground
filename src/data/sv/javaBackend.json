@@ -59,6 +59,16 @@
       "screenshot": "/images/runnables.png",
       "difficulty": "intermediate",
       "estimatedTime": "2 timmar"
+    },
+    {
+      "id": 7,
+      "key": "collections",
+      "title": "Samlingar & Comparator",
+      "description": "Att hålla och ordna data: List, Set, Map och Queue, när man väljer vilken, equals och hashCode, Comparable mot Comparator, att bygga comparator-kedjor och de klassiska fallgroparna",
+      "route": "/collections",
+      "screenshot": "/images/collections.png",
+      "difficulty": "beginner",
+      "estimatedTime": "2,5 timmar"
     }
   ]
 }

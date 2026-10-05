@@ -1,0 +1,204 @@
+---
+title: "Collections & Comparator"
+practiceTopics:
+  - "Pick the Right Collection"
+  - "Write the Comparator"
+  - "Predict the Output: Collections"
+quiz: true
+---
+
+import ComparatorBuilderDemo from "../../../components/demos/collections-demos/ComparatorBuilderDemo";
+import PickCollectionDemo from "../../../components/demos/collections-demos/PickCollectionDemo";
+import WriteComparatorDemo from "../../../components/demos/collections-demos/WriteComparatorDemo";
+import CollectionsPredictDemo from "../../../components/demos/collections-demos/CollectionsPredictDemo";
+
+<Section lead>
+
+## Holding Data and Putting It in Order
+
+Almost every Java program keeps groups of things: users, orders, words, tasks. The Collections Framework in `java.util` is the standard toolbox for that - lists, sets, maps and queues, each with different promises about order, duplicates and speed. Choosing the right one is mostly a matter of asking what you need to do with the data. Two questions then keep coming back: *when are two objects the same?* (`equals` and `hashCode`) and *which one comes first?* (`Comparable` and `Comparator`). Spring Data repositories, JSON mapping and stream pipelines all hand you collections, so this is the vocabulary the rest of the Java course is written in.
+
+</Section>
+
+<Section>
+
+## Core Concepts
+
+- **The Framework at a Glance:** `Collection` is the root of `List`, `Set` and `Queue` (with `Deque`). `Map<K, V>` is a separate family - it is not a `Collection`. Declare variables by the interface (`List<String> names = new ArrayList<>();`) and choose the implementation only where you create it, so you can swap it later
+- **List - Ordered, Duplicates Allowed:** Items keep the position you gave them and are reached by index. `ArrayList` is the default: array-backed, instant `get(i)`, cheap appends. `LinkedList` is almost never the better choice. `List.of(...)` makes an immutable list, and `Arrays.asList(...)` a fixed-size one that cannot grow
+- **Set - No Duplicates:** `HashSet` is the fast general-purpose set with no order guarantee. `LinkedHashSet` remembers insertion order. `TreeSet` keeps its elements sorted, at the price of O(log n) operations. Adding something already present simply returns `false`
+- **Map - Key to Value:** `HashMap` is the fast default, `LinkedHashMap` keeps insertion order, `TreeMap` keeps keys sorted. The useful methods are `getOrDefault`, `putIfAbsent`, `computeIfAbsent` (create the value the first time a key is seen), `merge` (for counting) and iterating `entrySet()`
+- **Queue and Deque:** `ArrayDeque` is the right choice for both a stack (`push`/`pop`) and a plain FIFO queue (`offer`/`poll`); avoid the legacy `Stack` class. `PriorityQueue` always hands out the smallest element next, according to its ordering - but it is a heap, so only the head is in order when you print or iterate it
+- **equals() and hashCode():** Hash-based collections (`HashSet`, `HashMap`) use `hashCode()` to find a bucket and `equals()` to confirm a match. The contract: objects that are `equals` must have the same `hashCode`. Override both together, never one. Without them, two logically identical objects are treated as different. A `record` gets both for free. Do not use a mutable field as part of a key you have already stored
+- **Comparable - the Natural Order:** A class implements `Comparable<T>` and its single `compareTo` method defines its one built-in order (`String` is alphabetical, `Integer` numeric). `Collections.sort(list)`, `TreeSet` and `TreeMap` use it by default. A class can have only one
+- **Comparator - Any Other Order:** A `Comparator<T>` is a separate object with `int compare(a, b)` that you can write for any order you need, as many as you like, without touching the class. `list.sort(comparator)`, `new TreeSet<>(comparator)` and `new PriorityQueue<>(comparator)` all accept one
+- **The compare Contract:** Return a negative number if the first argument comes first, zero if they tie, and a positive number if it comes second. It must be consistent: swapping the arguments flips the sign, and if a comes before b and b before c then a comes before c. Never write `a - b` for ints - it overflows - use `Integer.compare(a, b)` or `comparingInt`
+- **Building Comparators:** `Comparator.comparing(Employee::department)` takes a key extractor. Chain tiebreakers with `thenComparing`, flip with `reversed()` or `Comparator.reverseOrder()`, and use `comparingInt` to avoid boxing. `nullsFirst` and `nullsLast` wrap another comparator so `null` keys do not throw. Sorting is stable: elements that tie keep their original order
+- **TreeSet and TreeMap Ignore equals():** They decide that two elements are the same when `compare` returns 0. A comparator that only looks at the name will silently drop a second person with the same name. Add enough tiebreakers that the comparator only returns 0 for elements you consider identical
+- **Utilities and Safe Iteration:** `Collections.sort`, `reverse`, `shuffle`, `max`/`min` (optionally with a comparator), `frequency` and `unmodifiableList` save you from writing loops. Changing a collection while a for-each loop is walking it throws `ConcurrentModificationException`; use `removeIf` or the iterator's `remove()` instead
+- **Boxing Gotchas:** Collections hold objects, so `int` becomes `Integer`. Compare boxed values with `equals`, not `==`, and remember that `list.remove(1)` removes the element at *index* 1, while `list.remove(Integer.valueOf(1))` removes the *value* 1
+
+</Section>
+
+<Section>
+
+## Building a Comparator
+
+Choose up to three sort keys and their direction. The table re-sorts and the Java `Comparator` that would produce the same order is printed above it. Remove the last key and watch how tied rows keep their original positions.
+
+<ComparatorBuilderDemo />
+
+</Section>
+
+<Section>
+
+## Full Example, Step by Step
+
+<Walkthrough title="Sorting, grouping, deduplicating and queueing employees" files={["code-examples/java/collections/CollectionsDemo.java"]}>
+
+A small list of employees is sorted two ways, grouped by department, then a `HashSet` of products is used to show why `equals` and `hashCode` matter, a `PriorityQueue` hands out the best-paid employee, and `removeIf` trims the list. Compile it and print each line to check the comments.
+
+<Step label="A list and its natural order" lines={[15, 22]}>`List.of(...)` is immutable, so it is copied into an `ArrayList` we are allowed to change. `Collections.sort(staff)` uses the natural order - `Employee.compareTo`, defined near the bottom - so Adam comes first alphabetically. No comparator is passed because the class already knows how to compare itself.</Step>
+
+<Step label="A comparator chain" lines={[24, 28]}>`list.sort(...)` takes a `Comparator` instead. `comparing(Employee::department)` is the primary key; `thenComparing` runs only when departments tie, here by salary highest first, and then by name for any remaining ties. The output shows Lena above Omar in IT, and Adam before Maja among the two equal Sales salaries.</Step>
+
+<Step label="Grouping into a TreeMap" lines={[30, 34]}>`computeIfAbsent` creates an empty list the first time a department appears and returns the existing one afterwards, so each employee is added to the right list in one line. A `TreeMap` was chosen so that `keySet()` comes out sorted: `[IT, Sales]`. A `HashMap` would give the same groups in no promised order.</Step>
+
+<Step label="A HashSet and duplicates" lines={[36, 39]}>Two `Product` objects with the same SKU but different labels are added. The set contains one, because `Product` defines equality by SKU. Without those overrides, the two objects would be different identities and the size would be 2.</Step>
+
+<Step label="A PriorityQueue with a comparator" lines={[41, 44]}>`comparingInt(Employee::salary).reversed()` makes the queue treat the highest salary as the 'smallest', so it comes first. `poll()` removes and returns the head - Lena. The queue is not fully sorted inside; it only guarantees the next one out is correct.</Step>
+
+<Step label="Removing while iterating, safely" lines={[46, 47]}>`removeIf` takes a predicate and removes every match in one pass. This is the safe replacement for deleting inside a for-each loop, which would throw `ConcurrentModificationException`. Two employees under 40000 are removed, leaving two.</Step>
+
+<Step label="Employee: a Comparable record" lines={[51, 58]}>A `record` is an immutable data class that already has `equals`, `hashCode` and `toString` generated from its fields. It also implements `Comparable<Employee>`, and `compareTo` delegates to `String.compareTo` on the name, which is what `Collections.sort(staff)` and any `TreeSet<Employee>` would use.</Step>
+
+<Step label="Product: equals and hashCode together" lines={[60, 78]}>`equals` says two products are the same when their SKU matches; `hashCode` is built from the same field, `Objects.hash(sku)`, so equal products always land in the same bucket. The `label` is deliberately left out of both - it does not take part in identity. Overriding one of the two without the other is a bug.</Step>
+
+</Walkthrough>
+
+</Section>
+
+<Section>
+
+## Getting Started
+
+- Start with `ArrayList`, `HashMap` and `HashSet`; move to `LinkedHashMap`/`LinkedHashSet` when you need insertion order and to `TreeMap`/`TreeSet` when you need sorted keys
+- Declare with the interface (`Map<String, Integer>`), construct with the class, and return the interface from methods
+- If an object will be a key in a `HashMap` or an element in a `HashSet`, give it `equals` and `hashCode` - or make it a `record`
+- Prefer `Comparator.comparing(...).thenComparing(...)` over hand-written lambdas with `-` or nested `if`s; it is shorter and cannot overflow
+- Implement `Comparable` only for an obvious natural order (a version number, a date); use a `Comparator` for everything else
+- If a `TreeSet` or `TreeMap` seems to lose items, check that the comparator does not return 0 for elements you consider different
+- Return `List.copyOf(...)` or `Collections.unmodifiableList(...)` from public methods so callers cannot change your internal state
+- Never remove from a collection inside a for-each loop; use `removeIf` or an `Iterator`
+- `ArrayList` and `HashMap` are not thread-safe. Shared between threads, use `ConcurrentHashMap` or `CopyOnWriteArrayList`, as described in Threads & Multithreading
+- Streams build on all of this: `stream().sorted(comparator)` and `Collectors.groupingBy` produce the same sorted lists and grouped maps you see here
+
+</Section>
+
+<Section>
+
+## Practice Topics
+
+Click a topic to open a live, editable example.
+
+<PracticeTopics>
+
+<PracticeTopic title="Pick the Right Collection" demo={<PickCollectionDemo />}>Eight requirements, eight collection classes - match ArrayList, HashSet, LinkedHashSet, TreeSet, HashMap, TreeMap, ArrayDeque and PriorityQueue to the job each one does best</PracticeTopic>
+
+<PracticeTopic title="Write the Comparator" demo={<WriteComparatorDemo />}>Choose the correct comparator for five requirements - reversed order, tiebreakers, overflow-safe comparison, null keys and a TreeSet that must not drop elements</PracticeTopic>
+
+<PracticeTopic title="Predict the Output: Collections" demo={<CollectionsPredictDemo />}>Missing hashCode, immutable lists, removing inside a for-each, `remove(int)` versus `remove(Object)`, a comparator that drops elements, and an unsorted PriorityQueue</PracticeTopic>
+
+</PracticeTopics>
+
+</Section>
+
+<Section>
+
+## Self-Check
+
+Recall, don't re-read - answer before you check.
+
+<Quiz>
+
+<Question>
+
+What is the difference between `Comparable` and `Comparator`?
+
+<Option>They are the same interface under two names</Option>
+<Option correct>Comparable is implemented by the class itself and defines its one natural order; a Comparator is a separate object that defines any other order</Option>
+<Option>Comparable sorts descending and Comparator sorts ascending</Option>
+<Option>Comparator can only be used with arrays</Option>
+
+<Explanation>`Comparable.compareTo` lives inside the class, so there is exactly one. A `Comparator.compare` lives outside it, so you can have many - by name, by age, by salary - without changing the class.</Explanation>
+
+</Question>
+
+<Question>
+
+A class overrides `equals()` but not `hashCode()`, and its objects are put into a `HashSet`. What can go wrong?
+
+<Option>Nothing - hashCode is optional</Option>
+<Option correct>Two objects that are equal can land in different buckets, so the set may contain duplicates and fail to find existing elements</Option>
+<Option>The code does not compile</Option>
+<Option>The set sorts the elements in the wrong order</Option>
+
+<Explanation>A `HashSet` first uses `hashCode()` to pick a bucket and only then calls `equals()`. If equal objects have different hash codes, they are never even compared. Override both together, from the same fields.</Explanation>
+
+</Question>
+
+<Question>
+
+You need a collection of unique words that always prints in alphabetical order. Which fits best?
+
+<Option>ArrayList</Option>
+<Option>HashSet</Option>
+<Option correct>TreeSet</Option>
+<Option>ArrayDeque</Option>
+
+<Explanation>A set rejects duplicates, and a `TreeSet` keeps its elements sorted by `compareTo` or a comparator. `HashSet` has no order, and `ArrayList` allows duplicates.</Explanation>
+
+</Question>
+
+<Question>
+
+Why is `(a, b) -> a.score() - b.score()` a risky comparator?
+
+<Option>Subtraction is not allowed on ints in a lambda</Option>
+<Option>It always sorts in descending order</Option>
+<Option correct>The subtraction can overflow for large or negative values and return the wrong sign - use `Integer.compare` or `comparingInt`</Option>
+<Option>It sorts correctly but runs slowly</Option>
+
+<Explanation>`Integer.MAX_VALUE - (-1)` wraps around to a negative number, so the comparator says the larger value comes first. `Integer.compare(a, b)` never overflows.</Explanation>
+
+</Question>
+
+<Question>
+
+A `TreeSet` is created with a comparator that compares only by `name`. What happens when two different people with the same name are added?
+
+<Option>Both are kept, because their equals() methods differ</Option>
+<Option>An exception is thrown</Option>
+<Option correct>The second is silently dropped, because compare() returned 0 and the TreeSet treats that as the same element</Option>
+<Option>The second replaces the first</Option>
+
+<Explanation>`TreeSet` and `TreeMap` never call `equals()`; a result of 0 from the comparator means 'already present'. Add a tiebreaker such as the id so the comparator only returns 0 for truly identical elements.</Explanation>
+
+</Question>
+
+<Question>
+
+Why does removing an element inside a for-each loop over an `ArrayList` usually throw `ConcurrentModificationException`?
+
+<Option>for-each loops lock the list</Option>
+<Option correct>The loop's iterator detects that the list was structurally modified outside of it and fails fast</Option>
+<Option>ArrayList is not allowed to shrink</Option>
+<Option>Only another thread can modify a list</Option>
+
+<Explanation>The exception is not about threads - a single thread triggers it. Use `list.removeIf(...)` or the iterator's own `remove()`, both of which keep the iterator informed.</Explanation>
+
+</Question>
+
+</Quiz>
+
+</Section>

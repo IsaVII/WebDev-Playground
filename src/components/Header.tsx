@@ -32,6 +32,7 @@ import springContentEn from "../data/en/learning/springContent.json";
 import heapStackContentEn from "../data/en/learning/heapStackContent.json";
 import threadsFrontmatterEn from "../data/en/learning/threads.mdx?frontmatter";
 import runnablesFrontmatterEn from "../data/en/learning/runnables.mdx?frontmatter";
+import collectionsFrontmatterEn from "../data/en/learning/collections.mdx?frontmatter";
 import { lessonMeta } from "../utils/lessonMeta";
 
 // Swedish content
@@ -58,12 +59,15 @@ import springContentSv from "../data/sv/learning/springContent.json";
 import heapStackContentSv from "../data/sv/learning/heapStackContent.json";
 import threadsFrontmatterSv from "../data/sv/learning/threads.mdx?frontmatter";
 import runnablesFrontmatterSv from "../data/sv/learning/runnables.mdx?frontmatter";
+import collectionsFrontmatterSv from "../data/sv/learning/collections.mdx?frontmatter";
 
 // Lessons written as MDX contribute just their frontmatter (practice topics, quiz).
 const threadsContentEn = lessonMeta(threadsFrontmatterEn);
 const threadsContentSv = lessonMeta(threadsFrontmatterSv);
 const runnablesContentEn = lessonMeta(runnablesFrontmatterEn);
 const runnablesContentSv = lessonMeta(runnablesFrontmatterSv);
+const collectionsContentEn = lessonMeta(collectionsFrontmatterEn);
+const collectionsContentSv = lessonMeta(collectionsFrontmatterSv);
 
 // Content maps
 interface LanguageContent {
@@ -103,6 +107,7 @@ const CONTENT_BY_LANG: Record<string, LanguageContent> = {
       heapstack: heapStackContentEn,
       threads: threadsContentEn,
       runnables: runnablesContentEn,
+      collections: collectionsContentEn,
     },
   },
   sv: {
@@ -130,6 +135,7 @@ const CONTENT_BY_LANG: Record<string, LanguageContent> = {
       heapstack: heapStackContentSv,
       threads: threadsContentSv,
       runnables: runnablesContentSv,
+      collections: collectionsContentSv,
     },
   },
 };

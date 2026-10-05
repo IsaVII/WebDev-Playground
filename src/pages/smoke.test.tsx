@@ -11,6 +11,7 @@ import Streams from "./learning/Streams";
 import Spring from "./learning/Spring";
 import Threads from "./learning/Threads";
 import Runnables from "./learning/Runnables";
+import Collections from "./learning/Collections";
 import { stripMarkdown } from "../utils/markdown";
 import learningContent from "../data/en/learningContent.json";
 import cheatsheets from "../data/en/cheatsheets.json";
@@ -20,6 +21,7 @@ import streamsContent from "../data/en/learning/streamsContent.json";
 import springContent from "../data/en/learning/springContent.json";
 import { frontmatter as threadsFrontmatter } from "../data/en/learning/threads.mdx";
 import { frontmatter as runnablesFrontmatter } from "../data/en/learning/runnables.mdx";
+import { frontmatter as collectionsFrontmatter } from "../data/en/learning/collections.mdx";
 
 /**
  * These don't try to cover every interaction on every page - the practice
@@ -198,6 +200,53 @@ describe("Runnables & synchronized (second lesson written as MDX)", () => {
     renderWithProviders(<Runnables />);
     fireEvent.click(screen.getByRole("button", { name: /Who Blocks Whom\?/ }));
     expect(screen.getByText(/Does B have\s+to wait/)).toBeInTheDocument();
+  });
+});
+
+describe("Collections & Comparator (third lesson written as MDX)", () => {
+  it("renders its heading, every section, practice topic, and the Self-Check", () => {
+    renderWithProviders(<Collections />);
+
+    expect(
+      screen.getByRole("heading", { name: collectionsFrontmatter.title, level: 1 }),
+    ).toBeInTheDocument();
+    for (const heading of [
+      "Holding Data and Putting It in Order",
+      "Core Concepts",
+      "Building a Comparator",
+      "Full Example, Step by Step",
+      "Getting Started",
+      "Practice Topics",
+      "Self-Check",
+    ]) {
+      expect(
+        screen.getByRole("heading", { name: heading, level: 2 }),
+      ).toBeInTheDocument();
+    }
+    for (const title of collectionsFrontmatter.practiceTopics) {
+      expect(screen.getByText(title)).toBeInTheDocument();
+    }
+    expect(document.body.textContent).not.toContain("`");
+  });
+
+  it("wires up its comparator demo, walkthrough and quiz", () => {
+    renderWithProviders(<Collections />);
+
+    // <ComparatorBuilderDemo /> starts sorted by department, salary, name.
+    expect(screen.getAllByRole("row")).toHaveLength(7);
+    expect(
+      screen.getByRole("button", { name: /A list and its natural order/ }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /check answers/i }),
+    ).toBeDisabled();
+    expect(screen.getAllByRole("radio")).toHaveLength(24);
+  });
+
+  it("opens a practice topic's live demo when clicked", () => {
+    renderWithProviders(<Collections />);
+    fireEvent.click(screen.getByRole("button", { name: /Pick the Right Collection/ }));
+    expect(screen.getByText(/Each\s+class is the right answer exactly once/)).toBeInTheDocument();
   });
 });
 

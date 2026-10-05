@@ -1,0 +1,204 @@
+---
+title: "Samlingar & Comparator"
+practiceTopics:
+  - "Välj rätt samling"
+  - "Skriv Comparatorn"
+  - "Förutsäg utskriften: samlingar"
+quiz: true
+---
+
+import ComparatorBuilderDemo from "../../../components/demos/collections-demos/ComparatorBuilderDemo";
+import PickCollectionDemo from "../../../components/demos/collections-demos/PickCollectionDemo";
+import WriteComparatorDemo from "../../../components/demos/collections-demos/WriteComparatorDemo";
+import CollectionsPredictDemo from "../../../components/demos/collections-demos/CollectionsPredictDemo";
+
+<Section lead>
+
+## Att hålla data och få ordning på den
+
+Nästan varje Java-program håller grupper av saker: användare, ordrar, ord, uppgifter. Collections Framework i `java.util` är standardverktygslådan för det - listor, mängder, map:ar och köer, var och en med olika löften om ordning, dubbletter och hastighet. Att välja rätt handlar mest om att fråga sig vad du behöver göra med datan. Två frågor återkommer sedan hela tiden: *när är två objekt samma?* (`equals` och `hashCode`) och *vilket kommer först?* (`Comparable` och `Comparator`). Spring Data-repositories, JSON-mappning och stream-pipelines ger dig alla samlingar, så det här är vokabulären resten av Java-kursen är skriven på.
+
+</Section>
+
+<Section>
+
+## Kärnbegrepp
+
+- **Ramverket i överblick:** `Collection` är roten till `List`, `Set` och `Queue` (med `Deque`). `Map<K, V>` är en separat familj - den är inte en `Collection`. Deklarera variabler med gränssnittet (`List<String> names = new ArrayList<>();`) och välj implementationen bara där du skapar objektet, så att du kan byta den senare
+- **List - ordnad, dubbletter tillåtna:** Element behåller den position du gav dem och nås via index. `ArrayList` är standardvalet: array-baserad, omedelbar `get(i)`, billiga tillägg i slutet. `LinkedList` är nästan aldrig det bättre valet. `List.of(...)` skapar en oföränderlig lista, och `Arrays.asList(...)` en med fast storlek som inte kan växa
+- **Set - inga dubbletter:** `HashSet` är den snabba allmänna mängden utan ordningsgaranti. `LinkedHashSet` minns insättningsordningen. `TreeSet` håller sina element sorterade, till priset av O(log n)-operationer. Att lägga till något som redan finns returnerar bara `false`
+- **Map - nyckel till värde:** `HashMap` är det snabba standardvalet, `LinkedHashMap` behåller insättningsordningen, `TreeMap` håller nycklarna sorterade. De användbara metoderna är `getOrDefault`, `putIfAbsent`, `computeIfAbsent` (skapa värdet första gången en nyckel ses), `merge` (för räkning) och att iterera över `entrySet()`
+- **Queue och Deque:** `ArrayDeque` är rätt val både för en stack (`push`/`pop`) och en vanlig FIFO-kö (`offer`/`poll`); undvik den gamla klassen `Stack`. `PriorityQueue` delar alltid ut det minsta elementet härnäst, enligt sin ordning - men den är en heap, så bara huvudet är i ordning när du skriver ut eller itererar den
+- **equals() och hashCode():** Hashbaserade samlingar (`HashSet`, `HashMap`) använder `hashCode()` för att hitta en hink och `equals()` för att bekräfta en träff. Kontraktet: objekt som är `equals` måste ha samma `hashCode`. Överskugga båda tillsammans, aldrig bara en. Utan dem behandlas två logiskt identiska objekt som olika. En `record` får båda gratis. Använd inte ett föränderligt fält som del av en nyckel du redan lagrat
+- **Comparable - den naturliga ordningen:** En klass implementerar `Comparable<T>` och dess enda metod `compareTo` definierar dess ena inbyggda ordning (`String` är alfabetisk, `Integer` numerisk). `Collections.sort(list)`, `TreeSet` och `TreeMap` använder den som standard. En klass kan bara ha en
+- **Comparator - vilken annan ordning som helst:** En `Comparator<T>` är ett separat objekt med `int compare(a, b)` som du kan skriva för vilken ordning du behöver, hur många du vill, utan att röra klassen. `list.sort(comparator)`, `new TreeSet<>(comparator)` och `new PriorityQueue<>(comparator)` tar alla emot en
+- **compare-kontraktet:** Returnera ett negativt tal om det första argumentet kommer först, noll om de är lika, och ett positivt tal om det kommer efter. Det måste vara konsekvent: att byta plats på argumenten vänder tecknet, och om a kommer före b och b före c så kommer a före c. Skriv aldrig `a - b` för int - det kan svämma över - använd `Integer.compare(a, b)` eller `comparingInt`
+- **Att bygga Comparators:** `Comparator.comparing(Employee::department)` tar en nyckelextraktor. Kedja avgörare med `thenComparing`, vänd med `reversed()` eller `Comparator.reverseOrder()`, och använd `comparingInt` för att slippa boxning. `nullsFirst` och `nullsLast` omsluter en annan comparator så att `null`-nycklar inte kastar undantag. Sorteringen är stabil: element som är lika behåller sin ursprungliga ordning
+- **TreeSet och TreeMap ignorerar equals():** De avgör att två element är samma när `compare` returnerar 0. En comparator som bara tittar på namnet släpper tyst en andra person med samma namn. Lägg till tillräckligt många avgörare så att comparatorn bara returnerar 0 för element du anser vara identiska
+- **Verktyg och säker iteration:** `Collections.sort`, `reverse`, `shuffle`, `max`/`min` (valfritt med en comparator), `frequency` och `unmodifiableList` sparar dig från att skriva loopar. Att ändra en samling medan en for-each-loop går igenom den kastar `ConcurrentModificationException`; använd `removeIf` eller iteratorns `remove()` i stället
+- **Fallgropar med boxning:** Samlingar håller objekt, så `int` blir `Integer`. Jämför boxade värden med `equals`, inte `==`, och kom ihåg att `list.remove(1)` tar bort elementet på *index* 1, medan `list.remove(Integer.valueOf(1))` tar bort *värdet* 1
+
+</Section>
+
+<Section>
+
+## Att bygga en Comparator
+
+Välj upp till tre sorteringsnycklar och deras riktning. Tabellen sorteras om, och den Java-`Comparator` som ger samma ordning skrivs ut ovanför den. Ta bort den sista nyckeln och se hur lika rader behåller sina ursprungliga positioner.
+
+<ComparatorBuilderDemo />
+
+</Section>
+
+<Section>
+
+## Fullständigt exempel, steg för steg
+
+<Walkthrough title="Sortera, gruppera, ta bort dubbletter och köa anställda" files={["code-examples/java/collections/CollectionsDemo.java"]}>
+
+En liten lista med anställda sorteras på två sätt och grupperas per avdelning, sedan används ett `HashSet` med produkter för att visa varför `equals` och `hashCode` spelar roll, en `PriorityQueue` delar ut den bäst betalda anställda, och `removeIf` rensar listan. Kompilera det och skriv ut varje rad för att kontrollera kommentarerna.
+
+<Step label="En lista och dess naturliga ordning" lines={[15, 22]}>`List.of(...)` är oföränderlig, så den kopieras till en `ArrayList` som vi får ändra. `Collections.sort(staff)` använder den naturliga ordningen - `Employee.compareTo`, definierad längre ner - så Adam kommer först alfabetiskt. Ingen comparator skickas med eftersom klassen redan vet hur den jämför sig själv.</Step>
+
+<Step label="En comparator-kedja" lines={[24, 28]}>`list.sort(...)` tar en `Comparator` i stället. `comparing(Employee::department)` är den primära nyckeln; `thenComparing` körs bara när avdelningarna är lika, här på lön med högst först, och sedan på namn för eventuella återstående likheter. Utskriften visar Lena före Omar i IT, och Adam före Maja bland de två lika Sales-lönerna.</Step>
+
+<Step label="Gruppera i en TreeMap" lines={[30, 34]}>`computeIfAbsent` skapar en tom lista första gången en avdelning dyker upp och returnerar den befintliga därefter, så varje anställd läggs till i rätt lista på en rad. En `TreeMap` valdes för att `keySet()` ska komma ut sorterad: `[IT, Sales]`. En `HashMap` skulle ge samma grupper i en ordning utan löfte.</Step>
+
+<Step label="Ett HashSet och dubbletter" lines={[36, 39]}>Två `Product`-objekt med samma SKU men olika etiketter läggs till. Mängden innehåller ett, eftersom `Product` definierar likhet via SKU. Utan de överskuggningarna skulle de två objekten ha olika identitet och storleken vara 2.</Step>
+
+<Step label="En PriorityQueue med comparator" lines={[41, 44]}>`comparingInt(Employee::salary).reversed()` får kön att behandla den högsta lönen som den 'minsta', så den kommer först. `poll()` tar bort och returnerar huvudet - Lena. Kön är inte helt sorterad inuti; den garanterar bara att nästa som kommer ut är rätt.</Step>
+
+<Step label="Ta bort under iteration, säkert" lines={[46, 47]}>`removeIf` tar ett predikat och tar bort varje träff i ett svep. Det är den säkra ersättningen för att radera inuti en for-each-loop, vilket skulle kasta `ConcurrentModificationException`. Två anställda under 40000 tas bort, och två blir kvar.</Step>
+
+<Step label="Employee: en Comparable-record" lines={[51, 58]}>En `record` är en oföränderlig dataklass som redan har `equals`, `hashCode` och `toString` genererade från sina fält. Den implementerar också `Comparable<Employee>`, och `compareTo` delegerar till `String.compareTo` på namnet, vilket är vad `Collections.sort(staff)` och varje `TreeSet<Employee>` skulle använda.</Step>
+
+<Step label="Product: equals och hashCode tillsammans" lines={[60, 78]}>`equals` säger att två produkter är samma när deras SKU matchar; `hashCode` bygger på samma fält, `Objects.hash(sku)`, så lika produkter alltid hamnar i samma hink. `label` är medvetet utelämnad från båda - den ingår inte i identiteten. Att överskugga den ena utan den andra är en bugg.</Step>
+
+</Walkthrough>
+
+</Section>
+
+<Section>
+
+## Kom igång
+
+- Börja med `ArrayList`, `HashMap` och `HashSet`; gå över till `LinkedHashMap`/`LinkedHashSet` när du behöver insättningsordning och till `TreeMap`/`TreeSet` när du behöver sorterade nycklar
+- Deklarera med gränssnittet (`Map<String, Integer>`), skapa med klassen och returnera gränssnittet från metoder
+- Om ett objekt ska vara en nyckel i en `HashMap` eller ett element i ett `HashSet`, ge det `equals` och `hashCode` - eller gör det till en `record`
+- Föredra `Comparator.comparing(...).thenComparing(...)` framför handskrivna lambdas med `-` eller nästlade `if`; det är kortare och kan inte svämma över
+- Implementera `Comparable` bara för en självklar naturlig ordning (ett versionsnummer, ett datum); använd en `Comparator` för allt annat
+- Om ett `TreeSet` eller `TreeMap` verkar tappa element, kontrollera att comparatorn inte returnerar 0 för element du anser vara olika
+- Returnera `List.copyOf(...)` eller `Collections.unmodifiableList(...)` från publika metoder så att anropare inte kan ändra ditt interna tillstånd
+- Ta aldrig bort från en samling inuti en for-each-loop; använd `removeIf` eller en `Iterator`
+- `ArrayList` och `HashMap` är inte trådsäkra. Delas de mellan trådar, använd `ConcurrentHashMap` eller `CopyOnWriteArrayList`, som beskrivs i Trådar & multitrådning
+- Streams bygger på allt detta: `stream().sorted(comparator)` och `Collectors.groupingBy` ger samma sorterade listor och grupperade map:ar som du ser här
+
+</Section>
+
+<Section>
+
+## Övningsämnen
+
+Klicka på ett ämne för att öppna ett levande, redigerbart exempel.
+
+<PracticeTopics>
+
+<PracticeTopic title="Välj rätt samling" demo={<PickCollectionDemo />}>Åtta krav, åtta samlingsklasser - para ihop ArrayList, HashSet, LinkedHashSet, TreeSet, HashMap, TreeMap, ArrayDeque och PriorityQueue med det jobb var och en gör bäst</PracticeTopic>
+
+<PracticeTopic title="Skriv Comparatorn" demo={<WriteComparatorDemo />}>Välj rätt comparator för fem krav - omvänd ordning, avgörare, översvämningssäker jämförelse, null-nycklar och ett TreeSet som inte får tappa element</PracticeTopic>
+
+<PracticeTopic title="Förutsäg utskriften: samlingar" demo={<CollectionsPredictDemo />}>Saknad hashCode, oföränderliga listor, borttagning inuti en for-each, `remove(int)` mot `remove(Object)`, en comparator som tappar element och en osorterad PriorityQueue</PracticeTopic>
+
+</PracticeTopics>
+
+</Section>
+
+<Section>
+
+## Självtest
+
+Minns i stället för att läsa om - svara innan du kontrollerar.
+
+<Quiz>
+
+<Question>
+
+Vad är skillnaden mellan `Comparable` och `Comparator`?
+
+<Option>De är samma gränssnitt under två namn</Option>
+<Option correct>Comparable implementeras av klassen själv och definierar dess enda naturliga ordning; en Comparator är ett separat objekt som definierar vilken annan ordning som helst</Option>
+<Option>Comparable sorterar fallande och Comparator stigande</Option>
+<Option>Comparator kan bara användas med arrayer</Option>
+
+<Explanation>`Comparable.compareTo` finns inuti klassen, så det finns exakt en. En `Comparator.compare` finns utanför, så du kan ha många - efter namn, ålder, lön - utan att ändra klassen.</Explanation>
+
+</Question>
+
+<Question>
+
+En klass överskuggar `equals()` men inte `hashCode()`, och dess objekt läggs i ett `HashSet`. Vad kan gå fel?
+
+<Option>Ingenting - hashCode är valfri</Option>
+<Option correct>Två objekt som är lika kan hamna i olika hinkar, så mängden kan innehålla dubbletter och misslyckas med att hitta befintliga element</Option>
+<Option>Koden kompileras inte</Option>
+<Option>Mängden sorterar elementen i fel ordning</Option>
+
+<Explanation>Ett `HashSet` använder först `hashCode()` för att välja en hink och anropar sedan `equals()`. Om lika objekt har olika hashkoder jämförs de aldrig ens. Överskugga båda tillsammans, från samma fält.</Explanation>
+
+</Question>
+
+<Question>
+
+Du behöver en samling unika ord som alltid skrivs ut i alfabetisk ordning. Vilken passar bäst?
+
+<Option>ArrayList</Option>
+<Option>HashSet</Option>
+<Option correct>TreeSet</Option>
+<Option>ArrayDeque</Option>
+
+<Explanation>En mängd avvisar dubbletter, och ett `TreeSet` håller sina element sorterade via `compareTo` eller en comparator. `HashSet` har ingen ordning, och `ArrayList` tillåter dubbletter.</Explanation>
+
+</Question>
+
+<Question>
+
+Varför är `(a, b) -> a.score() - b.score()` en riskabel comparator?
+
+<Option>Subtraktion är inte tillåten på int i ett lambda</Option>
+<Option>Den sorterar alltid fallande</Option>
+<Option correct>Subtraktionen kan svämma över för stora eller negativa värden och ge fel tecken - använd `Integer.compare` eller `comparingInt`</Option>
+<Option>Den sorterar rätt men körs långsamt</Option>
+
+<Explanation>`Integer.MAX_VALUE - (-1)` slår runt till ett negativt tal, så comparatorn säger att det större värdet kommer först. `Integer.compare(a, b)` svämmar aldrig över.</Explanation>
+
+</Question>
+
+<Question>
+
+Ett `TreeSet` skapas med en comparator som bara jämför på `name`. Vad händer när två olika personer med samma namn läggs till?
+
+<Option>Båda behålls, eftersom deras equals()-metoder skiljer sig</Option>
+<Option>Ett undantag kastas</Option>
+<Option correct>Den andra släpps tyst, eftersom compare() returnerade 0 och TreeSet behandlar det som samma element</Option>
+<Option>Den andra ersätter den första</Option>
+
+<Explanation>`TreeSet` och `TreeMap` anropar aldrig `equals()`; ett resultat på 0 från comparatorn betyder 'finns redan'. Lägg till en avgörare som id så att comparatorn bara returnerar 0 för verkligt identiska element.</Explanation>
+
+</Question>
+
+<Question>
+
+Varför kastar borttagning av ett element inuti en for-each-loop över en `ArrayList` oftast `ConcurrentModificationException`?
+
+<Option>for-each-loopar låser listan</Option>
+<Option correct>Loopens iterator upptäcker att listan ändrats strukturellt utanför den och misslyckas snabbt</Option>
+<Option>ArrayList får inte krympa</Option>
+<Option>Bara en annan tråd kan ändra en lista</Option>
+
+<Explanation>Undantaget handlar inte om trådar - en enda tråd kan utlösa det. Använd `list.removeIf(...)` eller iteratorns egen `remove()`, som båda håller iteratorn underrättad.</Explanation>
+
+</Question>
+
+</Quiz>
+
+</Section>
