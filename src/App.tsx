@@ -37,6 +37,7 @@ const HeapStack = lazy(() => import("./pages/learning/HeapStack"));
 const Threads = lazy(() => import("./pages/learning/Threads"));
 const Runnables = lazy(() => import("./pages/learning/Runnables"));
 const Collections = lazy(() => import("./pages/learning/Collections"));
+const StreamApi = lazy(() => import("./pages/learning/StreamApi"));
 const ProjectSetup = lazy(() => import("./pages/cheatsheets/ProjectSetup"));
 const GithubPages = lazy(() => import("./pages/cheatsheets/GithubPages"));
 const NpmLibraries = lazy(() => import("./pages/cheatsheets/NpmLibraries"));
@@ -83,6 +84,7 @@ function App() {
                 <Route path="/threads" element={<Threads />} />
                 <Route path="/runnables" element={<Runnables />} />
                 <Route path="/collections" element={<Collections />} />
+                <Route path="/streamapi" element={<StreamApi />} />
                 <Route path="/projectsetup" element={<ProjectSetup />} />
                 <Route path="/githubpages" element={<GithubPages />} />
                 <Route path="/npmlibraries" element={<NpmLibraries />} />

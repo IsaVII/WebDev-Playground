@@ -1,0 +1,207 @@
+---
+title: "Stream API på djupet"
+practiceTopics:
+  - "Välj operationen"
+  - "Skriv streamen"
+  - "Förutsäg utskriften: streams"
+quiz: true
+---
+
+import StreamExplorerDemo from "../../../components/demos/streamapi-demos/StreamExplorerDemo";
+import PickOperationDemo from "../../../components/demos/streamapi-demos/PickOperationDemo";
+import WriteStreamDemo from "../../../components/demos/streamapi-demos/WriteStreamDemo";
+import StreamPredictDemo from "../../../components/demos/streamapi-demos/StreamPredictDemo";
+
+<Section lead>
+
+## Att beskriva vad du vill ha, inte hur man loopar
+
+En stream är en pipeline för att bearbeta elementen i en samling: du anger en källa, kedjar några operationer som var och en gör en liten sak, och avslutar med en operation som ger svaret. Du säger *vad* du vill ha - namnen på de vuxna, sorterade - och biblioteket sköter loopandet. Lektionen Lambda & Stream API introducerade lambdas och pipelinens form; den här lektionen är verktygslådan ovanpå - operationerna du använder varje dag (`flatMap`, `distinct`, `sorted`, `limit`, `reduce`), primitiva streams, collectors för gruppering och sammanfogning, och reglerna som får folk att snubbla (lathet, engångsbruk, sidoeffekter, parallella streams). Den bygger på Samlingar & Comparator: en stream börjar i en samling, slutar i en, och sorterar med en `Comparator`.
+
+</Section>
+
+<Section>
+
+## Kärnbegrepp
+
+- **Källa, mellanliggande, avslutande:** Varje pipeline har en källa (`list.stream()`, `Stream.of(...)`, `Arrays.stream(array)`, `IntStream.range(...)`), valfritt antal mellanliggande operationer som var och en returnerar en ny stream, och exakt en avslutande operation som ger ett resultat. En stream är ingen datastruktur - den lagrar inga element, den beskriver bara hur de hämtas från källan
+- **Lat tills den avslutande operationen:** Mellanliggande operationer gör ingenting på egen hand. Först när den avslutande operationen körs dras element igenom, ett i taget, hela vägen ner genom pipelinen. En pipeline utan avslutande operation körs aldrig - inte ens en `peek` inuti den
+- **filter, map, flatMap:** `filter(predicate)` behåller vissa element. `map(function)` gör varje element till exakt ett nytt element, eventuellt av en annan typ. `flatMap(function)` tar en funktion som returnerar en *stream* per element och slår ihop dem alla till en, så ett element kan bli inget, ett eller flera - verktyget för "en lista med ordrar, var och en med en lista med varor, till alla varor"
+- **distinct, sorted, limit, skip:** `distinct()` tar bort dubbletter med `equals`/`hashCode`. `sorted()` använder den naturliga ordningen och `sorted(comparator)` vilken annan som helst. `limit(n)` stannar efter n element, `skip(n)` släpper de första n, och `takeWhile`/`dropWhile` gör detsamma tills ett villkor ändras. Operationernas ordning ändrar svaret - `limit` före `sorted` sorterar bara de första
+- **Kortslutning:** `findFirst`, `findAny`, `anyMatch`, `allMatch`, `noneMatch` och `limit` kan bli klara utan att läsa hela källan. Tillsammans med latheten stannar `filter(...).findFirst()` vid första träffen, och `Stream.iterate`/`Stream.generate` kan säkert vara oändliga så länge något som `limit` avslutar dem
+- **Avslutande operationer:** `toList()` (Java 16+, returnerar en oföränderlig lista), `collect(collector)`, `count()`, `forEach` (för sidoeffekter som utskrift), `min`/`max(comparator)` (returnerar en `Optional`), `findFirst`, `anyMatch` och liknande, `reduce` och `toArray`. Använd exakt en per stream
+- **reduce:** `reduce(identity, accumulator)` viker ihop alla element till ett värde: `reduce(0, Integer::sum)` är en summa. Formen med ett argument har inget startvärde och returnerar en `Optional`. Det är det allmänna verktyget, men `sum()`, `max()` och collectors är tydligare när de passar
+- **Primitiva streams:** `IntStream`, `LongStream` och `DoubleStream` undviker boxning och lägger till `sum()`, `average()` (en `OptionalDouble`), `max()` och `summaryStatistics()` för antal, min, max, summa och medelvärde i ett svep. Konvertera med `mapToInt`, `mapToDouble`, och tillbaka med `boxed()`. `range(1, 5)` utesluter slutet; `rangeClosed(1, 5)` inkluderar det
+- **Collectors:** `Collectors.toSet()`, `joining(", ")` (med valfritt prefix och suffix), `groupingBy(classifier)` till en `Map<K, List<V>>`, och `groupingBy(classifier, downstream)` med `counting()`, `summingInt`, `averagingDouble`, `mapping` eller `maxBy`. Ett tredje argument som `TreeMap::new` väljer map-typen. `partitioningBy(predicate)` ger en `true`/`false`-map
+- **toMap och dubblettnycklar:** `Collectors.toMap(keyFn, valueFn)` kastar `IllegalStateException` om två element ger samma nyckel. Skicka med en sammanfogningsfunktion som tredje argument, `toMap(k, v, Integer::sum)`, eller använd `groupingBy` när många element delar en nyckel
+- **Engångsbruk:** En stream kan förbrukas en gång. Efter en avslutande operation är den stängd, och att återanvända variabeln kastar `IllegalStateException`. Skapa en ny stream från källan varje gång, eller spara resultatet i en samling
+- **Håll lambdas rena:** En stream ändrar aldrig sin källa, och lambdorna du skickar in bör inte heller ändra något utanför sig själva. `forEach(list::add)` för att bygga en lista är en kodlukt och går sönder med parallella streams - använd `collect` eller `toList()`. `peek` är bara avsedd för felsökning
+- **Parallella streams:** `parallelStream()` eller `.parallel()` delar upp arbetet över den gemensamma trådpoolen. Det hjälper bara för stort, CPU-tungt, oberoende och tillståndslöst arbete - för små datamängder eller I/O är det långsammare, och delat föränderligt tillstånd blir de race conditions du känner från Trådar & multitrådning. Mät innan du använder det
+- **Streams eller loopar?:** Streams glänser i filtrera-omvandla-samla-pipelines. En vanlig loop är tydligare när du behöver ett index, flera utdata samtidigt, tidigt `break` med komplext tillstånd, eller när ett lambda skulle behöva kasta ett checked exception
+
+</Section>
+
+<Section>
+
+## Att bygga en pipeline
+
+Lägg till operationer i valfri ordning och se streamen efter varje steg, och välj sedan en avslutande operation som gör den till ett resultat. Prova `limit` före `sorted` och sedan efter, eller lägg `distinct` före och efter `flatMap`.
+
+<StreamExplorerDemo />
+
+</Section>
+
+<Section>
+
+## Fullständigt exempel, steg för steg
+
+<Walkthrough title="Analysera ordrar med Stream API" files={["code-examples/java/streamapi/StreamApiDemo.java"]}>
+
+Fyra ordrar, var och en med en lista varor, analyseras på åtta olika sätt - plattas ut, summeras, sammanfattas, grupperas, slås ihop, sammanfogas, viks ihop och genereras. Kompilera det och jämför varje utskriven rad med kommentaren bredvid.
+
+<Step label="Datan: records och nästlade listor" lines={[11, 20]}>Varje `Order` håller en `List<Item>`, så datan är nästlad: en lista med ordrar, och inuti varje en lista med varor. Records håller exemplet kort - var och en är en oföränderlig hållare med genererade accessorer.</Step>
+
+<Step label="flatMap, distinct, sorted" lines={[22, 28]}>`flatMap` gör varje order till en stream av dess varor och slår ihop dem till en enda stream av varor. `map(Item::name)` tar sedan namnet på var och en, `distinct()` tar bort den andra musen, `sorted()` ordnar strängarna alfabetiskt och `toList()` avslutar pipelinen. Ingenting hände före `toList()`.</Step>
+
+<Step label="Primitiva streams: sum och summaryStatistics" lines={[30, 40]}>`mapToInt(Order::total)` byter till en `IntStream` med vanliga int, som har `sum()`. Den första pipelinen summerar bara de skickade ordrarna. Den andra ber om `summaryStatistics()`, som räknar ut antal, min, max, summa och medelvärde i ett enda svep över datan.</Step>
+
+<Step label="groupingBy med en downstream-collector" lines={[42, 45]}>`groupingBy(Order::customer, ...)` samlar ordrarna per kund. I stället för standardlistan med ordrar per kund summerar den avslutande `summingInt(Order::total)` varje grupp, och `TreeMap::new` i mitten gör resultatet sorterat på kundnamn.</Step>
+
+<Step label="toMap med en sammanfogningsfunktion" lines={[47, 50]}>Maja har två ordrar, så enbart `toMap(Order::customer, o -> 1)` skulle kasta `IllegalStateException` på den dubbla nyckeln. Det tredje argumentet `Integer::sum` säger vad som ska hända när en nyckel upprepas - addera värdena - vilket gör mappen till ett ordrarantal. Det fjärde väljer en `TreeMap`.</Step>
+
+<Step label="filter, map och joining" lines={[52, 56]}>Bara skickade ordrar passerar filtret, `map` gör varje id till en `String`, och `Collectors.joining(", ", "[", "]")` fogar ihop dem med avskiljare, prefix och suffix. Ingen manuell loop och ingen hantering av avslutande komma.</Step>
+
+<Step label="reduce" lines={[58, 61]}>`reduce(0, Integer::sum)` börjar från identiteten 0 och kombinerar upprepade gånger den löpande summan med nästa element. Det är den allmänna formen av en summa. Här vore `mapToInt(...).sum()` enklare, men reduce är verktyget när kombineringssteget inte är en vanlig summa.</Step>
+
+<Step label="iterate och limit" lines={[63, 66]}>`Stream.iterate(1, n -> n * 2)` är en oändlig stream: 1, 2, 4, 8 och så vidare. Det är bara säkert eftersom den är lat och `limit(5)` stoppar den efter fem element - utan limit skulle `toList()` aldrig bli klar.</Step>
+
+<Step label="Records som datahållare" lines={[70, 77]}>`Item` och `Order` är records, så det finns inga getters att skriva och inga `equals` eller `toString` att underhålla. `Order.total()` är i sig en liten stream: den summerar varupriserna - streams går naturligt att komponera inuti dataklasserna.</Step>
+
+</Walkthrough>
+
+</Section>
+
+<Section>
+
+## Kom igång
+
+- Läs en pipeline uppifrån och ner som en mening: från den här listan, behåll dessa, gör var och en till det där, ge mig sedan det här resultatet
+- Filtrera tidigt så att senare operationer bearbetar färre element, och lägg `sorted` efter de operationer som krymper streamen
+- Använd `mapToInt`/`mapToDouble` före `sum`, `average` och `max` på tal - det undviker boxning och ger dig rätt metoder
+- Föredra `toList()` för ett enkelt resultat och `collect(Collectors.groupingBy(...))` för gruppering; undvik `forEach` som lägger till i en extern lista eller räknare
+- För `toMap`, fråga alltid vad som händer om två element har samma nyckel - lägg till en sammanfogningsfunktion eller använd `groupingBy`
+- Återanvänd aldrig en stream-variabel; anropa `.stream()` igen på källan
+- När en pipeline blir längre än ungefär fem steg, eller behöver ett komplext lambda, bryt ut en namngiven metod och använd en metodreferens som `Order::total`
+- Hantera `Optional`-resultat med `orElse`, `orElseThrow` eller `ifPresent` i stället för att anropa `get()` blint
+- Ta inte till `parallelStream()` som standard; för typiska backend-samlingar på några hundra element ger det bara overhead
+- När en loop verkligen är tydligare, använd loopen - en stream är ett verktyg, inte ett mål
+
+</Section>
+
+<Section>
+
+## Övningsämnen
+
+Klicka på ett ämne för att öppna ett levande, redigerbart exempel.
+
+<PracticeTopics>
+
+<PracticeTopic title="Välj operationen" demo={<PickOperationDemo />}>Åtta krav, åtta operationer - para ihop filter, map, flatMap, distinct, sorted, limit, reduce och anyMatch med det jobb var och en gör</PracticeTopic>
+
+<PracticeTopic title="Skriv streamen" demo={<WriteStreamDemo />}>Välj rätt pipeline för fem uppgifter - filtrera och sortera namn, summera löner, räkna per avdelning, foga ihop strängar och platta ut nästlade listor</PracticeTopic>
+
+<PracticeTopic title="Förutsäg utskriften: streams" demo={<StreamPredictDemo />}>En pipeline utan avslutande operation, en återanvänd stream, kortslutning, `range` mot `rangeClosed`, dubblettnycklar i `toMap`, en oföränderlig `toList()` och en källa som förblir oförändrad</PracticeTopic>
+
+</PracticeTopics>
+
+</Section>
+
+<Section>
+
+## Självtest
+
+Minns i stället för att läsa om - svara innan du kontrollerar.
+
+<Quiz>
+
+<Question>
+
+En lista med ordrar har var och en en `List<Item>`. Vad är skillnaden mellan `map(o -> o.items().stream())` och `flatMap(o -> o.items().stream())`?
+
+<Option>Det är ingen skillnad</Option>
+<Option correct>map ger en stream av streams (ett element per order); flatMap slår ihop dem till en enda platt stream av varor</Option>
+<Option>flatMap sorterar varorna, map gör det inte</Option>
+<Option>map fungerar bara på primitiva typer</Option>
+
+<Explanation>`map` ger alltid exakt ett resultat per element, så resultaten här är streams. `flatMap` tar var och en av dessa streams och plattar ut dem till en enda stream.</Explanation>
+
+</Question>
+
+<Question>
+
+Vad skrivs ut av detta? `Stream.of(1, 2, 3).peek(x -> System.out.println(x)).map(x -> x * 2);`
+
+<Option>1, 2 och 3 på separata rader</Option>
+<Option correct>Ingenting - det finns ingen avslutande operation, så pipelinen körs aldrig</Option>
+<Option>2, 4 och 6</Option>
+<Option>Det kompileras inte</Option>
+
+<Explanation>Mellanliggande operationer är lata; de bygger bara upp en beskrivning. Lägg till en avslutande operation som `count()` eller `toList()` så dras elementen igenom.</Explanation>
+
+</Question>
+
+<Question>
+
+Du anropar `count()` på en stream och sedan `forEach(...)` på samma variabel. Vad händer?
+
+<Option>Båda fungerar, eftersom streams är samlingar</Option>
+<Option correct>`IllegalStateException` - en stream kan förbrukas bara en gång</Option>
+<Option>forEach gör tyst ingenting</Option>
+<Option>Streamen startar om från första elementet</Option>
+
+<Explanation>En avslutande operation stänger streamen. Anropa `.stream()` på källan igen, eller samla resultatet i en lista du kan använda flera gånger.</Explanation>
+
+</Question>
+
+<Question>
+
+`Stream.of("a", "b", "a").collect(Collectors.toMap(s -> s, s -> 1))` - vad händer?
+
+<Option>Den returnerar `{a=1, b=1}`</Option>
+<Option>Den returnerar `{a=2, b=1}`</Option>
+<Option correct>Den kastar `IllegalStateException` eftersom nyckeln "a" förekommer två gånger</Option>
+<Option>Den returnerar en tom map</Option>
+
+<Explanation>`toMap` bestämmer inte vad som ska hända med dubblettnycklar. Ge den en sammanfogningsfunktion (`Integer::sum`), eller använd `groupingBy` med `counting()`.</Explanation>
+
+</Question>
+
+<Question>
+
+Varför använda `mapToInt(Employee::salary).sum()` i stället för `map(Employee::salary)` följt av en summa?
+
+<Option>mapToInt är det enda sättet att läsa ett fält</Option>
+<Option correct>Den skapar en `IntStream`, som har `sum()` och undviker att boxa varje tal till en `Integer`</Option>
+<Option>map kan inte returnera tal</Option>
+<Option>Den gör pipelinen parallell</Option>
+
+<Explanation>En vanlig `Stream<Integer>` har ingen `sum()`-metod. De primitiva streamsen `IntStream`, `LongStream` och `DoubleStream` lägger till `sum`, `average` och `summaryStatistics`, och de arbetar på oboxade värden.</Explanation>
+
+</Question>
+
+<Question>
+
+Varför är `list.stream().forEach(result::add)` ett dåligt sätt att bygga en lista?
+
+<Option>forEach kan inte anropa add</Option>
+<Option>Det är alltid långsammare än en for-loop</Option>
+<Option correct>Det ändrar tillstånd utanför pipelinen, vilket är felbenäget och går sönder om streamen görs parallell - `toList()` eller `collect` är det avsedda sättet</Option>
+<Option>Det ändrar ordningen på elementen</Option>
+
+<Explanation>Stream-lambdas ska vara fria från sidoeffekter. Om streamen körs parallellt anropar flera trådar `result.add` samtidigt på en icke trådsäker `ArrayList`. Att samla är både tydligare och säkert.</Explanation>
+
+</Question>
+
+</Quiz>
+
+</Section>

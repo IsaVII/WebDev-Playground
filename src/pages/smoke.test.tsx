@@ -12,6 +12,7 @@ import Spring from "./learning/Spring";
 import Threads from "./learning/Threads";
 import Runnables from "./learning/Runnables";
 import Collections from "./learning/Collections";
+import StreamApi from "./learning/StreamApi";
 import { stripMarkdown } from "../utils/markdown";
 import learningContent from "../data/en/learningContent.json";
 import cheatsheets from "../data/en/cheatsheets.json";
@@ -22,6 +23,7 @@ import springContent from "../data/en/learning/springContent.json";
 import { frontmatter as threadsFrontmatter } from "../data/en/learning/threads.mdx";
 import { frontmatter as runnablesFrontmatter } from "../data/en/learning/runnables.mdx";
 import { frontmatter as collectionsFrontmatter } from "../data/en/learning/collections.mdx";
+import { frontmatter as streamApiFrontmatter } from "../data/en/learning/streamapi.mdx";
 
 /**
  * These don't try to cover every interaction on every page - the practice
@@ -247,6 +249,55 @@ describe("Collections & Comparator (third lesson written as MDX)", () => {
     renderWithProviders(<Collections />);
     fireEvent.click(screen.getByRole("button", { name: /Pick the Right Collection/ }));
     expect(screen.getByText(/Each\s+class is the right answer exactly once/)).toBeInTheDocument();
+  });
+});
+
+describe("Stream API in Depth (fourth lesson written as MDX)", () => {
+  it("renders its heading, every section, practice topic, and the Self-Check", () => {
+    renderWithProviders(<StreamApi />);
+
+    expect(
+      screen.getByRole("heading", { name: streamApiFrontmatter.title, level: 1 }),
+    ).toBeInTheDocument();
+    for (const heading of [
+      "Describing What You Want, Not How to Loop",
+      "Core Concepts",
+      "Building a Pipeline",
+      "Full Example, Step by Step",
+      "Getting Started",
+      "Practice Topics",
+      "Self-Check",
+    ]) {
+      expect(
+        screen.getByRole("heading", { name: heading, level: 2 }),
+      ).toBeInTheDocument();
+    }
+    for (const title of streamApiFrontmatter.practiceTopics) {
+      expect(screen.getByText(title)).toBeInTheDocument();
+    }
+    expect(document.body.textContent).not.toContain("`");
+  });
+
+  it("wires up its pipeline explorer, walkthrough and quiz", () => {
+    renderWithProviders(<StreamApi />);
+
+    // <StreamExplorerDemo /> starts with flatMap, distinct and sorted.
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "[be, is, not, or, question, that, the, to]",
+    );
+    expect(
+      screen.getByRole("button", { name: /The data: records and nested lists/ }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /check answers/i }),
+    ).toBeDisabled();
+    expect(screen.getAllByRole("radio")).toHaveLength(24);
+  });
+
+  it("opens a practice topic's live demo when clicked", () => {
+    renderWithProviders(<StreamApi />);
+    fireEvent.click(screen.getByRole("button", { name: /Pick the Operation/ }));
+    expect(screen.getByText(/pick the stream operation that does it/)).toBeInTheDocument();
   });
 });
 

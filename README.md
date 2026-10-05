@@ -116,7 +116,7 @@ Under the hood this lives in `src/context/ProgressContext.tsx`, which reads/writ
 
 ## Writing a Lesson in MDX
 
-Most lessons are JSON (`src/data/{en,sv}/learning/*Content.json`) rendered by `LearningTopicLayout`. The **Threads & Multithreading**, **Runnables & synchronized** and **Collections & Comparator** lessons use a different format: one `.mdx` file per language (`src/data/{en,sv}/learning/threads.mdx`, `runnables.mdx`, `collections.mdx`) - Markdown with React components mixed in - so the text, the demos and the quiz all live together in reading order.
+Most lessons are JSON (`src/data/{en,sv}/learning/*Content.json`) rendered by `LearningTopicLayout`. The **Threads & Multithreading**, **Runnables & synchronized**, **Collections & Comparator** and **Stream API in Depth** lessons use a different format: one `.mdx` file per language (`src/data/{en,sv}/learning/threads.mdx`, `runnables.mdx`, `collections.mdx`, `streamapi.mdx`) - Markdown with React components mixed in - so the text, the demos and the quiz all live together in reading order.
 
 ```mdx
 ---
@@ -168,7 +168,8 @@ src/
 │       ├── spring-demos/          # Spring Framework demos
 │       ├── threads-demos/         # Threads & Multithreading demos
 │       ├── runnables-demos/       # Runnables & synchronized demos
-│       └── collections-demos/     # Collections & Comparator demos
+│       ├── collections-demos/     # Collections & Comparator demos
+│       └── streamapi-demos/       # Stream API in Depth demos
 │   └── SelfCheckQuiz.tsx          # Retrieval-practice quiz shown at the end of a lesson
 ├── context/
 │   └── ProgressContext.tsx     # Topic/sub-topic completion state, backed by a cookie

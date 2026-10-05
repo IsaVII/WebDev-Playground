@@ -69,6 +69,16 @@
       "screenshot": "/images/collections.png",
       "difficulty": "beginner",
       "estimatedTime": "2.5 hours"
+    },
+    {
+      "id": 8,
+      "key": "streamapi",
+      "title": "Stream API in Depth",
+      "description": "The Stream API toolbox beyond the basics: flatMap, distinct, sorted, limit, reduce, primitive streams, grouping and joining collectors, toMap pitfalls, and the rules about laziness, single use and parallel streams",
+      "route": "/streamapi",
+      "screenshot": "/images/streamapi.png",
+      "difficulty": "intermediate",
+      "estimatedTime": "3 hours"
     }
   ]
 }

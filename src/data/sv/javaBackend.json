@@ -69,6 +69,16 @@
       "screenshot": "/images/collections.png",
       "difficulty": "beginner",
       "estimatedTime": "2,5 timmar"
+    },
+    {
+      "id": 8,
+      "key": "streamapi",
+      "title": "Stream API på djupet",
+      "description": "Stream API-verktygslådan bortom grunderna: flatMap, distinct, sorted, limit, reduce, primitiva streams, collectors för gruppering och sammanfogning, toMap-fallgropar och reglerna om lathet, engångsbruk och parallella streams",
+      "route": "/streamapi",
+      "screenshot": "/images/streamapi.png",
+      "difficulty": "intermediate",
+      "estimatedTime": "3 timmar"
     }
   ]
 }
