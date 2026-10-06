@@ -89,6 +89,16 @@
       "screenshot": "/images/jdbc.png",
       "difficulty": "intermediate",
       "estimatedTime": "3 hours"
+    },
+    {
+      "id": 10,
+      "key": "hibernate",
+      "title": "Java & Hibernate (JPA)",
+      "description": "Mapping Java objects to PostgreSQL tables with Hibernate: entities and annotations, the Session and its four lifecycle states, dirty checking, HQL queries, relationships, lazy loading, the N+1 problem, and how it all builds on JDBC",
+      "route": "/hibernate",
+      "screenshot": "/images/hibernate.png",
+      "difficulty": "intermediate",
+      "estimatedTime": "4 hours"
     }
   ]
 }

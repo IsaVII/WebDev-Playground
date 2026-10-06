@@ -1,4 +1,4 @@
-import ScenarioQuiz, { type Scenario } from "./ScenarioQuiz";
+import ScenarioQuiz, { type Scenario } from "../ScenarioQuiz";
 
 const SCENARIOS: Scenario[] = [
   {

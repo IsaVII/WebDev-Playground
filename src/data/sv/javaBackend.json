@@ -89,6 +89,16 @@
       "screenshot": "/images/jdbc.png",
       "difficulty": "intermediate",
       "estimatedTime": "3 timmar"
+    },
+    {
+      "id": 10,
+      "key": "hibernate",
+      "title": "Java & Hibernate (JPA)",
+      "description": "Att mappa Java-objekt till PostgreSQL-tabeller med Hibernate: entiteter och annoteringar, Session och dess fyra livscykeltillstånd, dirty checking, HQL-frågor, relationer, lazy loading, N+1-problemet och hur allt bygger på JDBC",
+      "route": "/hibernate",
+      "screenshot": "/images/hibernate.png",
+      "difficulty": "intermediate",
+      "estimatedTime": "4 timmar"
     }
   ]
 }

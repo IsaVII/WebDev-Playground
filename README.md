@@ -116,7 +116,7 @@ Under the hood this lives in `src/context/ProgressContext.tsx`, which reads/writ
 
 ## Writing a Lesson in MDX
 
-Most lessons are JSON (`src/data/{en,sv}/learning/*Content.json`) rendered by `LearningTopicLayout`. The **Threads & Multithreading**, **Runnables & synchronized**, **Collections & Comparator**, **Stream API in Depth** and **Java & JDBC with PostgreSQL** lessons use a different format: one `.mdx` file per language (`src/data/{en,sv}/learning/threads.mdx`, `runnables.mdx`, `collections.mdx`, `streamapi.mdx`, `jdbc.mdx`) - Markdown with React components mixed in - so the text, the demos and the quiz all live together in reading order.
+Most lessons are JSON (`src/data/{en,sv}/learning/*Content.json`) rendered by `LearningTopicLayout`. The **Threads & Multithreading**, **Runnables & synchronized**, **Collections & Comparator**, **Stream API in Depth**, **Java & JDBC with PostgreSQL** and **Java & Hibernate (JPA)** lessons use a different format: one `.mdx` file per language (`src/data/{en,sv}/learning/threads.mdx`, `runnables.mdx`, `collections.mdx`, `streamapi.mdx`, `jdbc.mdx`, `hibernate.mdx`) - Markdown with React components mixed in - so the text, the demos and the quiz all live together in reading order.
 
 ```mdx
 ---
@@ -170,7 +170,9 @@ src/
 │       ├── runnables-demos/       # Runnables & synchronized demos
 │       ├── collections-demos/     # Collections & Comparator demos
 │       ├── streamapi-demos/       # Stream API in Depth demos
-│       └── jdbc-demos/            # Java & JDBC with PostgreSQL demos
+│       ├── jdbc-demos/            # Java & JDBC with PostgreSQL demos
+│       ├── hibernate-demos/       # Java & Hibernate (JPA) demos
+│       └── ScenarioQuiz.tsx       # Snippet + answer buttons, shared by the JDBC and Hibernate demos
 │   └── SelfCheckQuiz.tsx          # Retrieval-practice quiz shown at the end of a lesson
 ├── context/
 │   └── ProgressContext.tsx     # Topic/sub-topic completion state, backed by a cookie

@@ -1,0 +1,255 @@
+---
+title: "Java & Hibernate (JPA)"
+practiceTopics:
+  - "Pick the Annotation"
+  - "Spot the Bug"
+  - "Predict the SQL"
+quiz: true
+---
+
+import LifecycleDemo from "../../../components/demos/hibernate-demos/LifecycleDemo";
+import PickAnnotationDemo from "../../../components/demos/hibernate-demos/PickAnnotationDemo";
+import SpotBugDemo from "../../../components/demos/hibernate-demos/SpotBugDemo";
+import PredictSqlDemo from "../../../components/demos/hibernate-demos/PredictSqlDemo";
+
+<Section lead>
+
+## Talking to a Database with Objects
+
+With JDBC you translate by hand: every `INSERT` needs a `setString` per column, and every `SELECT` needs a `rs.getString` per column to rebuild an object. An ORM (object-relational mapper) does that translation for you. You describe how a class maps to a table with annotations, and the ORM writes and sends the SQL. Hibernate is the most widely used Java ORM and the engine behind JPA (Jakarta Persistence), the standard API for it; Spring Data JPA, which most Spring Boot projects use, runs on top of Hibernate. This lesson covers what a Java course will assume you know: mapping an entity, the session and the four lifecycle states of an object, dirty checking, queries in HQL, relationships, lazy loading and the N+1 problem. It builds directly on the JDBC lesson - Hibernate still sends SQL over a JDBC connection, and its log shows the statements you used to write yourself. The Class & ER Diagrams lesson covers the relationships that `@ManyToOne` and `@OneToMany` map.
+
+</Section>
+
+<Section>
+
+## Core Concepts
+
+- **The Object-Relational Mismatch:** Objects have references, collections and inheritance; tables have rows, foreign keys and no collections. A `Product` that holds a `Category` object is just a `category_id` column in the table. Converting back and forth by hand is repetitive and easy to get wrong - that is the gap an ORM fills
+- **ORM, JPA and Hibernate:** ORM is the idea. JPA (Jakarta Persistence) is the specification: annotations and interfaces such as `EntityManager`. Hibernate is the most popular implementation and also has its own API - its `Session` extends `EntityManager`. Spring Data JPA adds repository interfaces on top and uses Hibernate underneath by default. The annotations live in `jakarta.persistence`; older tutorials show `javax.persistence`, the same annotations from before Java EE became Jakarta EE (Hibernate 6 and later and Spring Boot 3 and later use `jakarta`)
+- **Entity:** A class marked `@Entity` whose objects are stored as rows. It needs an `@Id` field, a no-argument constructor (which may be `protected`) and must not be `final`, because Hibernate creates empty instances when it reads rows and subclasses the class for lazy-loading proxies. A `record` cannot be an entity (its fields are final) but works well as a read-only query result
+- **Mapping with Annotations:** `@Table(name = "product")` names the table. Every field becomes a column of the same name; `@Column(nullable = false, precision = 10, scale = 2)` adds details and also shapes the table Hibernate generates; `@Transient` leaves a field out. `@Enumerated(EnumType.STRING)` stores an enum by name - the default, `ORDINAL`, stores its position (0, 1, 2), which silently breaks when you reorder the constants. Put the annotations on the fields: when `@Id` is on a field, Hibernate reads and writes fields directly
+- **Primary Keys and @GeneratedValue:** `@Id` marks the primary key and `@GeneratedValue` lets the database or Hibernate create it. `GenerationType.IDENTITY` uses an identity column: simple, but the INSERT must be sent immediately to learn the id, which also prevents batching inserts. `SEQUENCE` fetches ids from a database sequence ahead of time, so the INSERT can wait and be batched. Use `Long`, not `long`, so a new object's id can be `null` until it is saved
+- **Configuration:** Hibernate needs a JDBC URL, user and password and a list of entity classes. They go in a `Configuration` object (as in the example), `hibernate.cfg.xml` or `persistence.xml` - or, in Spring Boot, `application.properties`. The SQL dialect is detected from the driver. `hibernate.show_sql` prints every statement and `hibernate.format_sql` makes it readable. `hibernate.hbm2ddl.auto` controls the schema: `create` rebuilds it, `update` adds missing tables and columns, `validate` only checks that the entities match, `none` does nothing. `update` is fine for learning; real schemas change through migration tools such as Flyway or Liquibase, with `validate`
+- **SessionFactory and Session:** A `SessionFactory` (JPA: `EntityManagerFactory`) is built once at startup - it is expensive, thread-safe and holds the mappings and the connection setup. A `Session` (JPA: `EntityManager`) is one unit of work: cheap, not thread-safe, and borrows a JDBC `Connection`. Open one, do the work, close it. Never share a session between threads or keep one for the life of the application. Spring creates and closes them for you
+- **Transactions:** Writes happen inside a transaction. `sessionFactory.inTransaction(session -> ...)` starts one, commits when the lambda finishes and rolls back if it throws; the longhand is `session.beginTransaction()`, `tx.commit()`, `tx.rollback()`. In Spring, `@Transactional` on a method does the same. It is the `setAutoCommit(false)`, `commit()`, `rollback()` from the JDBC lesson, wrapped up. Without a transaction the plain `Session` API does not complain - the write is just never saved
+- **Persistence Context (First-Level Cache):** Every session keeps a map of the entities it has loaded or persisted, by id. Ask for the same id twice and the second answer comes from memory: the very same Java object, `==` is true and no SQL is sent. The map lives and dies with the session
+- **The Entity Lifecycle:** An object is always in one of four states. **Transient:** a new object Hibernate has never seen, with no row. **Managed:** tracked by an open session. **Detached:** it has an id and a row, but the session that managed it is closed, cleared or has let go of it. **Removed:** managed and scheduled for deletion. Most Hibernate surprises - "my change was not saved", `LazyInitializationException` - come down to an object being in a different state than you assumed. The explorer below lets you try every move
+- **persist, find, remove:** `session.persist(obj)` turns a transient object into a managed one and schedules the INSERT (immediately with `IDENTITY`). `session.find(Product.class, id)` returns the managed entity, or `null` if there is no row. `session.remove(obj)` schedules the DELETE. Older code uses `save`, `saveOrUpdate`, `get` and `delete`, Hibernate's pre-JPA names - prefer the JPA ones
+- **merge:** For a detached object, `session.merge(obj)` loads the row, copies the detached object's values onto the managed instance and returns that instance. The object you passed in stays detached, so always keep using the return value. It is how an edited object that came back from a web form gets saved
+- **Flush and Dirty Checking:** Hibernate does not run SQL when you call a setter. It remembers the values it loaded for every managed entity and, at flush time, compares them with the current ones; every difference becomes an UPDATE. A flush happens at commit, before an HQL query that could be affected, and when you call `session.flush()`. That is why there is no `update()` call: change a managed entity inside a transaction and it is saved. The flip side: changing a detached object does nothing. By default the UPDATE writes all columns
+- **HQL and JPQL:** The query language works on entities, not tables: `from Product p where p.price < :max order by p.price` uses the class name `Product` and the field `price`. `:max` is a named parameter, bound with `setParameter("max", value)`; the value travels separately like a JDBC `?`, so never concatenate user input. Run it with `session.createSelectionQuery(hql, Product.class).getResultList()`; changing statements use `createMutationQuery`. HQL supports `join`, `group by` and aggregates. For what it cannot express, `createNativeQuery` sends plain SQL, and the Criteria API builds queries from Java objects. Spring Data JPA can derive queries from method names such as `findByPriceLessThan`
+- **Relationships:** `@ManyToOne` (many products, one category), `@OneToMany` (the other direction), `@OneToOne` and `@ManyToMany` (through a join table) turn foreign keys into object references: `Product.category` is a `Category`, not a number. This is the ER diagram written as fields
+- **The Owning Side and mappedBy:** In a two-way relationship only one side controls the foreign key column: the side with `@JoinColumn`, normally the `@ManyToOne`. The other side says `mappedBy = "category"` - the name of the owning field - meaning "I am only the mirror". Hibernate writes the foreign key from the owning side alone, so set both sides together, for example in an `addProduct` helper; set only the mirror and `category_id` is saved as `NULL`
+- **Fetch Types, Lazy and Eager:** `LAZY` loads related data the first time you use it, `EAGER` loads it together with its owner. By default `@ManyToOne` and `@OneToOne` are `EAGER`, while `@OneToMany` and `@ManyToMany` are `LAZY`. Prefer `fetch = FetchType.LAZY` on every relationship, including `@ManyToOne`, and ask for exactly what a use case needs in its query
+- **Proxies and LazyInitializationException:** A lazy `@ManyToOne` holds a proxy: a stand-in object that knows only the id and runs a SELECT the first time you read real data. If the session is already closed by then, you get `LazyInitializationException`. Fix it by reading what you need while the session is open, by fetching it in the query with `join fetch`, or by copying the data into a record before the session ends. Switching everything to `EAGER` just moves the cost to every query
+- **The N+1 Problem:** Load N parents with one query, then touch a lazy collection on each, and Hibernate runs N more queries: 1 + N. The code looks innocent; only the SQL log shows it, and it is slow once there is real data. The cure is to load them together: `join fetch` in HQL (`from Category c join fetch c.products`), an entity graph, or `@BatchSize`. Keep `show_sql` on while you develop and count the statements
+- **Cascade and orphanRemoval:** `cascade = CascadeType.PERSIST` carries an operation from a parent to its children: persisting the category persists its products. `CascadeType.ALL` also includes remove. `orphanRemoval = true` deletes a child that is taken out of the parent's collection. Use these from a parent to the children it owns; cascading remove from a `@ManyToOne` would delete the shared parent
+- **Optimistic Locking with @Version:** A field marked `@Version` is added to every UPDATE's `WHERE` clause and incremented. If someone else changed the row in between, no row matches and Hibernate throws `OptimisticLockException` instead of silently overwriting their change - lost updates detected without locking the database
+- **equals, hashCode and toString:** Do not let `equals`, `hashCode` or `toString` read lazy fields or collections - they trigger loading, or `LazyInitializationException` when the session is closed. Generated `toString` methods (for example Lombok's `@Data` on an entity) are a common trap, and so is a two-way relationship, where each side's `toString` calls the other's until the stack overflows
+- **After Hibernate:** Hibernate wraps the JDBC `SQLException` in an unchecked `PersistenceException` (for example `ConstraintViolationException` for a unique violation), with the original as its cause. It is excellent for CRUD and object graphs; for heavy reports and bulk updates, a native query, `JdbcTemplate` or plain JDBC can be simpler. Underneath is always a JDBC connection and prepared statements, so what you learned about injection, transactions and closing resources still holds
+
+</Section>
+
+<Section>
+
+## Setting Up
+
+To follow along you need the same PostgreSQL database `shop` as in the JDBC lesson, plus Hibernate and the driver. In Maven:
+
+```xml
+<dependency>
+    <groupId>org.hibernate.orm</groupId>
+    <artifactId>hibernate-core</artifactId>
+    <version>7.4.12.Final</version>
+</dependency>
+<dependency>
+    <groupId>org.postgresql</groupId>
+    <artifactId>postgresql</artifactId>
+    <version>42.7.13</version>
+</dependency>
+```
+
+`hibernate-core` brings the `jakarta.persistence` annotations with it. There is no table to create by hand: the example sets `hibernate.hbm2ddl.auto` to `update`, so Hibernate creates the `category` and `product` tables on first run. If you still have the `product` table from the JDBC lesson, Hibernate adds a `category_id` column to it; a fresh database (or `drop table product`) keeps your output identical to the walkthrough.
+
+In a Spring Boot project you add `spring-boot-starter-data-jpa` and the driver, and the `SessionFactory` and transactions are set up for you from `application.properties`:
+
+```properties
+spring.datasource.url=jdbc:postgresql://localhost:5432/shop
+spring.datasource.username=${DB_USER}
+spring.datasource.password=${DB_PASSWORD}
+spring.jpa.hibernate.ddl-auto=validate
+spring.jpa.show-sql=true
+```
+
+</Section>
+
+<Section>
+
+## Trying the Lifecycle
+
+You hold one `Product` object. Call methods on the session and watch which state it is in, what SQL Hibernate sends and when - and what the table looks like. Things to try: persist, change the price, and commit; change the price and then detach before committing; detach and then persist or merge; remove and then persist again.
+
+<LifecycleDemo />
+
+</Section>
+
+<Section>
+
+## Full Example, Step by Step
+
+<Walkthrough title="Categories and products with Hibernate" files={["code-examples/java/hibernate/HibernateDemo.java"]}>
+
+Two entities, `Category` and `Product`, with a one-to-many relationship between them. `main` builds the `SessionFactory`, saves some data, changes a price without any explicit save, runs an HQL query, provokes a `LazyInitializationException`, shows the N+1 problem and its fix, and removes a row. It needs PostgreSQL running and the driver and Hibernate on the classpath, and reads the credentials from `DB_USER` and `DB_PASSWORD`. Hibernate prints every statement it sends, so run it and compare the log with the steps.
+
+<Step label="main: building the SessionFactory" lines={[21, 30]}>The `Configuration` gathers the JDBC URL and credentials - the same ones you gave `DriverManager` in the JDBC lesson, read from the environment - asks Hibernate to create missing tables (`hbm2ddl.auto`) and to print every statement (`show_sql`), and lists the entity classes. `buildSessionFactory()` does the expensive work once. Everything below borrows short-lived sessions from this one factory.</Step>
+
+<Step label="Category: a class that is a table" lines={[93, 105]}>`@Entity` and `@Table` turn the class into a table. `@Id` with `@GeneratedValue(IDENTITY)` is a primary key the database numbers. The `@OneToMany(mappedBy = "category")` list is the mirror side of the relationship: it has no column of its own, and `mappedBy` names the field on `Product` that owns the foreign key. `cascade = PERSIST` means persisting a category also persists its products.</Step>
+
+<Step label="Category: constructors and addProduct" lines={[107, 117]}>Hibernate needs a no-argument constructor to create objects when it reads rows; it is `protected` so application code has to use the real one. `addProduct` sets both sides of the relationship together: the list on the Java side and `product.setCategory`, the owning side that actually writes `category_id`. Skip the second call and the column is saved as `NULL`.</Step>
+
+<Step label="Product: columns and the owning side" lines={[128, 144]}>Fields become columns of the same name, and `@Column` adds `NOT NULL` and `NUMERIC(10, 2)`, which Hibernate uses when it creates the table. `@ManyToOne` with `@JoinColumn(name = "category_id")` makes `category` the owning side: this field is stored as the foreign key. `LAZY` means the category is not loaded together with the product.</Step>
+
+<Step label="persist: from transient to managed" lines={[32, 44]}>The categories and products start as plain Java objects (transient). `session.persist` makes each category managed, and the cascade carries it to its products. Because the id is an identity column, Hibernate sends every INSERT immediately - the log shows five. `fromTransaction` commits when the lambda returns and hands back the products. The session is closed by then, so they are detached, but their ids can still be read.</Step>
+
+<Step label="find and dirty checking: no save() call" lines={[46, 50]}>`find` sends a SELECT and returns a managed `Product`. `setPrice` is an ordinary setter. At commit Hibernate compares the product with the values it loaded, sees that `price` changed and sends `update product set category_id=?, name=?, price=? where id=?`. Delete the setter call and no UPDATE is sent at all.</Step>
+
+<Step label="HQL: a query over entities" lines={[52, 60]}>`inSession` opens a session without a transaction, which is fine for reading. The query names the entity `Product` and its field `price`, not a table and column. `:max` is a named parameter bound with `setParameter`, so the value travels separately, like `?` in JDBC. The result is a list of managed `Product` objects - no `ResultSet` and no `toProduct` helper.</Step>
+
+<Step label="Lazy loading: the closed session" lines={[62, 68]}>`fromSession` returns the product after its session has closed, so it is detached. Its `category` is a proxy that holds only an id; `getName()` needs a SELECT, but there is no session to run it in, so Hibernate throws `LazyInitializationException`. The fix is to read what you need while the session is open, or to fetch it in the query.</Step>
+
+<Step label="The N+1 problem" lines={[70, 75]}>One SELECT loads the two categories. Then each `getProducts()` touches a lazy collection and runs its own SELECT: 1 + 2 = 3 statements in the log. With 500 categories it would be 501. The loop looks harmless; only the SQL log gives it away.</Step>
+
+<Step label="The fix: join fetch" lines={[77, 84]}>`join fetch c.products` tells Hibernate to load each category together with its products, in one SELECT with a join. The output is the same, one statement instead of three. The list still holds each category once.</Step>
+
+<Step label="remove: the DELETE waits for commit" lines={[86, 89]}>`find` loads the product with a SELECT, `remove` marks it as removed, and the DELETE is sent when the transaction commits. Finally `sessionFactory.close()` releases the connections - a real application does that once, at shutdown.</Step>
+
+</Walkthrough>
+
+</Section>
+
+<Section>
+
+## Getting Started
+
+- Annotate fields, give every entity an `@Id`, a `protected` no-argument constructor, and keep the class non-final
+- Mark enums `@Enumerated(EnumType.STRING)` and use `BigDecimal` for money, with `@Column(precision = 10, scale = 2)`
+- Turn on `hibernate.show_sql` while you learn and read the log: count the statements, and compare them with the SQL you would have written
+- Do every write inside a transaction (`inTransaction`, or `@Transactional` in Spring), and keep sessions short
+- Change managed entities and let dirty checking write them; do not hunt for an `update()` call. Use `merge` for a detached object
+- Make every relationship `LAZY`, set both sides of a two-way relationship together, and remember that the side without `mappedBy` owns the foreign key
+- Fetch what a use case needs in its query with `join fetch` - never rely on touching a lazy field after the session has closed
+- Watch for N+1: a loop that calls a lazy getter on every row is the usual culprit
+- Pass values to HQL with named parameters (`:max`), never by string concatenation
+- Return records or DTOs from services instead of entities, so the web layer never trips over a lazy field
+- Let Flyway or Liquibase manage the schema in real projects, and use `validate` or `none` instead of `update`
+- Try a query as plain SQL in `psql` first if HQL surprises you - the log shows exactly what Hibernate generated
+
+</Section>
+
+<Section>
+
+## Practice Topics
+
+Click a topic to open a live, editable example.
+
+<PracticeTopics>
+
+<PracticeTopic title="Pick the Annotation" demo={<PickAnnotationDemo />}>Eight jobs, eight answers - match @Entity, @Id, @GeneratedValue, @Column, @ManyToOne, @OneToMany(mappedBy), @Enumerated and join fetch to what each one is for</PracticeTopic>
+
+<PracticeTopic title="Spot the Bug" demo={<SpotBugDemo />}>Six snippets with a classic mistake each - a lazy field read after the session closed, a missing no-argument constructor, a write without a transaction, a change to a detached object, a foreign key left NULL and an enum stored by position</PracticeTopic>
+
+<PracticeTopic title="Predict the SQL" demo={<PredictSqlDemo />}>How many statements Hibernate sends, and when - find twice in one session, a setter with no change, persist with an identity id, remove, getReference and the N+1 loop</PracticeTopic>
+
+</PracticeTopics>
+
+</Section>
+
+<Section>
+
+## Self-Check
+
+Recall, don't re-read - answer before you check.
+
+<Quiz>
+
+<Question>
+
+Inside a transaction you call `find` to load a `Product`, then `product.setPrice(...)`, and the transaction commits. You never call `save` or `update`. What happens?
+
+<Option>Nothing - the change is lost without an explicit save call</Option>
+<Option correct>Hibernate sends an UPDATE at commit, because dirty checking sees that the managed entity changed</Option>
+<Option>Hibernate sends an UPDATE immediately when `setPrice` runs</Option>
+<Option>It throws an exception, because `setPrice` is outside a query</Option>
+
+<Explanation>A managed entity is watched by its session. At flush time - which includes commit - Hibernate compares it with the values it loaded and writes every difference. That is why there is no `update()` call.</Explanation>
+
+</Question>
+
+<Question>
+
+A method returns a `Product` after its session has closed. The caller runs `product.getCategory().getName()` and gets a `LazyInitializationException`. Why?
+
+<Option>`getName` is not allowed on an entity</Option>
+<Option>The category was deleted</Option>
+<Option correct>`category` is a lazy proxy that needs a SELECT on first use, and the session that could run it is closed</Option>
+<Option>`find` always returns an incomplete object</Option>
+
+<Explanation>A lazy relationship holds a stand-in that only knows the id. Reading real data triggers a SELECT, which needs an open session. Load it inside the session (for example with `join fetch`) or copy the data you need into a record first.</Explanation>
+
+</Question>
+
+<Question>
+
+In `Category` you write `@OneToMany(mappedBy = "category")`. What does `mappedBy` tell Hibernate?
+
+<Option>That the category table has a column called `category`</Option>
+<Option correct>That the `category` field on `Product` owns the foreign key, so this list is only the mirror side</Option>
+<Option>That products should be loaded eagerly</Option>
+<Option>That deleting a category deletes its products</Option>
+
+<Explanation>Only the owning side - the `@ManyToOne` with `@JoinColumn` - writes `category_id`. The `mappedBy` side is ignored when saving, which is why you must set both sides, for example in an `addProduct` helper.</Explanation>
+
+</Question>
+
+<Question>
+
+You loaded a `Product` in one session, closed it, changed the price and now want to save that change. What do you do?
+
+<Option>Call `persist` on it - it will update the existing row</Option>
+<Option>Nothing - Hibernate remembers the object</Option>
+<Option correct>Open a transaction and `merge` it, then use the managed object that `merge` returns</Option>
+<Option>Call `remove` and then `persist`</Option>
+
+<Explanation>The object is detached, so nobody is watching it and `persist` rejects detached objects (`EntityExistsException`). `merge` loads the row, copies the changes onto a managed instance and returns that instance - the object you passed in stays detached.</Explanation>
+
+</Question>
+
+<Question>
+
+A page lists 40 categories and prints how many products each has. The SQL log shows 41 SELECT statements. What is this called, and what is the usual fix?
+
+<Option>A dirty read - use a bigger connection pool</Option>
+<Option>Lazy initialization - switch every relationship to `EAGER`</Option>
+<Option correct>The N+1 problem - load the products with the categories, for example `join fetch`</Option>
+<Option>A flush storm - call `session.flush()` less often</Option>
+
+<Explanation>One query for the categories plus one per category to load its lazy collection is 1 + N. `from Category c join fetch c.products` brings it down to one statement. Switching to `EAGER` mostly hides the problem and makes every other query pay for it.</Explanation>
+
+</Question>
+
+<Question>
+
+In `from Product p where p.price < :max`, what do `Product` and `price` refer to?
+
+<Option>The table `Product` and the column `price`, spelled exactly as in the database</Option>
+<Option correct>The entity class `Product` and its field `price` - Hibernate translates them to the table and column</Option>
+<Option>Two variables that must be declared before the query</Option>
+<Option>Nothing - HQL cannot filter by a field</Option>
+
+<Explanation>HQL (and JPQL) queries entities, so the names are those of your classes and fields. If `@Table` or `@Column` rename things, the query does not change. `:max` is a named parameter, which keeps the value out of the query text just like `?` in JDBC.</Explanation>
+
+</Question>
+
+</Quiz>
+
+</Section>

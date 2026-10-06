@@ -14,6 +14,7 @@ import Runnables from "./learning/Runnables";
 import Collections from "./learning/Collections";
 import StreamApi from "./learning/StreamApi";
 import Jdbc from "./learning/Jdbc";
+import Hibernate from "./learning/Hibernate";
 import { stripMarkdown } from "../utils/markdown";
 import learningContent from "../data/en/learningContent.json";
 import cheatsheets from "../data/en/cheatsheets.json";
@@ -26,6 +27,7 @@ import { frontmatter as runnablesFrontmatter } from "../data/en/learning/runnabl
 import { frontmatter as collectionsFrontmatter } from "../data/en/learning/collections.mdx";
 import { frontmatter as streamApiFrontmatter } from "../data/en/learning/streamapi.mdx";
 import { frontmatter as jdbcFrontmatter } from "../data/en/learning/jdbc.mdx";
+import { frontmatter as hibernateFrontmatter } from "../data/en/learning/hibernate.mdx";
 
 /**
  * These don't try to cover every interaction on every page - the practice
@@ -348,6 +350,55 @@ describe("Java & JDBC with PostgreSQL (fifth lesson written as MDX)", () => {
     renderWithProviders(<Jdbc />);
     fireEvent.click(screen.getByRole("button", { name: /Spot the Bug/ }));
     expect(screen.getByText(/Each snippet has one classic JDBC mistake/)).toBeInTheDocument();
+  });
+});
+
+describe("Java & Hibernate (sixth lesson written as MDX)", () => {
+  it("renders its heading, every section, practice topic, and the Self-Check", () => {
+    renderWithProviders(<Hibernate />);
+
+    expect(
+      screen.getByRole("heading", { name: hibernateFrontmatter.title, level: 1 }),
+    ).toBeInTheDocument();
+    for (const heading of [
+      "Talking to a Database with Objects",
+      "Core Concepts",
+      "Setting Up",
+      "Trying the Lifecycle",
+      "Full Example, Step by Step",
+      "Getting Started",
+      "Practice Topics",
+      "Self-Check",
+    ]) {
+      expect(
+        screen.getByRole("heading", { name: heading, level: 2 }),
+      ).toBeInTheDocument();
+    }
+    for (const title of hibernateFrontmatter.practiceTopics) {
+      expect(screen.getByText(title)).toBeInTheDocument();
+    }
+    expect(document.body.textContent).not.toContain("`");
+  });
+
+  it("wires up its lifecycle explorer, walkthrough and quiz", () => {
+    renderWithProviders(<Hibernate />);
+
+    // <LifecycleDemo /> starts with a transient object and nothing sent yet.
+    expect(screen.getByRole("status")).toHaveTextContent("Press a button");
+    expect(screen.getByTestId("sql-log")).toHaveTextContent("nothing sent yet");
+    expect(
+      screen.getByRole("button", { name: /Product: columns and the owning side/ }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /check answers/i }),
+    ).toBeDisabled();
+    expect(screen.getAllByRole("radio")).toHaveLength(24);
+  });
+
+  it("opens a practice topic's live demo when clicked", () => {
+    renderWithProviders(<Hibernate />);
+    fireEvent.click(screen.getByRole("button", { name: /Spot the Bug/ }));
+    expect(screen.getByText(/Each snippet has one classic Hibernate mistake/)).toBeInTheDocument();
   });
 });
 

@@ -31,6 +31,7 @@ import runnablesFrontmatter from "../data/en/learning/runnables.mdx?frontmatter"
 import collectionsFrontmatter from "../data/en/learning/collections.mdx?frontmatter";
 import streamApiFrontmatter from "../data/en/learning/streamapi.mdx?frontmatter";
 import jdbcFrontmatter from "../data/en/learning/jdbc.mdx?frontmatter";
+import hibernateFrontmatter from "../data/en/learning/hibernate.mdx?frontmatter";
 import { lessonMeta } from "../utils/lessonMeta";
 
 // Lessons written as MDX contribute just their frontmatter (practice topics).
@@ -39,6 +40,7 @@ const runnablesContent = lessonMeta(runnablesFrontmatter);
 const collectionsContent = lessonMeta(collectionsFrontmatter);
 const streamapiContent = lessonMeta(streamApiFrontmatter);
 const jdbcContent = lessonMeta(jdbcFrontmatter);
+const hibernateContent = lessonMeta(hibernateFrontmatter);
 
 // Map topic keys to their learning content (to access practice topics)
 const CONTENT_BY_KEY: Record<string, { practiceTopics?: { title: string }[] }> = {
@@ -65,6 +67,7 @@ const CONTENT_BY_KEY: Record<string, { practiceTopics?: { title: string }[] }> =
   collections: collectionsContent,
   streamapi: streamapiContent,
   jdbc: jdbcContent,
+  hibernate: hibernateContent,
 };
 
 // Everything the user has checked off lives in a single cookie, so

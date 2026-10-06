@@ -39,6 +39,7 @@ const Runnables = lazy(() => import("./pages/learning/Runnables"));
 const Collections = lazy(() => import("./pages/learning/Collections"));
 const StreamApi = lazy(() => import("./pages/learning/StreamApi"));
 const Jdbc = lazy(() => import("./pages/learning/Jdbc"));
+const Hibernate = lazy(() => import("./pages/learning/Hibernate"));
 const ProjectSetup = lazy(() => import("./pages/cheatsheets/ProjectSetup"));
 const GithubPages = lazy(() => import("./pages/cheatsheets/GithubPages"));
 const NpmLibraries = lazy(() => import("./pages/cheatsheets/NpmLibraries"));
@@ -87,6 +88,7 @@ function App() {
                 <Route path="/collections" element={<Collections />} />
                 <Route path="/streamapi" element={<StreamApi />} />
                 <Route path="/jdbc" element={<Jdbc />} />
+                <Route path="/hibernate" element={<Hibernate />} />
                 <Route path="/projectsetup" element={<ProjectSetup />} />
                 <Route path="/githubpages" element={<GithubPages />} />
                 <Route path="/npmlibraries" element={<NpmLibraries />} />

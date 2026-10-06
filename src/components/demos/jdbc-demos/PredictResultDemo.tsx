@@ -1,4 +1,4 @@
-import ScenarioQuiz, { type Scenario } from "./ScenarioQuiz";
+import ScenarioQuiz, { type Scenario } from "../ScenarioQuiz";
 
 const TABLE = "product has 4 rows with ids 1, 2, 3, 4";
 
