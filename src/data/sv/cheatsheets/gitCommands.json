@@ -72,6 +72,14 @@
       "language": "bash",
       "note": "git checkout <commit-id> försätter dig i ett skrivskyddat \"detached HEAD\"-tillstånd - helt okej för att titta runt, men skapa en branch först om du vill göra ändringar där.",
       "codeFile": "code-examples/cheatsheets/gitCommands-sv/08-undo-and-discard-changes.sh"
+    },
+    {
+      "id": 9,
+      "title": "Byt Namn På Main-branchen",
+      "description": "Har du ett äldre repository där standardbranchen heter master? Byt namn lokalt, push:a det nya namnet och ta sedan bort den gamla branchen på remoten.",
+      "language": "bash",
+      "note": "Om repot ligger på GitHub, byt även standardbranch till main under Settings → Branches innan du tar bort master - GitHub låter dig inte ta bort standardbranchen. Teammedlemmar behöver sedan köra git fetch och git branch -u origin/main main i sina egna kloner.",
+      "codeFile": "code-examples/cheatsheets/gitCommands-sv/09-rename-the-main-branch.sh"
     }
   ],
   "gettingStarted": {

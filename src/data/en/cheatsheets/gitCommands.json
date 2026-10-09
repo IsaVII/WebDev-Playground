@@ -72,6 +72,14 @@
       "language": "bash",
       "note": "git checkout <commit-id> puts you in a read-only \"detached HEAD\" state - fine for looking around, but create a branch first if you want to make changes there.",
       "codeFile": "code-examples/cheatsheets/gitCommands/08-undo-and-discard-changes.sh"
+    },
+    {
+      "id": 9,
+      "title": "Rename the Main Branch",
+      "description": "Got an older repository whose default branch is called master? Rename it locally, push the new name, then delete the old branch on the remote.",
+      "language": "bash",
+      "note": "If the repo is on GitHub, also switch the default branch to main under Settings → Branches before deleting master - GitHub won't let you delete the default branch. Teammates then need to run git fetch and git branch -u origin/main main in their own clones.",
+      "codeFile": "code-examples/cheatsheets/gitCommands/09-rename-the-main-branch.sh"
     }
   ],
   "gettingStarted": {
