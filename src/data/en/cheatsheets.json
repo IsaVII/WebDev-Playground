@@ -109,6 +109,15 @@
       "screenshot": "/images/markdown.png",
       "difficulty": "beginner",
       "estimatedTime": "10 minutes"
+    },
+    {
+      "id": 12,
+      "key": "mermaidclass",
+      "title": "Mermaid Class Diagram Cheat Sheet",
+      "description": "Reference for class diagrams in Mermaid: visibility symbols, fields and methods, abstract classes and interfaces, relationship arrows, multiplicity, and translating Java into a diagram",
+      "route": "/mermaidclass",
+      "difficulty": "beginner",
+      "estimatedTime": "10 minutes"
     }
 ]
 }

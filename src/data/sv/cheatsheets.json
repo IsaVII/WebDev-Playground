@@ -99,6 +99,15 @@
       "screenshot": "/images/markdown.png",
       "difficulty": "beginner",
       "estimatedTime": "10 minuter"
+    },
+    {
+      "id": 12,
+      "key": "mermaidclass",
+      "title": "Mermaid-klassdiagram Cheat Sheet",
+      "description": "Referens för klassdiagram i Mermaid: synlighetssymboler, fält och metoder, abstrakta klasser och gränssnitt, relationspilar, multiplicitet och Java-till-diagram-översättning",
+      "route": "/mermaidclass",
+      "difficulty": "beginner",
+      "estimatedTime": "10 minuter"
     }
 ]
 }

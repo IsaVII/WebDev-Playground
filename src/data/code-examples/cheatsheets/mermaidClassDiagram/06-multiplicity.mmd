@@ -1,0 +1,4 @@
+classDiagram
+    Customer "1" --> "0..*" Order : places
+    Order "1" --> "0..1" Payment : paid by
+    Restaurant "1" --> "1..*" MenuItem : offers

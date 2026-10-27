@@ -1,0 +1,215 @@
+{
+  "title": "Cheat Sheet för Mermaid-klassdiagram",
+  "introduction": {
+    "heading": "Klassdiagram i Mermaid",
+    "description": "Ett klassdiagram är ritningen över ett objektorienterat system, ritad innan du skriver koden: vilka klasser som finns, vilka fält och metoder varje klass har och hur de hänger ihop. Med Mermaid skriver du diagrammet som vanlig text, och GitHub, VS Code (med ett Mermaid-tillägg) och mermaid.live gör det till en bild. Alla exempel nedan använder Employee-systemet från OOP-lektionen, och varje exempel visar både källkoden och diagrammet den ger."
+  },
+  "prerequisites": [
+    "En plats som renderar Mermaid, t.ex. en GitHub README/PR/issue, VS Code med ett Mermaid-tillägg för förhandsgranskning, eller mermaid.live",
+    "I en Markdown-fil läggs diagrammet i ett kodblock märkt `mermaid`",
+    "Grundläggande OOP-begrepp: klass, fält, metod, `extends`, `implements`"
+  ],
+  "steps": [
+    {
+      "id": 1,
+      "title": "Starta ett klassdiagram",
+      "description": "Varje diagram börjar med nyckelordet `classDiagram`. En klass är en ruta med tre delar: namnet överst, fälten i mitten och metoderna längst ner. Mermaid skiljer fält från metoder på parenteserna - en medlem med `()` är en metod.",
+      "tables": [
+        {
+          "headers": ["Del", "Innehåller", "Exempel"],
+          "rows": [
+            ["Namn", "Klassens namn", "`class Employee`"],
+            ["Fält", "Objektets data", "`- salary: double`"],
+            ["Metoder", "Objektets beteende", "`+ raiseSalary(amount double)`"]
+          ]
+        }
+      ],
+      "note": "Konstruktorer listas tillsammans med metoderna, skrivna som en metod utan returtyp: `+ Employee(name, salary)`.",
+      "codeFile": "code-examples/cheatsheets/mermaidClassDiagram/01-basic-structure.mmd",
+      "diagram": true
+    },
+    {
+      "id": 2,
+      "title": "Synlighetssymboler",
+      "description": "Ett tecken framför ett fält eller en metod anger vem som får använda det. Det motsvarar direkt Javas åtkomstmodifierare.",
+      "tables": [
+        {
+          "headers": ["Symbol", "Java-nyckelord", "Betydelse", "Exempel"],
+          "rows": [
+            ["`+`", "`public`", "nås från var som helst", "`+ getName() String`"],
+            ["`-`", "`private`", "nås bara inuti den här klassen", "`- salary: double`"],
+            ["`#`", "`protected`", "den här klassen och alla dess subklasser", "`# id: int`"],
+            ["`~`", "*(inget nyckelord)*", "paketsynlig - bara inom samma paket", "`~ branch: String`"]
+          ]
+        }
+      ],
+      "note": "I praktiken använder klassdiagram nästan bara `+` och `-`: privata fält, publika metoder. `#` och `~` dyker sällan upp i enkla OOP-diagram.",
+      "codeFile": "code-examples/cheatsheets/mermaidClassDiagram/02-visibility.mmd",
+      "diagram": true
+    },
+    {
+      "id": 3,
+      "title": "Fält, metoder och typer",
+      "description": "Skriv ett fält som `synlighet namn: Typ` och en metod som `synlighet namn(parametrar) Returtyp`. Statiska och abstrakta medlemmar markeras med en symbol allra sist på raden.",
+      "tables": [
+        {
+          "headers": ["Vad", "Syntax", "Exempel"],
+          "rows": [
+            ["Fält", "`synlighet namn: Typ`", "`- salary: double`"],
+            ["Metod", "`synlighet namn(params) Returtyp`", "`+ getName() String`"],
+            ["Konstruktor", "`+ Klassnamn(params)`", "`+ Employee(name String)`"],
+            ["Parameter", "`namn Typ`, eller bara `namn`", "`+ raiseSalary(amount double)`"],
+            ["Generisk typ", "`~` i stället för `<` och `>`", "`- skills: List~String~`"],
+            ["Statisk medlem", "`$` sist", "`- totalEmployees: int$`"],
+            ["Abstrakt metod", "`*` sist", "`+ onboard(newEmployee Employee)*`"]
+          ]
+        }
+      ],
+      "note": "Välj en stil för typer och håll dig till den. Det här bladet använder `namn: Typ` för fält och returtyp sist för metoder, som i OOP-lektionen. Generics kräver tilde eftersom vinkelparenteser skulle tolkas som en del av diagramsyntaxen.",
+      "codeFile": "code-examples/cheatsheets/mermaidClassDiagram/03-fields-and-methods.mmd",
+      "diagram": true
+    },
+    {
+      "id": 4,
+      "title": "Abstrakta klasser, gränssnitt och enum",
+      "description": "En etikett inom dubbla vinkelparenteser på första raden inuti klassrutan anger vilken sorts typ det är. Enum-konstanter listas en per rad, utan typer.",
+      "tables": [
+        {
+          "headers": ["Etikett", "Betydelse", "Java"],
+          "rows": [
+            ["`<<abstract>>`", "kan inte instansieras; varje subklass måste fylla i de abstrakta metoderna", "`abstract class`"],
+            ["`<<interface>>`", "ett rent kontrakt - anger vad, inte hur", "`interface`"],
+            ["`<<enumeration>>`", "en fast uppsättning namngivna konstanter", "`enum`"]
+          ]
+        }
+      ],
+      "note": "En abstrakt metod markeras med `*` sist, så etiketten och metoden berättar tillsammans hela historien: klassen är en mall, och `onboard()` är luckan varje subklass fyller i.",
+      "codeFile": "code-examples/cheatsheets/mermaidClassDiagram/04-class-types.mmd",
+      "diagram": true
+    },
+    {
+      "id": 5,
+      "title": "Relationspilar",
+      "description": "En linje mellan två klassnamn är en relation, och pilens stil anger vilken sorts relation. Avsnitten nedan förklarar hur du väljer mellan dem.",
+      "tables": [
+        {
+          "headers": ["Relation", "Pil", "Java", "Läses som"],
+          "rows": [
+            ["Arv", "`<|--`", "`extends`", "\"är-en\""],
+            ["Implementation", "`<|..`", "`implements`", "skriver under kontraktet"],
+            ["Aggregering", "`o--`", "fält; delarna skapas utanför och skickas in", "har-en (svag): delarna överlever utan helheten"],
+            ["Komposition", "`*--`", "fält; delen skapas inuti förälderns konstruktor", "äger (stark): delen kan inte existera utan helheten"],
+            ["Association", "`-->`", "skickas som metodparameter, lagras inte", "använder"],
+            ["Beroende", "`..>`", "förekommer i metodsignaturer", "beror på"]
+          ]
+        }
+      ],
+      "note": "Triangeln i `<|--` och `<|..` pekar på föräldern eller gränssnittet, så `Employee <|-- Manager` betyder att Manager ärver från Employee. Romben i `o--` och `*--` sitter på helhetens sida. En heldragen linje är en strukturell koppling, en streckad är en lösare. Lägg till en etikett efter ett kolon: `Company o-- Employee : has`.",
+      "codeFile": "code-examples/cheatsheets/mermaidClassDiagram/05-relationships.mmd",
+      "diagram": true
+    },
+    {
+      "id": 6,
+      "title": "Association, aggregering eller komposition?",
+      "description": "Dessa tre är lätta att blanda ihop. Ställ tre frågor: lagras det andra objektet som ett fält, vem skapar det och kan det existera ensamt?",
+      "tables": [
+        {
+          "headers": ["", "Association", "Aggregering", "Komposition"],
+          "rows": [
+            ["Nyckelord", "använder", "har-en", "äger"],
+            ["Pil", "`-->`", "`o--`", "`*--`"],
+            ["Lagras som fält?", "Nej - bara en parameter", "Ja - ett samlingsfält", "Ja - ett enskilt fält"],
+            ["Skapas av", "någon annan", "utanför, skickas sedan in", "inuti förälderns konstruktor"],
+            ["Kan existera ensamt?", "Ja", "Ja", "Nej"],
+            ["Styrka", "svagast", "medel", "starkast"],
+            ["Exempel", "Employee använder en Laptop", "Company har Employees", "Employee äger en WorkContract"]
+          ]
+        }
+      ],
+      "note": "Tumregel: en permanent koppling är ett fält, en tillfällig är en parameter. Kursmaterialet ritar användning enbart via parameter som association (`-->`), medan strikt UML skulle kalla det ett beroende (`..>`) - följ det din kurs eller ditt team använder, men var konsekvent."
+    },
+    {
+      "id": 7,
+      "title": "Arv: abstrakt klass eller gränssnitt?",
+      "description": "Båda ritas med en triangelpil, men linjens stil skiljer sig. Börja med \"är-en\"-testet: om \"A är en B\" stämmer passar arv. En Manager är en Employee, men en Company är inte en Employee, så den kopplingen är komposition eller aggregering.",
+      "tables": [
+        {
+          "headers": ["", "Abstrakt klass", "Gränssnitt"],
+          "rows": [
+            ["Pil", "`<|--` (heldragen)", "`<|..` (streckad)"],
+            ["Java-nyckelord", "`extends`", "`implements`"],
+            ["Kan ha fält?", "Ja", "Nej (bara konstanter)"],
+            ["Kan ha konkreta metoder?", "Ja", "Ja (`default`-metoder)"],
+            ["Hur många per klass?", "Bara en förälder", "Så många du vill"],
+            ["Använd när", "kod ska delas mellan nära besläktade klasser", "en förmåga ska kunna ges till vilken klass som helst"]
+          ]
+        }
+      ],
+      "note": "\"Är-en\" med delad kod är en abstrakt klass (`Circle` är en `Shape`). En \"kan-göra\"-förmåga är ett gränssnitt (`Manager` kan vara `Payable`)."
+    },
+    {
+      "id": 8,
+      "title": "Multiplicitet",
+      "description": "Multiplicitet anger hur många objekt av en klass som kopplas till hur många av den andra. Skriv den inom citattecken bredvid klassen den beskriver, en i varje ände: `Customer \"1\" --> \"0..*\" Order : places`. Läs den från vänster till höger (en Customer lägger noll eller flera Orders) och från höger till vänster (varje Order tillhör exakt en Customer).",
+      "tables": [
+        {
+          "headers": ["Notation", "Betydelse", "Exempel i vanlig text"],
+          "rows": [
+            ["`1`", "exakt en", "varje Order tillhör exakt en Customer"],
+            ["`0..1`", "noll eller en", "en Order kan ha en Payment eller sakna en"],
+            ["`1..*`", "en eller flera", "en Restaurant har minst ett MenuItem"],
+            ["`0..*`", "noll eller flera", "en Customer kanske inte har lagt några ordrar än"]
+          ]
+        }
+      ],
+      "note": "Utan multiplicitet säger en pil bara \"de här hänger ihop\". Med den svarar diagrammet på verkliga frågor: kan en kund ha flera ordrar, och kan en order finnas utan betalning? Varje värde ska komma från en verklig regel i systemet, inte från en gissning.",
+      "codeFile": "code-examples/cheatsheets/mermaidClassDiagram/06-multiplicity.mmd",
+      "diagram": true
+    },
+    {
+      "id": 9,
+      "title": "Från Java-kod till diagramrad",
+      "description": "Att gå från kod till diagram är mest en uppslagning. Så här översätts Employee-koden från OOP-lektionen.",
+      "tables": [
+        {
+          "headers": ["Java-kod", "Diagramrad"],
+          "rows": [
+            ["`private String name;`", "`- name: String`"],
+            ["`public double getSalary()`", "`+ getSalary() double`"],
+            ["`private static int totalEmployees;`", "`- totalEmployees: int$`"],
+            ["`public abstract void onboard(Employee e);`", "`+ onboard(e Employee)*`"],
+            ["`private List<Employee> employees;`", "`- employees: List~Employee~`"],
+            ["`class Manager extends Employee`", "`Employee <|-- Manager`"],
+            ["`class EmployeeDAOImpl implements EmployeeDAO`", "`EmployeeDAO <|.. EmployeeDAOImpl`"],
+            ["`private List<Employee> employees;` fylls av `hire(employee)`", "`Company o-- Employee`"],
+            ["`this.contract = new WorkContract(...)` i konstruktorn", "`Employee *-- WorkContract`"],
+            ["`public void use(Laptop laptop)`", "`Employee --> Laptop`"],
+            ["`private Department department;` (en enum)", "`Employee --> Department`"]
+          ]
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Allt tillsammans",
+      "description": "Hela Employee Management System i ett diagram: en abstrakt Employee med två subklasser, en enum, ett gränssnitt med sin implementation och alla tre sorters kopplingar med multiplicitet.",
+      "note": "Rita ett diagram som det här innan du kodar. En saknad klass eller en felaktig pil är billig att rätta på papper och dyr att rätta i kod.",
+      "codeFile": "code-examples/cheatsheets/mermaidClassDiagram/07-full-example.mmd",
+      "diagram": true
+    }
+  ],
+  "gettingStarted": {
+    "heading": "Snabb syntaxreferens",
+    "steps": [
+      "`classDiagram` - första raden i varje diagram",
+      "`+` public, `-` private, `#` protected, `~` paketsynlig",
+      "`$` sist - statisk; `*` sist - abstrakt",
+      "`List~Employee~` - generics använder tilde, inte vinkelparenteser",
+      "`<<abstract>>`, `<<interface>>`, `<<enumeration>>` - första raden inuti klassrutan",
+      "`A <|-- B` - B ärver från A; `A <|.. B` - B implementerar A",
+      "`A o-- B` - aggregering; `A *-- B` - komposition",
+      "`A --> B` - association; `A ..> B` - beroende",
+      "`A \"1\" --> \"0..*\" B : label` - multiplicitet och en etikett"
+    ]
+  }
+}

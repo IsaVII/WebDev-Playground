@@ -1,0 +1,60 @@
+classDiagram
+    class Employee {
+        <<abstract>>
+        - name: String
+        - role: String
+        - department: Department
+        - salary: double
+        + getName() String
+        + raiseSalary(amount double)
+        + introduce()
+        + onboard(newEmployee Employee)*
+    }
+    class Manager {
+        - teamSize: int
+        + onboard(newEmployee Employee)
+        + approveLeave(employee Employee)
+    }
+    class Developer {
+        - programmingLanguage: String
+        + onboard(newEmployee Employee)
+        + writeCode()
+    }
+    class Department {
+        <<enumeration>>
+        IT
+        HR
+        FINANCE
+        MARKETING
+    }
+    class EmployeeDAO {
+        <<interface>>
+        + add(employee Employee)
+        + findAll() List~Employee~
+        + findByName(name String) Employee
+        + remove(employee Employee)
+    }
+    class EmployeeDAOImpl {
+        - employees: List~Employee~
+    }
+    class Company {
+        - name: String
+        - employees: List~Employee~
+        + hire(employee Employee)
+    }
+    class WorkContract {
+        - startDate: String
+        - contractType: String
+    }
+    class Laptop {
+        - brand: String
+        - model: String
+    }
+    Employee <|-- Manager
+    Employee <|-- Developer
+    EmployeeDAO <|.. EmployeeDAOImpl
+    EmployeeDAO ..> Employee : uses
+    Company "1" o-- "0..*" Employee : has
+    Employee "1" *-- "1" WorkContract : owns
+    Employee "0..*" --> "0..1" Laptop : uses
+    Employee "0..*" --> "1" Department : belongs to

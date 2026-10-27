@@ -53,6 +53,9 @@ const LlmIntegration = lazy(() =>
 );
 const CiCd = lazy(() => import("./pages/cheatsheets/CiCd"));
 const Markdown = lazy(() => import("./pages/cheatsheets/Markdown"));
+const MermaidClassDiagram = lazy(
+  () => import("./pages/cheatsheets/MermaidClassDiagram"),
+);
 
 function App() {
   return (
@@ -103,6 +106,10 @@ function App() {
                 />
                 <Route path="/cicd" element={<CiCd />} />
                 <Route path="/markdown" element={<Markdown />} />
+                <Route
+                  path="/mermaidclass"
+                  element={<MermaidClassDiagram />}
+                />
               </Routes>
             </PageTransition>
           </Suspense>

@@ -1,0 +1,7 @@
+classDiagram
+    Employee <|-- Manager : inheritance
+    EmployeeDAO <|.. EmployeeDAOImpl : implementation
+    Company o-- Employee : aggregation
+    Employee *-- WorkContract : composition
+    Employee --> Laptop : association
+    EmployeeDAO ..> Employee : dependency

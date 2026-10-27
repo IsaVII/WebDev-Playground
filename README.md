@@ -67,6 +67,7 @@ Task-focused references for setup work you'd otherwise have to look up across a 
 | **MongoDB Setup & Connection**   | Local/Atlas setup, connection strings, and troubleshooting                                                                                                              |
 | **SQL Database**                 | Creating tables, SELECT/INSERT/UPDATE/DELETE, JOINs, aggregation, constraints, indexes, transactions                                                                    |
 | **Text Reveal & Content Reveal** | A drop-in, IntersectionObserver-based scroll-reveal system for React (word-by-word text reveals plus fade/slide content reveals), with `prefers-reduced-motion` support |
+| **Mermaid Class Diagram** | Class diagrams in Mermaid: visibility symbols, fields and methods, abstract classes and interfaces, relationship arrows, multiplicity, and Java-to-diagram translation (also as a standalone [Markdown file](Mermaid_ClassDiagram_CheatSheet.md)) |
 
 ---
 
@@ -234,7 +235,7 @@ A **Java Backend** topic is the same, except its index entry goes in `src/data/{
 ## Adding a New Cheat Sheet
 
 1. Add an entry to `src/data/cheatsheets.json` with a unique `key` and a `route` (e.g. `"key": "sql"`, `"route": "/sql"`) — the home page and header nav both pull from this file automatically.
-2. Create a `src/data/cheatsheets/<name>.json` file shaped like the existing ones: `title`, `introduction`, `prerequisites`, `steps` (each with `title`, `description`, optional `code`/`highlightLines`/`note`/`substeps`/`subSteps`), and any of the optional sections `CheatSheetLayout` supports (`folderStructure`, `backendSetup`, `whatYouMightBeMissing`, `gettingStarted`, `source`).
+2. Create a `src/data/cheatsheets/<name>.json` file shaped like the existing ones: `title`, `introduction`, `prerequisites`, `steps` (each with `title`, `description`, optional `code`/`highlightLines`/`note`/`substeps`/`subSteps`, reference `tables`, and `diagram: true` to also render a `.mmd` code file as a Mermaid diagram), and any of the optional sections `CheatSheetLayout` supports (`folderStructure`, `backendSetup`, `whatYouMightBeMissing`, `gettingStarted`, `source`).
 3. Create `src/pages/cheatsheets/<Name>.tsx`, following the pattern in `SQL.tsx` — import the JSON and pass its fields straight into `<CheatSheetLayout>`.
 4. Register the route in `src/App.tsx` as a lazy-loaded page (see the other cheat sheet imports).
 

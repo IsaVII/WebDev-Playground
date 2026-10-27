@@ -1,0 +1,17 @@
+classDiagram
+    class Employee {
+        <<abstract>>
+        - name: String
+        + onboard(newEmployee Employee)*
+    }
+    class Payable {
+        <<interface>>
+        + pay() void
+    }
+    class Department {
+        <<enumeration>>
+        IT
+        HR
+        FINANCE
+        MARKETING
+    }

@@ -70,12 +70,23 @@ export interface CheatSheetSubStep {
   note?: string;
 }
 
+/** A reference table; every header and cell is inline Markdown (symbols go in `code`). */
+export interface CheatSheetTable {
+  caption?: string;
+  headers: string[];
+  rows: string[][];
+}
+
 export interface CheatSheetStep {
   id?: string | number;
   title: string;
   description?: string;
+  /** Reference tables, shown between the description and the code. */
+  tables?: CheatSheetTable[];
   codeFile?: string;
   highlightLines?: number[];
+  /** Also render `codeFile` (Mermaid source) as a diagram under the code block. */
+  diagram?: boolean;
   substeps?: string[];
   note?: string;
   subSteps?: CheatSheetSubStep[];

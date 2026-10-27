@@ -2,6 +2,8 @@ import { useEffect } from "react";
 import CodeBlock from "./CodeBlock";
 import ContentCard from "./ContentCard";
 import InlineMarkdown from "./InlineMarkdown";
+import MermaidDiagram from "./MermaidDiagram";
+import ReferenceTable from "./ReferenceTable";
 import Reveal from "./motion/Reveal";
 import TextReveal from "./motion/TextReveal";
 import { loadCodeFile } from "../utils/codeExamples";
@@ -108,11 +110,24 @@ function CheatSheetLayout({
                   </p>
                 )}
 
+                {step.tables && step.tables.length > 0 && (
+                  <div className="flex flex-col gap-4 mb-4">
+                    {step.tables.map((table, tableIndex) => (
+                      <ReferenceTable key={tableIndex} {...table} />
+                    ))}
+                  </div>
+                )}
+
                 {step.codeFile && (
                   <div className="mb-4">
                     <CodeBlock highlightLines={step.highlightLines}>
                       {loadCodeFile(step.codeFile)}
                     </CodeBlock>
+                    {step.diagram && (
+                      <div className="mt-3">
+                        <MermaidDiagram source={loadCodeFile(step.codeFile)} />
+                      </div>
+                    )}
                   </div>
                 )}
 

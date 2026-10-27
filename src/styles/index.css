@@ -319,3 +319,13 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+
+/* Reference tables are scanned for their symbols, so keep those readable
+   (the default code color is deliberately dim) and compact. Has to live
+   here, unlayered: see the note in CodeBlock about utilities losing to the
+   global `code` rule. */
+.reference-table code {
+  color: var(--color-heading-alt);
+  font-size: 13px;
+  padding: 2px 6px;
+}
