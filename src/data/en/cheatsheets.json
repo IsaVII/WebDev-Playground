@@ -118,6 +118,15 @@
       "route": "/mermaidclass",
       "difficulty": "beginner",
       "estimatedTime": "10 minutes"
+    },
+    {
+      "id": 13,
+      "key": "webstack",
+      "title": "JavaScript Web Stack Cheat Sheet",
+      "description": "Compare JavaScript, TypeScript, Node.js, Express.js, React, Next.js and Tailwind CSS side by side: what each one is for, what it builds on, and a small example of each",
+      "route": "/webstack",
+      "difficulty": "beginner",
+      "estimatedTime": "15 minutes"
     }
 ]
 }

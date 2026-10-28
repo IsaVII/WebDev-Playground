@@ -1,0 +1,111 @@
+{
+  "title": "JavaScript Web Stack Cheat Sheet",
+  "introduction": {
+    "heading": "JavaScript, TypeScript, Node.js, Express, React, Next.js och Tailwind i överblick",
+    "description": "De här sju namnen dyker ofta upp tillsammans, men de är inte alternativ till varandra: några är språk, några körs i webbläsaren, några körs på en server och ett hanterar bara utseende. Den här sidan jämför dem sida vid sida och ger sedan varje teknik en mening om vad den används till och ett litet exempel. Alla exempel är variationer på samma idé - en användare som heter Ada - så att du ser hur delarna skiljer sig åt utan att behöva lära dig ett nytt problem varje gång."
+  },
+  "prerequisites": [
+    "Grundläggande kunskap om HTML och hur en webbsida laddas i en webbläsare",
+    "Node.js installerat om du vill köra exemplen för JavaScript, Node.js och Express (`node --version` för att kontrollera)"
+  ],
+  "steps": [
+    {
+      "id": 1,
+      "title": "De sju i överblick",
+      "description": "En rad per teknik: vilken sorts sak det är, vad den bygger på, var den körs och vad du använder den till.",
+      "tables": [
+        {
+          "headers": ["Teknik", "Vad det är", "Bygger på", "Körs i", "Använd den till"],
+          "rows": [
+            ["JavaScript", "Programmeringsspråk", "-", "Webbläsare och Node.js", "Logik och interaktivitet - grunden som allt annat här är byggt av"],
+            ["TypeScript", "JavaScript med statiska typer", "JavaScript", "Kompileras först till JavaScript", "Att fånga typfel innan koden körs"],
+            ["Node.js", "Körmiljö för JavaScript", "JavaScript", "Din dator eller en server", "Att köra JavaScript utanför webbläsaren: skript, servrar, byggverktyg"],
+            ["Express.js", "Ramverk för webbservrar", "Node.js", "Node.js", "REST-API:er och webbservrar med routes och middleware"],
+            ["React", "UI-bibliotek", "JavaScript", "Webbläsare", "Att bygga interaktiva gränssnitt av återanvändbara komponenter"],
+            ["Next.js", "Full-stack-ramverk för React", "React och Node.js", "Server och webbläsare", "Hela sajter: filbaserad routing, serverrendering, API-routes"],
+            ["Tailwind CSS", "CSS-ramverk", "CSS", "Byggsteg, sedan webbläsare", "Styling med små utility-klasser skrivna direkt i markupen"]
+          ]
+        }
+      ],
+      "note": "Bara JavaScript och TypeScript är språk. Node.js är platsen där JavaScript körs på en server, React och Tailwind är till för det användaren ser, och Express och Next.js är ramverk byggda ovanpå de andra."
+    },
+    {
+      "id": 2,
+      "title": "Hur de passar ihop",
+      "description": "Sortera dem efter vilket lager av appen de hör till. Ett typiskt projekt gör ett val per lager.",
+      "tables": [
+        {
+          "headers": ["Lager", "Val här", "Hur du väljer"],
+          "rows": [
+            ["Språk", "JavaScript eller TypeScript", "TypeScript för allt som kommer att växa; vanlig JavaScript för små skript och för att lära sig"],
+            ["Användargränssnitt", "React, stylat med Tailwind", "React bygger struktur och beteende, Tailwind utseendet - de överlappar inte"],
+            ["Server", "Node.js med Express", "Node.js kör koden, Express organiserar routes - du behöver alltid det första för att använda det andra"],
+            ["Full-stack-ramverk", "Next.js", "Ersätter en separat React-app och Express-server när ett projekt ska göra båda"]
+          ]
+        }
+      ],
+      "note": "En vanlig uppsättning är ett React-gränssnitt (stylat med Tailwind) som pratar med ett Express-API, allt i TypeScript. Next.js är alternativet som lägger frontend och backend i ett och samma projekt."
+    },
+    {
+      "id": 3,
+      "title": "JavaScript",
+      "description": "Webbens språk: det gör sidor interaktiva i webbläsaren och körs, med Node.js, även på servrar.",
+      "codeFile": "code-examples/cheatsheets/webStack/01-javascript.js",
+      "note": "**Jämför:** JavaScript har ingen typkontroll - `age: \"36\"` accepteras tyst och går fel senare, vid körning. Det är precis det gapet TypeScript fyller."
+    },
+    {
+      "id": 4,
+      "title": "TypeScript",
+      "description": "JavaScript plus typer: du beskriver formen på din data och kompilatorn varnar för misstag innan du kört något.",
+      "codeFile": "code-examples/cheatsheets/webStack/02-typescript.ts",
+      "note": "**Jämför:** TypeScript är inte ett helt nytt språk att lära sig - varje giltig JavaScript-fil är giltig TypeScript. Webbläsare och Node.js kör det inte direkt, så det kompileras först till vanlig JavaScript."
+    },
+    {
+      "id": 5,
+      "title": "Node.js",
+      "description": "En körmiljö som kör JavaScript utanför webbläsaren, så att du kan läsa filer, köra skript och starta servrar.",
+      "codeFile": "code-examples/cheatsheets/webStack/03-nodejs.js",
+      "note": "**Jämför:** Node.js är inget ramverk - det är platsen där koden körs. Den inbyggda `http`-modulen kan ta emot anrop själv, men routing och tolkning blir snabbt repetitivt, och därför finns Express. Importerna ovan kräver `\"type\": \"module\"` i `package.json`."
+    },
+    {
+      "id": 6,
+      "title": "Express.js",
+      "description": "Ett litet ramverk ovanpå Node.js som gör inkommande anrop till routes, så att du kan bygga ett API på några få rader.",
+      "codeFile": "code-examples/cheatsheets/webStack/04-expressjs.js",
+      "note": "**Jämför:** Express ger dig servern och API:et men inga sidor och inget gränssnitt - du kombinerar det med en frontend som React. Next.js kan ersätta båda med ett enda projekt."
+    },
+    {
+      "id": 7,
+      "title": "React",
+      "description": "Ett bibliotek för att bygga användargränssnitt av komponenter - funktioner som returnerar markup och ritas om när deras state ändras.",
+      "codeFile": "code-examples/cheatsheets/webStack/05-react.jsx",
+      "note": "**Jämför:** React ritar bara gränssnittet. Det har ingen router, ingen server och ingen datahämtning inbyggd, och därför lägger större appar till ett ramverk som Next.js runt det."
+    },
+    {
+      "id": 8,
+      "title": "Next.js",
+      "description": "Ett ramverk runt React som lägger till routing, serverrendering och API-endpoints, så att en sida kan hämta sin data på servern innan den når webbläsaren.",
+      "codeFile": "code-examples/cheatsheets/webStack/06-nextjs.jsx",
+      "note": "**Jämför:** I vanlig React skulle du sätta upp en router och hämta användaren i en effect när sidan har laddats. I Next.js blir mappnamnet `[id]` till routen, och datan finns redan i HTML:en när sidan kommer fram."
+    },
+    {
+      "id": 9,
+      "title": "Tailwind CSS",
+      "description": "Ett CSS-ramverk av små klasser som gör en sak var, så att du stylar ett element genom att lista klasser på det i stället för att skriva en separat stilmall.",
+      "codeFile": "code-examples/cheatsheets/webStack/07-tailwind.html",
+      "note": "**Jämför:** Tailwind hanterar bara utseende och fungerar med alla de andra. I React och Next.js skrivs attributet `className` i stället för `class`. Det ersätter inte CSS-kunskap - klassnamnen är CSS-egenskaper i förkortad form."
+    }
+  ],
+  "gettingStarted": {
+    "heading": "Vilken behöver jag?",
+    "steps": [
+      "Göra en sida interaktiv, eller lära dig programmera - **JavaScript**",
+      "Samma sak, men med färre buggar i en växande kodbas - **TypeScript**",
+      "Köra JavaScript på din dator eller en server - **Node.js**",
+      "Bygga ett REST-API - **Node.js + Express.js**",
+      "Bygga ett komponentbaserat användargränssnitt - **React**",
+      "Bygga en hel sajt med routing och serverrendering i ett projekt - **Next.js**",
+      "Styla det utan separata CSS-filer - **Tailwind CSS**"
+    ]
+  }
+}

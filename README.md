@@ -68,6 +68,7 @@ Task-focused references for setup work you'd otherwise have to look up across a 
 | **SQL Database**                 | Creating tables, SELECT/INSERT/UPDATE/DELETE, JOINs, aggregation, constraints, indexes, transactions                                                                    |
 | **Text Reveal & Content Reveal** | A drop-in, IntersectionObserver-based scroll-reveal system for React (word-by-word text reveals plus fade/slide content reveals), with `prefers-reduced-motion` support |
 | **Mermaid Class Diagram** | Class diagrams in Mermaid: visibility symbols, fields and methods, abstract classes and interfaces, relationship arrows, multiplicity, and Java-to-diagram translation (also as a standalone [Markdown file](Mermaid_ClassDiagram_CheatSheet.md)) |
+| **JavaScript Web Stack** | JavaScript, TypeScript, Node.js, Express.js, React, Next.js and Tailwind CSS compared side by side, with a one-sentence usage and a small example of each |
 
 ---
 

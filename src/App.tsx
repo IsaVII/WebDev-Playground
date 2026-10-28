@@ -56,6 +56,7 @@ const Markdown = lazy(() => import("./pages/cheatsheets/Markdown"));
 const MermaidClassDiagram = lazy(
   () => import("./pages/cheatsheets/MermaidClassDiagram"),
 );
+const WebStack = lazy(() => import("./pages/cheatsheets/WebStack"));
 
 function App() {
   return (
@@ -110,6 +111,7 @@ function App() {
                   path="/mermaidclass"
                   element={<MermaidClassDiagram />}
                 />
+                <Route path="/webstack" element={<WebStack />} />
               </Routes>
             </PageTransition>
           </Suspense>

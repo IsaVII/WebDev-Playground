@@ -1,0 +1,111 @@
+{
+  "title": "JavaScript Web Stack Cheat Sheet",
+  "introduction": {
+    "heading": "JavaScript, TypeScript, Node.js, Express, React, Next.js and Tailwind at a Glance",
+    "description": "These seven names come up together constantly, but they are not alternatives to each other: some are languages, some run in the browser, some run on a server, and one only does styling. This sheet compares them side by side, then gives each one a one-sentence description of what it is for and a small example. All the examples are variations on the same idea - a user named Ada - so you can see how the pieces differ without learning a new problem each time."
+  },
+  "prerequisites": [
+    "Basic familiarity with HTML and how a web page is loaded in a browser",
+    "Node.js installed if you want to run the JavaScript, Node.js and Express examples (`node --version` to check)"
+  ],
+  "steps": [
+    {
+      "id": 1,
+      "title": "The Seven at a Glance",
+      "description": "One row per technology: what kind of thing it is, what it builds on, where it runs, and what you reach for it to do.",
+      "tables": [
+        {
+          "headers": ["Technology", "What it is", "Builds on", "Runs in", "Use it for"],
+          "rows": [
+            ["JavaScript", "Programming language", "-", "Browser and Node.js", "Logic and interactivity - the base everything else here is made from"],
+            ["TypeScript", "JavaScript with static types", "JavaScript", "Compiled to JavaScript first", "Catching type mistakes before the code runs"],
+            ["Node.js", "JavaScript runtime", "JavaScript", "Your computer or a server", "Running JavaScript outside the browser: scripts, servers, build tools"],
+            ["Express.js", "Web server framework", "Node.js", "Node.js", "REST APIs and web servers with routes and middleware"],
+            ["React", "UI library", "JavaScript", "Browser", "Building interactive interfaces out of reusable components"],
+            ["Next.js", "Full-stack React framework", "React and Node.js", "Server and browser", "Whole sites: file-based routing, server rendering, API routes"],
+            ["Tailwind CSS", "CSS framework", "CSS", "Build step, then browser", "Styling with small utility classes written right in the markup"]
+          ]
+        }
+      ],
+      "note": "Only JavaScript and TypeScript are languages. Node.js is where JavaScript runs on a server, React and Tailwind are for what the user sees, and Express and Next.js are frameworks built on top of the others."
+    },
+    {
+      "id": 2,
+      "title": "How They Fit Together",
+      "description": "Sort them by the layer of the app they belong to. A typical project takes one choice per layer.",
+      "tables": [
+        {
+          "headers": ["Layer", "Choices here", "How to choose"],
+          "rows": [
+            ["Language", "JavaScript or TypeScript", "TypeScript for anything that will grow; plain JavaScript for small scripts and learning"],
+            ["User interface", "React, styled with Tailwind", "React builds the structure and behavior, Tailwind the look - they do not overlap"],
+            ["Server", "Node.js with Express", "Node.js runs the code, Express organizes the routes - you always need the first to use the second"],
+            ["Full-stack framework", "Next.js", "Replaces a separate React app and Express server when one project should do both"]
+          ]
+        }
+      ],
+      "note": "A common setup is a React front end (styled with Tailwind) talking to an Express API, all in TypeScript. Next.js is the alternative that puts the front end and the back end in one project."
+    },
+    {
+      "id": 3,
+      "title": "JavaScript",
+      "description": "The language of the web: it makes pages interactive in the browser and, with Node.js, also runs on servers.",
+      "codeFile": "code-examples/cheatsheets/webStack/01-javascript.js",
+      "note": "**Compare:** JavaScript has no type checking - `age: \"36\"` is accepted silently and fails later, at run time. That gap is exactly what TypeScript fills."
+    },
+    {
+      "id": 4,
+      "title": "TypeScript",
+      "description": "JavaScript plus types: you describe the shape of your data, and the compiler flags mistakes before you run anything.",
+      "codeFile": "code-examples/cheatsheets/webStack/02-typescript.ts",
+      "note": "**Compare:** TypeScript is not a different language to learn from scratch - every valid JavaScript file is valid TypeScript. Browsers and Node.js do not run it directly, so it is compiled to plain JavaScript first."
+    },
+    {
+      "id": 5,
+      "title": "Node.js",
+      "description": "A runtime that executes JavaScript outside the browser, so you can read files, run scripts and start servers.",
+      "codeFile": "code-examples/cheatsheets/webStack/03-nodejs.js",
+      "note": "**Compare:** Node.js is not a framework - it is where the code runs. Its built-in `http` module can serve requests on its own, but routing and parsing quickly get repetitive, which is why Express exists. The imports above need `\"type\": \"module\"` in `package.json`."
+    },
+    {
+      "id": 6,
+      "title": "Express.js",
+      "description": "A small framework on top of Node.js that turns incoming requests into routes, so you can build an API in a few lines.",
+      "codeFile": "code-examples/cheatsheets/webStack/04-expressjs.js",
+      "note": "**Compare:** Express gives you the server and the API but no pages and no UI - you pair it with a front end such as React. Next.js can replace both with a single project."
+    },
+    {
+      "id": 7,
+      "title": "React",
+      "description": "A library for building user interfaces from components - functions that return markup and re-render when their state changes.",
+      "codeFile": "code-examples/cheatsheets/webStack/05-react.jsx",
+      "note": "**Compare:** React only draws the UI. It has no router, no server and no data fetching built in, which is why larger apps add a framework such as Next.js around it."
+    },
+    {
+      "id": 8,
+      "title": "Next.js",
+      "description": "A framework around React that adds routing, server rendering and API endpoints, so a page can fetch its data on the server before it reaches the browser.",
+      "codeFile": "code-examples/cheatsheets/webStack/06-nextjs.jsx",
+      "note": "**Compare:** In plain React you would wire up a router and fetch the user in an effect after the page loads. In Next.js the folder name `[id]` becomes the route, and the data is already in the HTML when the page arrives."
+    },
+    {
+      "id": 9,
+      "title": "Tailwind CSS",
+      "description": "A CSS framework made of small single-purpose classes, so you style an element by listing classes on it instead of writing a separate stylesheet.",
+      "codeFile": "code-examples/cheatsheets/webStack/07-tailwind.html",
+      "note": "**Compare:** Tailwind only handles looks and works with any of the above. In React and Next.js the attribute is written `className` instead of `class`. It does not replace CSS knowledge - the class names are CSS properties in shorthand."
+    }
+  ],
+  "gettingStarted": {
+    "heading": "Which One Do I Need?",
+    "steps": [
+      "Make a page interactive, or learn programming - **JavaScript**",
+      "Same, but with fewer bugs in a growing codebase - **TypeScript**",
+      "Run JavaScript on your computer or a server - **Node.js**",
+      "Build a REST API - **Node.js + Express.js**",
+      "Build a component-based user interface - **React**",
+      "Build a whole site with routing and server rendering in one project - **Next.js**",
+      "Style it without writing separate CSS files - **Tailwind CSS**"
+    ]
+  }
+}
